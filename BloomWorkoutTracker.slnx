@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Bloom.Application/Bloom.Application.csproj" />
+    <Project Path="src/Bloom.Domain/Bloom.Domain.csproj" />
+    <Project Path="src/Bloom.Infrastructure/Bloom.Infrastructure.csproj" />
+    <Project Path="src/Bloom.Main/Bloom.Main.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Bloom.Application.Tests/Bloom.Application.Tests.csproj" />
+    <Project Path="tests/Bloom.Domain.Tests/Bloom.Domain.Tests.csproj" />
+    <Project Path="tests/Bloom.Infrastructure.Tests/Bloom.Infrastructure.Tests.csproj" />
+    <Project Path="tests/Bloom.Main.Tests/Bloom.Main.Tests.csproj" />
+  </Folder>
+</Solution>
