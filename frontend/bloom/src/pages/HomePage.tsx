@@ -3,6 +3,7 @@ import NavbarComponent from "../components/home/NavbarComponent.tsx";
 import HeaderComponent from "../components/home/HeaderComponent.tsx";
 import MissionComponent from "../components/home/MissionComponent.tsx";
 import ExerciseTypeImageComponent from "../components/home/ExerciseTypeImageComponent.tsx";
+import FeaturesComponent from "../components/home/FeaturesComponent.tsx";
 
 const HomePage = () => {
     return (
@@ -11,6 +12,7 @@ const HomePage = () => {
             <HeaderComponent/>
             <MissionComponent/>
             <ExerciseTypeImageComponent/>
+            <FeaturesComponent></FeaturesComponent>
         </>
     );
 }

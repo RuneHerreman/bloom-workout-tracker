@@ -5,22 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7031f523-a711-43e3-a570-6094f98ee991" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/bloom/public/media/Cardio.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/bloom/public/media/Plyo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/bloom/public/media/Strength.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/bloom/public/media/home_header.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/bloom/src/assets/homePage.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/bloom/src/assets/reset.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/bloom/src/components/buttons/ButtonComponent.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/bloom/src/components/home/ExerciseTypeImageComponent.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/bloom/src/components/home/HeaderComponent.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/bloom/src/components/home/MissionComponent.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/bloom/src/components/home/NavbarComponent.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/bloom/src/components/home/FeaturesComponent.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/bloom/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/bloom/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/bloom/src/assets/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/bloom/src/assets/screen.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/bloom/src/assets/index.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/bloom/src/main.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/bloom/src/main.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/bloom/src/assets/homePage.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/bloom/src/assets/homePage.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/bloom/src/components/home/ExerciseTypeImageComponent.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/bloom/src/components/home/ExerciseTypeImageComponent.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/bloom/src/pages/HomePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/bloom/src/pages/HomePage.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -105,7 +93,7 @@
       <workItem from="1769292182061" duration="1354000" />
       <workItem from="1769448118534" duration="31000" />
       <workItem from="1769448161267" duration="304000" />
-      <workItem from="1769448525944" duration="11325000" />
+      <workItem from="1769448525944" duration="17220000" />
     </task>
     <task id="LOCAL-00001" summary="have folder structure">
       <option name="closed" value="true" />
@@ -163,7 +151,15 @@
       <option name="project" value="LOCAL" />
       <updated>1769454993076</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Add first sections to home page">
+      <option name="closed" value="true" />
+      <created>1769461465364</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1769461465364</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -190,6 +186,7 @@
     <MESSAGE value="Add images and replace favicon" />
     <MESSAGE value="Install react-router, move css to assets/" />
     <MESSAGE value="Added routing and pages" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added routing and pages" />
+    <MESSAGE value="Add first sections to home page" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add first sections to home page" />
   </component>
 </project>

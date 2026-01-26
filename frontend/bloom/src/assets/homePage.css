@@ -88,20 +88,97 @@ h2 {
     grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
     padding: 0 0.5rem;
+    height: 100vh;
 }
 
-#exercise-type-image-section img {
+#exercise-type-image-section div {
+    position: relative;
+
     width: 100%;
-    height: 100%;
     border-radius: 0.75rem;
-    object-fit: cover;
+    display: flex;
+    align-items: end;
+    padding: 2rem;
+}
+
+#exercise-type-image-section div::after {
+    position: absolute;
+    content: '';
+    inset: 0;
+    background: linear-gradient(
+            to right,
+             rgba(0, 0, 0, 0)65%,
+            rgba(13, 13, 13, 0.45) 100%
+    );
+    border-radius: 0.75rem;
+    z-index: 1;
+}
+
+#exercise-type-image-section p {
+    position: relative;
+    z-index: 2;
+    color: white;
+    text-align: left;
+    font-size: 6rem;
+    font-weight: 150;
+    text-transform: uppercase;
+    text-shadow: 0 0 2rem rgba(0, 0, 0, 0.7);
+
+    width: 100%;
+    height: fit-content;
+    transform-origin: bottom right;
+    transform: rotate(-90deg) translateX(100%);
+}
+
+#cardio-image {
+    background: url('/media/Cardio.png') no-repeat center/cover;
+}
+
+#plyo-image {
+    background: url('/media/Plyo.png') no-repeat center/cover;
+}
+
+#strength-image {
+    background: url('/media/Strength.png') no-repeat center/cover;
 }
 
 
 /*         FEATURES         */
 
 
-@media(max-width: 1200px) {
+
+@media(max-width: 1500px) {
+    #exercise-type-image-section {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+    }
+
+    #cardio-image {
+        grid-row: span 2;
+    }
+
+    #strength-image,
+    #plyo-image {
+        grid-column: span 2;
+        p{
+            transform: rotate(0) translateX(0);
+
+        }
+
+    }
+
+    #strength-image::after,
+    #plyo-image::after {
+        background: linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0)65%,
+                rgba(13, 13, 13, 0.45) 100%
+        );
+    }
+}
+
+
+@media(max-width: 1300px) {
     #home-navbar{
         position: relative;
         inset: 0;
@@ -111,5 +188,72 @@ h2 {
 
     #home-header {
         padding: 18.75rem 10rem;
+    }
+
+    #our-mission p {
+        width: 90%;
+        font-size: 1.1rem;
+    }
+
+    h2 {
+        font-size: 3rem;
+    }
+}
+
+
+@media(max-width: 1100px) {
+    #exercise-type-image-section {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(3, 1fr);
+    }
+
+    #exercise-type-image-section div {
+        height: 35vh;
+    }
+
+    #strength-image,
+    #plyo-image{
+        grid-column: span 1;
+    }
+    #cardio-image {
+        grid-row: span 1;
+    }
+
+    #exercise-type-image-section p {
+        transform: rotate(0) translateX(0);
+    }
+
+    #exercise-type-image-section div::after {
+        background: linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0)65%,
+                rgba(13, 13, 13, 0.45) 100%
+        );
+    }
+
+
+}
+
+@media(max-width: 650px) {
+    #home-header {
+        padding: 15rem 3rem;
+    }
+    #home-header h1 {
+        font-size: 3.5rem;
+    }
+
+    #home-navbar-links {
+        display: none;
+    }
+
+    #exercise-type-image-section p{
+        font-weight: 250;
+        font-size: 2rem;
+        transform: rotate(-90deg) translateX(100%);
+
+    }
+
+    .button-component {
+        font-size: 0.9rem;
     }
 }
