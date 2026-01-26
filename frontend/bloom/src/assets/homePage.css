@@ -60,6 +60,27 @@
     filter: drop-shadow(0 0 0.75rem rgba(0, 0, 0, 0.52));
 }
 
+#discover {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    padding: 2rem 3rem 2rem 2rem;
+    border-radius: 0.5rem 0 0 0;
+    background: #fff;
+    font-size: 4rem;
+    font-weight: 500;
+}
+#discover img {
+    width: 3.5rem;
+    height: auto;
+}
+
+
 /*         OUR MISSION         */
 h2 {
     font-size: 4rem;
@@ -255,5 +276,14 @@ h2 {
 
     .button-component {
         font-size: 0.9rem;
+    }
+
+    #discover {
+        font-size: 2rem;
+        padding: 1rem 1rem;
+        gap: 1rem;
+    }
+    #discover img {
+        width: 1.75rem;
     }
 }
