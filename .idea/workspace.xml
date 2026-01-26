@@ -5,11 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7031f523-a711-43e3-a570-6094f98ee991" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/bloom/src/components/home/FeaturesComponent.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/bloom/src/assets/homePage.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/bloom/src/assets/homePage.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/bloom/src/components/home/ExerciseTypeImageComponent.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/bloom/src/components/home/ExerciseTypeImageComponent.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/bloom/src/pages/HomePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/bloom/src/pages/HomePage.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,7 +90,7 @@
       <workItem from="1769292182061" duration="1354000" />
       <workItem from="1769448118534" duration="31000" />
       <workItem from="1769448161267" duration="304000" />
-      <workItem from="1769448525944" duration="17220000" />
+      <workItem from="1769448525944" duration="19295000" />
     </task>
     <task id="LOCAL-00001" summary="have folder structure">
       <option name="closed" value="true" />
@@ -159,7 +156,23 @@
       <option name="project" value="LOCAL" />
       <updated>1769461465364</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Added exercise type component and necessary responsive design">
+      <option name="closed" value="true" />
+      <created>1769467427019</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1769467427019</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Added discover label">
+      <option name="closed" value="true" />
+      <created>1769469064999</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1769469064999</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -187,6 +200,8 @@
     <MESSAGE value="Install react-router, move css to assets/" />
     <MESSAGE value="Added routing and pages" />
     <MESSAGE value="Add first sections to home page" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add first sections to home page" />
+    <MESSAGE value="Added exercise type component and necessary responsive design" />
+    <MESSAGE value="Added discover label" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added discover label" />
   </component>
 </project>

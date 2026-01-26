@@ -60,6 +60,27 @@
     filter: drop-shadow(0 0 0.75rem rgba(0, 0, 0, 0.52));
 }
 
+#discover {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    padding: 2rem 3rem 2rem 2rem;
+    border-radius: 1rem 0 0 0;
+    background: #fff;
+    font-size: 3.5rem;
+    font-weight: 500;
+}
+#discover img {
+    width: 3rem;
+    height: auto;
+}
+
+
 /*         OUR MISSION         */
 h2 {
     font-size: 4rem;
@@ -88,7 +109,7 @@ h2 {
     grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
     padding: 0 0.5rem;
-    height: 100vh;
+    height: 95vh;
 }
 
 #exercise-type-image-section div {
@@ -141,6 +162,10 @@ h2 {
 #strength-image {
     background: url('/media/Strength.png') no-repeat center/cover;
 }
+#strength-image p,
+#plyo-image p {
+    font-size: 3rem;
+}
 
 
 /*         FEATURES         */
@@ -155,16 +180,12 @@ h2 {
 
     #cardio-image {
         grid-row: span 2;
+        grid-column: span 2;
     }
 
-    #strength-image,
-    #plyo-image {
-        grid-column: span 2;
-        p{
-            transform: rotate(0) translateX(0);
-
-        }
-
+    #strength-image p,
+    #plyo-image p {
+        transform: rotate(0) translateX(0);
     }
 
     #strength-image::after,
@@ -211,16 +232,14 @@ h2 {
         height: 35vh;
     }
 
-    #strength-image,
-    #plyo-image{
-        grid-column: span 1;
-    }
     #cardio-image {
         grid-row: span 1;
+        grid-column: span 1;
     }
 
     #exercise-type-image-section p {
         transform: rotate(0) translateX(0);
+        font-size: 4rem;
     }
 
     #exercise-type-image-section div::after {
@@ -255,5 +274,15 @@ h2 {
 
     .button-component {
         font-size: 0.9rem;
+    }
+
+    #discover {
+        font-size: 2rem;
+        padding: 1rem 1rem;
+        gap: 1rem;
+        border-radius: 0.5rem 0 0 0;
+    }
+    #discover img {
+        width: 1.75rem;
     }
 }
