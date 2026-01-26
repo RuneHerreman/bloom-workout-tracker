@@ -1,0 +1,115 @@
+﻿/*         HOME HEADER         */
+#home-navbar {
+    position: absolute;
+    top: 2rem;
+    right: 0;
+    z-index: 20;
+    background: white;
+    padding: 1rem 1.25rem;
+    border-radius: 0.5rem 0 0 0.5rem;
+
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    width: fit-content;
+}
+
+#home-navbar > img {
+    width: 6.25rem;
+    height: auto;
+}
+
+#home-navbar-links {
+    display: flex;
+    gap: 1rem;
+    text-transform: uppercase;
+    font-weight: 800;
+}
+
+#home-navbar-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/*         HOME HERO         */
+#home-header {
+    height: 95vh;
+    width: 100vw;
+    background: url('/media/home_header.png') no-repeat center/cover;
+    padding: 18.75rem 25rem;
+    position: relative;
+}
+
+#home-header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    filter: contrast(90%);
+    z-index: 1;
+}
+
+#home-header h1 {
+    position: relative;
+    z-index: 2;
+    color: white;
+    width: min-content;
+    font-size: 6rem;
+    font-weight: 100;
+    filter: drop-shadow(0 0 0.75rem rgba(0, 0, 0, 0.52));
+}
+
+/*         OUR MISSION         */
+h2 {
+    font-size: 4rem;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+
+#our-mission{
+    margin: 5rem auto 8rem auto;
+}
+
+#our-mission p {
+    margin-top: 2rem;
+    font-size: 1.25rem;
+    width: 70%;
+    line-height: 125%;
+    color: var(--text-grey);
+}
+
+/*         EXERCISE TYPE         */
+#exercise-type-image-section {
+    margin: 5rem auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+}
+
+#exercise-type-image-section img {
+    width: 100%;
+    height: 100%;
+    border-radius: 0.75rem;
+    object-fit: cover;
+}
+
+
+/*         FEATURES         */
+
+
+@media(max-width: 1200px) {
+    #home-navbar{
+        position: relative;
+        inset: 0;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    #home-header {
+        padding: 18.75rem 10rem;
+    }
+}

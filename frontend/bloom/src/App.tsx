@@ -1,4 +1,3 @@
-import './assets/App.css'
 import { Routes, Route } from "react-router-dom";
 import LogInPage from "./pages/LogInPage.tsx";
 import HomePage from "./pages/HomePage.tsx";
