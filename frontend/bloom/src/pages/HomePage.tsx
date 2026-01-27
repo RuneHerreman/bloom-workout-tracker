@@ -1,4 +1,4 @@
-﻿import '../assets/homePage.css'
+﻿import '../assets/css/homePage.css'
 import NavbarComponent from "../components/home/NavbarComponent.tsx";
 import HeaderComponent from "../components/home/HeaderComponent.tsx";
 import MissionComponent from "../components/home/MissionComponent.tsx";

@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client'
-import './assets/reset.css'
-import './assets/screen.css'
+import './assets/css/reset.css'
+import './assets/css/screen.css'
 import App from './App.tsx'
 import { BrowserRouter } from "react-router-dom";
 

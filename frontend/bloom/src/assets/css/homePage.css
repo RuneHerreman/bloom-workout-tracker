@@ -162,10 +162,6 @@ h2 {
 #strength-image {
     background: url('/media/Strength.png') no-repeat center/cover;
 }
-#strength-image p,
-#plyo-image p {
-    font-size: 3rem;
-}
 
 
 /*         FEATURES         */
@@ -186,6 +182,7 @@ h2 {
     #strength-image p,
     #plyo-image p {
         transform: rotate(0) translateX(0);
+        font-size: 3rem;
     }
 
     #strength-image::after,
