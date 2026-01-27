@@ -22,13 +22,6 @@ function SignupCredentials() {
                     <label htmlFor="password-check"></label>
                     <input type="password" id="password-check" placeholder="Repeat password"></input>
                 </div>
-                <div id="login-checks">
-                    <div>
-                        <label htmlFor="remember">Remember me</label>
-                        <input type="checkbox" id="remember"></input>
-                    </div>
-                    <a id="forgot-password">Forgot password?</a>
-                </div>
                 <div id="login-action">
                     <button type="submit" onClick={signUp}>Sign up</button>
                     <div>
