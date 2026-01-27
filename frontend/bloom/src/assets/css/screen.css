@@ -2,6 +2,8 @@
 :root {
     --green: #003E1F;
     --green-faded: #1C4B33;
+    --green-light: #2d8055;
+    --green-vibrant: rgba(132, 224, 178, 0.50);
     --orange: #E9762B;
     --green-dark: #01110A;
     --grey-light: #E3E3E3;
@@ -9,6 +11,11 @@
     --text-grey: #333333;
     --text-grey-lighter: #595959;
     --red: #7B1616;
+}
+
+form * {
+    font-family: 'Archivo', Arial, Helvetica, sans-serif;
+    box-sizing: border-box;
 }
 
 html, body{

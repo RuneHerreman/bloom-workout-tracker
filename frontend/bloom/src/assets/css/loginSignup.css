@@ -1,0 +1,146 @@
+main{
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: calc(100vh - 4rem);
+}
+
+h1{
+    font-size: 2.5rem;
+    font-weight: 400;
+}
+
+main > section{
+    height: 100%;
+    display: grid;
+    grid-template-rows: min-content 1fr;
+}
+
+
+.logo {
+    width: 7.5rem;
+    cursor: pointer;
+}
+
+.showcase-image {
+    height: 100%;
+    width: 100%;
+    background: grey;
+    border-radius: 1rem;
+    background: url("/media/showcase-image.png") center center no-repeat;
+    background-size: cover;
+}
+
+#login > p {
+    color: var(--text-grey-lighter);
+    font-size: .9rem;
+    line-height: 125%;
+    margin: .75rem 0 1.5rem;
+}
+
+#login{
+    padding-right: 3rem;
+    width: 55%;
+    align-self: center;
+    justify-self: center;
+    padding-bottom: 5rem;
+}
+
+form input{
+    margin-top: 0.75rem;
+    border: var(--grey-light) 0.1rem solid;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    width: 100%;
+    font-weight: 300;
+    transition: .1s ease-in-out;
+}
+
+form input:focus{
+    transition: .1s ease-in-out;
+    border: var(--green-light) 0.1rem solid;
+    outline: none;
+}
+
+form button{
+    padding: .9rem;
+    color: white;
+    background-color: var(--green);
+    border: none;
+    border-radius: 0.5rem;
+    font-size: .9rem;
+}
+
+form button:hover{
+    cursor: pointer;
+}
+
+#login-checks {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 0.5rem;
+    color: var(--text-grey-lighter);
+    font-size: 0.8rem;
+}
+
+#login-checks div{
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+#login-checks input {
+    width: fit-content;
+    margin: 0.1rem;
+    accent-color: var(--green);
+}
+
+#login-action {
+    margin-top: 1.5rem;
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: .8rem;
+    color: var(--text-grey);
+}
+
+#login-action button {
+    grid-column: 1/-1;
+}
+#login-action div {
+    display: flex;
+    gap: 0.5rem;
+}
+#login-action a {
+    color: var(--green);
+    font-weight: 600;
+}
+
+
+@media (max-width: 1200px) {
+    main {
+        grid-template-columns: 1fr;
+    }
+
+    main > .showcase-image {
+        display: none;
+    }
+}
+
+@media (max-width: 750px) {
+    main {
+        padding: 2rem;
+    }
+    #login-action{
+        width: 100%;
+    }
+
+    #login{
+        padding-left: 1rem;
+        width: 90%;
+        align-self: center;
+        justify-self: left;
+    }
+}

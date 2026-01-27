@@ -1,4 +1,4 @@
-﻿import ButtonComponent from "../buttons/ButtonComponent.tsx";
+﻿import ButtonComponent from "../general/ButtonComponent.tsx";
 import {NavLink} from "react-router-dom";
 
 function DashboardPage() {
@@ -12,7 +12,7 @@ function DashboardPage() {
                 </div>
                 <div id="home-navbar-buttons">
                     <ButtonComponent text={"Log In"} target={"login"} style="white"/>
-                    <ButtonComponent text={"Sign Up"} target={"login"} style="green"/>
+                    <ButtonComponent text={"Sign Up"} target={"signup"} style="green"/>
                 </div>
             </nav>
         </>

@@ -1,4 +1,8 @@
 ﻿/*         HOME HEADER         */
+.button-component {
+    font-size: 0.9rem;
+}
+
 #home-navbar {
     position: absolute;
     top: 2rem;
@@ -267,10 +271,6 @@ h2 {
         font-size: 2rem;
         transform: rotate(-90deg) translateX(100%);
 
-    }
-
-    .button-component {
-        font-size: 0.9rem;
     }
 
     #discover {
