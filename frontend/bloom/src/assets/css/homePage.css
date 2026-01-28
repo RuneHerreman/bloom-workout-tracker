@@ -100,7 +100,7 @@ h2 {
 
 #our-mission p {
     margin-top: 2rem;
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     width: 70%;
     line-height: 125%;
     color: var(--text-grey);
@@ -113,7 +113,7 @@ h2 {
     grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
     padding: 0 0.5rem;
-    height: 95vh;
+    min-height: 95vh;
 }
 
 #exercise-type-image-section div {
@@ -169,6 +169,35 @@ h2 {
 
 
 /*         FEATURES         */
+#features ul {
+    padding-top: 2rem;
+    list-style: none;
+    padding-left: 0;
+}
+
+#features li{
+    padding-left: 4rem;
+    padding-bottom: 0.75rem;
+    margin-bottom: 2rem;
+
+    background-image: url("/media/bloom_bullet.svg");
+    background-repeat: no-repeat;
+    background-position: 0 0.5rem;
+    background-size: 2.5rem;
+}
+
+#features li p {
+    line-height: 110%;
+    color: var(--text-grey);
+    font-weight: 300;
+}
+
+#features li p:first-child{
+    font-weight: 500;
+    color: #000;
+    font-size: 1.25rem;
+    line-height: 150%;
+}
 
 
 
@@ -177,7 +206,69 @@ h2 {
 
 
 
+/*          FOOTER          */
+footer {
+    margin: 2rem;
+    margin-top: 10rem;
+    height: fit-content;
+    background: var(--green-faded);
+    padding: 3rem 5rem;
 
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+footer > section > img {
+    width: 12rem;
+    height: auto;
+}
+
+footer article {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: min-content 1fr;
+    gap: 2rem;
+    column-gap: 5rem;
+}
+
+footer article img {
+    grid-column: 1 / -1;
+    background: white;
+    border-radius: 0.5rem;
+    padding: 0.9rem;
+    width: 7rem;
+    height: auto;
+    margin-right: 1rem;
+}
+
+footer article ul {
+    color: white;
+}
+
+footer article ul li:first-of-type {
+    font-weight: 500;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+footer article ul li {
+    font-weight: 200;
+    margin-bottom: 0.5rem;
+    font-size: .9rem;
+}
+
+footer > section:first-of-type {
+    display: flex;
+    gap: 5rem;
+}
+
+footer:last-child p{
+    font-size: 0.9rem;
+    color: white;
+    padding-top: 1rem;
+    border-top: white 0.1rem solid;
+}
 
 
 
@@ -231,6 +322,9 @@ h2 {
     h2 {
         font-size: 3rem;
     }
+    #features li {
+        width: 80%;
+    }
 }
 
 
@@ -261,8 +355,16 @@ h2 {
                 rgba(13, 13, 13, 0.45) 100%
         );
     }
+}
 
-
+@media(max-width: 800px) {
+    footer > section > img {
+        display: none;
+    }
+    footer {
+        margin: 0;
+        margin-top: 10rem;
+    }
 }
 
 @media(max-width: 650px) {

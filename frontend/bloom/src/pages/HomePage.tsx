@@ -4,6 +4,7 @@ import HeaderComponent from "../components/home/HeaderComponent.tsx";
 import MissionComponent from "../components/home/MissionComponent.tsx";
 import ExerciseTypeImageComponent from "../components/home/ExerciseTypeImageComponent.tsx";
 import FeaturesComponent from "../components/home/FeaturesComponent.tsx";
+import FooterComponent from "../components/home/FooterComponent.tsx";
 
 const HomePage = () => {
     return (
@@ -12,7 +13,8 @@ const HomePage = () => {
             <HeaderComponent/>
             <MissionComponent/>
             <ExerciseTypeImageComponent/>
-            <FeaturesComponent></FeaturesComponent>
+            <FeaturesComponent/>
+            <FooterComponent/>
         </>
     );
 }
