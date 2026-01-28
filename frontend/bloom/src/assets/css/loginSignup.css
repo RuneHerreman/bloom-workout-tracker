@@ -60,7 +60,6 @@ form input{
 form input:focus{
     transition: .1s ease-in-out;
     border: var(--green-light) 0.1rem solid;
-    font-size: 0.85rem;
     outline: none;
 }
 
