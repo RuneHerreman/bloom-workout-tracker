@@ -196,7 +196,7 @@ h2 {
     font-weight: 500;
     color: #000;
     font-size: 1.25rem;
-    line-height: 150%;
+    margin-bottom: 0.5rem;
 }
 
 
@@ -251,7 +251,7 @@ h2 {
 #testimonial-container {
     display: grid;
     gap: 1.2rem;
-    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
     margin-top: 3rem;
 }
 
@@ -457,5 +457,15 @@ footer:last-child p{
     }
     #discover img {
         width: 1.75rem;
+    }
+
+    #features li {
+        background-size: 1.5rem;
+        padding-left: 2.5rem;
+        width: 100%;
+    }
+
+    #features li p {
+        line-height: 125%;
     }
 }
