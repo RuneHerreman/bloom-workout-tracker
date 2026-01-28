@@ -54,11 +54,13 @@ form input{
     width: 100%;
     font-weight: 300;
     transition: .1s ease-in-out;
+    font-size: 0.8rem;
 }
 
 form input:focus{
     transition: .1s ease-in-out;
     border: var(--green-light) 0.1rem solid;
+    font-size: 0.85rem;
     outline: none;
 }
 
@@ -69,10 +71,15 @@ form button{
     border: none;
     border-radius: 0.5rem;
     font-size: .9rem;
+    grid-column: 1/-1;
+    transition: .1s ease-in-out;
+
 }
 
 form button:hover{
     cursor: pointer;
+    background-color: var(--green-faded);
+    transition: .1s ease-in-out;
 }
 
 #login-checks {
@@ -101,18 +108,16 @@ form button:hover{
     width: 70%;
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 0.5rem;
     font-size: .8rem;
     color: var(--text-grey);
 }
 
-#login-action button {
-    grid-column: 1/-1;
-}
 #login-action div {
     display: flex;
     gap: 0.5rem;
 }
+
 #login-action a {
     color: var(--green);
     font-weight: 600;
