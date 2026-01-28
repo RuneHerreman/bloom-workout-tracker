@@ -5,6 +5,7 @@ import MissionComponent from "../components/home/MissionComponent.tsx";
 import ExerciseTypeImageComponent from "../components/home/ExerciseTypeImageComponent.tsx";
 import FeaturesComponent from "../components/home/FeaturesComponent.tsx";
 import FooterComponent from "../components/home/FooterComponent.tsx";
+import TestimonialsComponent from "../components/home/TestimonialsComponent.tsx";
 
 const HomePage = () => {
     return (
@@ -14,6 +15,7 @@ const HomePage = () => {
             <MissionComponent/>
             <ExerciseTypeImageComponent/>
             <FeaturesComponent/>
+            <TestimonialsComponent/>
             <FooterComponent/>
         </>
     );

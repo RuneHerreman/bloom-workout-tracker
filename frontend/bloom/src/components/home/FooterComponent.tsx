@@ -10,7 +10,7 @@ function FooterComponent() {
                         <li>About Us</li>
                         <li><a href="#our-mission">Our mission</a></li>
                         <li><a href="#features">Features</a></li>
-                        <li><a href="#tesitmonials">Testimonials</a></li>
+                        <li><a href="#testimonials">Testimonials</a></li>
                     </ul>
                     <ul>
                         <li>Support</li>
