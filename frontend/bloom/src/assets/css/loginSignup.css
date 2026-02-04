@@ -31,19 +31,23 @@ main > section{
     background-size: cover;
 }
 
-#login > p {
+.loginsignup-form > p {
     color: var(--text-grey-lighter);
     font-size: .9rem;
     line-height: 125%;
     margin: .75rem 0 1.5rem;
 }
 
-#login{
+.loginsignup-form{
     padding-right: 3rem;
     width: 55%;
     align-self: center;
     justify-self: center;
     padding-bottom: 5rem;
+}
+
+.loginsignup-form div {
+    width: 100%;
 }
 
 form input{
@@ -122,6 +126,34 @@ form button:hover{
     font-weight: 600;
 }
 
+.error-message {
+    color: var(--red);
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    margin-left: 0.1rem;
+    font-weight: 550;
+}
+
+#onboarding form div:has(input){
+    margin-top: 1rem;
+}
+
+#onboarding form div label{
+    font-size: .85rem;
+    font-weight: 400;
+    color: var(--text-grey);
+}
+
+#onboarding form div input{
+    margin-top: 0.45rem;
+}
+
+#onboarding form div:has(div) {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0;
+}
 
 @media (max-width: 1200px) {
     main {
@@ -137,14 +169,24 @@ form button:hover{
     main {
         padding: 2rem;
     }
-    #login-action{
+
+    #login-action {
         width: 100%;
     }
 
-    #login{
+    .loginsignup-form {
         padding-left: 1rem;
         width: 90%;
         align-self: center;
         justify-self: left;
+    }
+
+    #onboarding form div:has(div) {
+        display: block;
+    }
+
+    #onboarding form div label{
+        font-size: .8rem;
+        font-weight: 400;
     }
 }
