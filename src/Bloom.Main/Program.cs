@@ -4,6 +4,7 @@ using Bloom.Infrastructure.Persistence;
 using Bloom.Infrastructure.Repositories;
 using Bloom.Domain.Repositories;
 using Bloom.Application.Commands;
+using Bloom.Application.Common.Behaviours;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,7 @@ builder.Services.AddDbContext<BloomDbContext>(options =>
 
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
 // MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(

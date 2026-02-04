@@ -7,18 +7,23 @@ using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using Bloom.Application.Common.Behaviours;
 
 namespace Bloom.Application.Commands;
 public record LoginCommand(string Email, string Password) : IRequest<Result<string>>;
 public class LoginHandler : IRequestHandler<LoginCommand, Result<string>>
 {
     private readonly IUserRepository _userRepository;
-    private readonly IConfiguration _configuration;
+    private readonly IJwtTokenGenerator _tokenGenerator;
 
-    public LoginHandler(IUserRepository userRepository, IConfiguration configuration)
+
+    public LoginHandler(
+        IUserRepository userRepository,
+        IJwtTokenGenerator tokenGenerator
+    )
     {
         _userRepository = userRepository;
-        _configuration = configuration;
+        _tokenGenerator = tokenGenerator;
     }
 
     public async Task<Result<string>> Handle(LoginCommand command, CancellationToken ct)
@@ -33,30 +38,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<string>>
             return Result<string>.Failure("Invalid email or password");
 
         // Generate JWT
-        var token = GenerateJwtToken(user);
+        var token = _tokenGenerator.GenerateToken(user);
         return Result<string>.Success(token);
-    }
-
-    private string GenerateJwtToken(User user)
-    {
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Name, user.Name)
-        };
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.Now.AddDays(7),
-            signingCredentials: creds
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

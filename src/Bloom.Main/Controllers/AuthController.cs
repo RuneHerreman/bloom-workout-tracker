@@ -16,7 +16,10 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<Guid>> Register(RegisterUserCommand command)
     {
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Errors);
+        if (!result.IsSuccess)
+            return BadRequest(result.Errors);
+
+        return Ok(new { token = result.Value });
     }
     
     [HttpPost("login")]
@@ -25,6 +28,7 @@ public class AuthController : ControllerBase
         var result = await _mediator.Send(command);
         if (result.IsSuccess)
             return Ok(new { token = result.Value });
+        
         return Unauthorized(new { error = result.Errors.FirstOrDefault() });
     }
 }

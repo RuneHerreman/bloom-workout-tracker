@@ -1,4 +1,5 @@
 ﻿using Bloom.Application.Common;
+using Bloom.Application.Common.Behaviours;
 using Bloom.Application.Common.Security;
 using Bloom.Domain.Entity;
 using Bloom.Domain.Repositories;
@@ -13,27 +14,32 @@ public record RegisterUserCommand(
     decimal Height,
     decimal Weight,
     int ActiveDays
-) : IRequest<Result<Guid>>;
+) : IRequest<Result<string>>;
 
-public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Result<Guid>>
+public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Result<string>>
 {
     private readonly IUserRepository _userRepository;
-
-    public RegisterUserHandler(IUserRepository userRepository)
+    private readonly IJwtTokenGenerator _tokenGenerator;
+    
+    public RegisterUserHandler(
+        IUserRepository userRepository,
+        IJwtTokenGenerator tokenGenerator)
     {
         _userRepository = userRepository;
+        _tokenGenerator = tokenGenerator;
     }
 
-    public async Task<Result<Guid>> Handle(RegisterUserCommand command, CancellationToken ct)
+    public async Task<Result<string>> Handle(RegisterUserCommand command, CancellationToken ct)
     {
         // Check if user already exists.
         var existingUser = await _userRepository.GetUserByEmail(command.Email, ct);
         
+        
         if (existingUser != null)
         {
-            return Result<Guid>.Failure("User with this email already exists.");
+            return Result<string>.Failure("User with this email already exists.");
         }
-
+        
         var user = new User(
             Guid.NewGuid(),
             command.Email,
@@ -45,6 +51,7 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Result<G
         );
         
         await _userRepository.RegisterUser(user, ct);
-        return Result<Guid>.Success(user.Id);
+        var token = _tokenGenerator.GenerateToken(user);
+        return Result<string>.Success(token);
     }
 }

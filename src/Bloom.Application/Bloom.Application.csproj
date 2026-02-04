@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\Behaviours\" />
     <Folder Include="Common\Mappings\" />
     <Folder Include="DTOs\" />
     <Folder Include="Interfaces\" />
