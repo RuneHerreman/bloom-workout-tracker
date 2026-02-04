@@ -1,7 +1,6 @@
 ﻿using Bloom.Application.Commands;
 using UnitTests.Mock;
 using Xunit;
-using Assert = NUnit.Framework.Assert;
 
 namespace UnitTests.Bloom.Application.Tests;
 
@@ -24,7 +23,7 @@ public class RegisterUserTests
             CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        Assert.That(result.Value, Is.EqualTo("fake-jwt-token-123"));
-        Assert.Equals(repo.CreatedUsers.Count, 1);
+        Assert.Equal("fake-jwt-token-123", result.Value);
+        Assert.Single(repo.CreatedUsers);
     }
 }
