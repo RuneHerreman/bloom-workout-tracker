@@ -2,5 +2,5 @@
 
 public class TemplateExerciseSet : ExerciseSet
 {
-    public Guid TemplateExerciseId { get; set; }
+    public Guid WorkoutTemplateExerciseId { get; set; }
 }
