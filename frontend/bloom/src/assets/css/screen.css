@@ -30,7 +30,6 @@ a {
     color: inherit;
 }
 
-
 .button-component {
     padding: 0.5rem 1rem;
     text-align: center;
@@ -40,7 +39,7 @@ a {
 .button-component.white{
     color: #000;
     background: white;
-    box-shadow: inset 0 0 0 0.1rem black;
+    box-shadow: inset 0 0 0 0.075rem black;
 }
 
 .button-component.green{
