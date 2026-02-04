@@ -6,10 +6,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
         <ProjectReference Include="..\Bloom.Application\Bloom.Application.csproj" />
         <ProjectReference Include="..\Bloom.Domain\Bloom.Domain.csproj" />
         <ProjectReference Include="..\Bloom.Infrastructure\Bloom.Infrastructure.csproj" />
         <PackageReference Include="MediatR" Version="14.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.23" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.12" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
