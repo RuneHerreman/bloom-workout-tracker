@@ -38,7 +38,7 @@ main > section{
     margin: .75rem 0 1.5rem;
 }
 
-.loginsignup-form{
+.loginsignup-form {
     padding-right: 3rem;
     width: 55%;
     align-self: center;
@@ -46,7 +46,7 @@ main > section{
     padding-bottom: 5rem;
 }
 
-.loginsignup-form div {
+.loginsignup-form > div {
     width: 100%;
 }
 

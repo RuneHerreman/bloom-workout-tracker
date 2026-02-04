@@ -17,7 +17,7 @@ public class AuthController : ControllerBase
     {
         var result = await _mediator.Send(command);
         if (!result.IsSuccess)
-            return BadRequest(result.Errors);
+            return BadRequest( new { error = result.Errors} );
 
         return Ok(new { token = result.Value });
     }
