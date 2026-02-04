@@ -1,4 +1,6 @@
-﻿using Bloom.Domain.Entity;
+﻿using Bloom.Application.Common.Exceptions;
+using Bloom.Application.Common.Security;
+using Bloom.Domain.Entity;
 using Bloom.Domain.Repositories;
 
 namespace UnitTests.Mock;
@@ -16,10 +18,5 @@ public class MockUserRepository : IUserRepository
     {
         CreatedUsers.Add(user);
         return Task.CompletedTask;
-    }
-
-    public Task LoginUser(string email, string password)
-    {
-        throw new NotImplementedException();
     }
 }

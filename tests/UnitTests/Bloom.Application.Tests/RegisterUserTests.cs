@@ -1,4 +1,5 @@
 ﻿using Bloom.Application.Commands;
+using Bloom.Application.Common.Security;
 using UnitTests.Mock;
 using Xunit;
 
@@ -14,12 +15,12 @@ public class RegisterUserTests
         var handler = new RegisterUserHandler(repo, jwt);
 
         var result = await handler.Handle(new RegisterUserCommand(
-                "test@bloom.com", 
-                "Test", 
-                "pass123", 
-                180, 
+                "test@bloom.com",
+                "Test",
+                Hashing.Hash("pass123"),
+                180,
                 75,
-                5), 
+                5),
             CancellationToken.None);
 
         Assert.True(result.IsSuccess);

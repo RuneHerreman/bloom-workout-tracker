@@ -21,9 +21,4 @@ public class UserRepository : IUserRepository
         await _context.Users.AddAsync(user, ct);
         await _context.SaveChangesAsync(ct);
     }
-
-    public Task LoginUser(string email, string password)
-    {
-        throw new NotImplementedException();
-    }
 }
