@@ -9,7 +9,7 @@
 
 ## Tech Stack
 - **Frontend**: React
-- **Backend**: ASP.NET Core 10 Web API
+- **Backend**: ASP.NET Core Web API
 - **Auth**: JWT + BCrypt
 - **Deployment**: Docker Compose
 
