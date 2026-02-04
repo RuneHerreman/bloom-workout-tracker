@@ -6,9 +6,6 @@
     <Project Path="src/Bloom.Main/Bloom.Main.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/Bloom.Application.Tests/Bloom.Application.Tests.csproj" />
-    <Project Path="tests/Bloom.Domain.Tests/Bloom.Domain.Tests.csproj" />
-    <Project Path="tests/Bloom.Infrastructure.Tests/Bloom.Infrastructure.Tests.csproj" />
-    <Project Path="tests/Bloom.Main.Tests/Bloom.Main.Tests.csproj" />
+    <Project Path="tests\UnitTests\UnitTests.csproj" Type="Classic C#" />
   </Folder>
 </Solution>
