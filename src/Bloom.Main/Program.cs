@@ -5,6 +5,7 @@ using Bloom.Infrastructure.Repositories;
 using Bloom.Domain.Repositories;
 using Bloom.Application.Commands;
 using Bloom.Application.Common.Behaviours;
+using Bloom.Application.Queries;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,9 +18,11 @@ builder.Services.AddDbContext<BloomDbContext>(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
+
 // MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(
-    typeof(RegisterUserCommand).Assembly  // Bloom.Application assembly
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
+    typeof(GetAllExercisesQuery).Assembly,
+    typeof(RegisterUserCommand).Assembly
 ));
 
 
@@ -61,7 +64,7 @@ var app = builder.Build();
 // Auto-create tables
 using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<BloomDbContext>();
-await context.Database.EnsureCreatedAsync();
+await context.Database.MigrateAsync();
 
 if (app.Environment.IsDevelopment())
 {
