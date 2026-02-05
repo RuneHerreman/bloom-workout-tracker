@@ -5,6 +5,7 @@ using Bloom.Domain.Entity;
 using Bloom.Domain.Repositories;
 using Bloom.Infrastructure.Persistence;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Bloom.Application.Commands;
 
@@ -31,17 +32,19 @@ public class CreateWorkoutTemplateCommandHandler : IRequestHandler<CreateWorkout
     private readonly IExerciseRepository _exerciseRepository;
     private readonly IUserRepository _userRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ILogger<CreateWorkoutTemplateCommandHandler> _logger;
 
     public CreateWorkoutTemplateCommandHandler(
         IWorkoutTemplateRepository workoutTemplateRepository,
         IExerciseRepository exerciseRepository,
         IUserRepository userRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService, ILogger<CreateWorkoutTemplateCommandHandler> logger)
     {
         _workoutTemplateRepository = workoutTemplateRepository;
         _exerciseRepository = exerciseRepository;
         _userRepository = userRepository;
         _currentUserService = currentUserService;
+        _logger = logger;
     }
 
     public async Task<Result<Guid>> Handle(CreateWorkoutTemplateCommand request, CancellationToken cancellationToken)
@@ -88,7 +91,7 @@ public class CreateWorkoutTemplateCommandHandler : IRequestHandler<CreateWorkout
         };
         
         await _workoutTemplateRepository.AddWorkoutTemplate(template);
-
+        _logger.LogInformation("Workout template created: {template} with {exercises} exercise(s)", template.Id, template.Exercises.Count);
         return Result<Guid>.Success(template.Id);
     }
 }

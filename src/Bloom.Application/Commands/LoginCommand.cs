@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Bloom.Application.Common.Behaviours;
+using Microsoft.Extensions.Logging;
 
 namespace Bloom.Application.Commands;
 public record LoginCommand(string Email, string Password) : IRequest<Result<string>>;
@@ -15,15 +16,16 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<string>>
 {
     private readonly IUserRepository _userRepository;
     private readonly IJwtTokenGenerator _tokenGenerator;
+    private readonly ILogger<LoginHandler> _logger;
 
 
     public LoginHandler(
         IUserRepository userRepository,
-        IJwtTokenGenerator tokenGenerator
-    )
+        IJwtTokenGenerator tokenGenerator, ILogger<LoginHandler> logger)
     {
         _userRepository = userRepository;
         _tokenGenerator = tokenGenerator;
+        _logger = logger;
     }
 
     public async Task<Result<string>> Handle(LoginCommand command, CancellationToken ct)
@@ -39,6 +41,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<string>>
 
         // Generate JWT
         var token = _tokenGenerator.GenerateToken(user);
+        _logger.LogInformation("User logged in: {user}", user.Email);
         return Result<string>.Success(token);
     }
 }

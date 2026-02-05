@@ -18,6 +18,6 @@ public class ExercisesController : ControllerBase
     public async Task<ActionResult<Result<List<Exercise>>>> GetExercises()
     {
         var result = await _mediator.Send(new GetAllExercisesQuery());
-        return Ok(result);
+        return Ok(new { exercises = result.Value });
     }
 }

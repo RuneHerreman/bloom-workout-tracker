@@ -4,6 +4,7 @@ using Bloom.Application.Common.Security;
 using Bloom.Domain.Entity;
 using Bloom.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Bloom.Application.Commands;
 
@@ -20,13 +21,15 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Result<s
 {
     private readonly IUserRepository _userRepository;
     private readonly IJwtTokenGenerator _tokenGenerator;
+    private readonly ILogger<RegisterUserHandler> _logger;
     
     public RegisterUserHandler(
         IUserRepository userRepository,
-        IJwtTokenGenerator tokenGenerator)
+        IJwtTokenGenerator tokenGenerator, ILogger<RegisterUserHandler> logger)
     {
         _userRepository = userRepository;
         _tokenGenerator = tokenGenerator;
+        _logger = logger;
     }
 
     public async Task<Result<string>> Handle(RegisterUserCommand command, CancellationToken ct)
@@ -52,6 +55,7 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Result<s
         
         await _userRepository.RegisterUser(user, ct);
         var token = _tokenGenerator.GenerateToken(user);
+        _logger.LogInformation("User registered: {user}", user.Email);
         return Result<string>.Success(token);
     }
 }
