@@ -18,3 +18,9 @@
 - [.NET 8 SDK](https://dotnet.microsoft.com/download)
 - [Node.js 20+](https://nodejs.org/)
 - [Docker](https://www.docker.com/) (optional)
+
+## Gettings started
+```bash
+    docker compose down
+    docker compose up --build
+```
