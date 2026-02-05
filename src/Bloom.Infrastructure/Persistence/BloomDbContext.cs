@@ -154,7 +154,7 @@ public class BloomDbContext : DbContext
             entity.Property(wt => wt.Name).HasMaxLength(100);
             
             entity.HasMany(wt => wt.Exercises)
-                .WithOne()
+                .WithOne(wte => wte.WorkoutTemplate)
                 .HasForeignKey(wte => wte.WorkoutTemplateId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
@@ -172,7 +172,7 @@ public class BloomDbContext : DbContext
         {
             entity.HasKey(s => s.Id);
             entity.HasOne<WorkoutTemplateExercise>()
-                .WithMany()
+                .WithMany(wte => wte.Sets)
                 .HasForeignKey(s => s.WorkoutTemplateExerciseId)
                 .OnDelete(DeleteBehavior.Cascade);
         });

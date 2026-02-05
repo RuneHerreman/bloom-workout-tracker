@@ -16,13 +16,19 @@ builder.Services.AddDbContext<BloomDbContext>(options =>
 
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
+builder.Services.AddScoped<IWorkoutTemplateRepository, WorkoutTemplateRepository>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 
 // MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     typeof(GetAllExercisesQuery).Assembly,
-    typeof(RegisterUserCommand).Assembly
+    typeof(RegisterUserCommand).Assembly,
+    typeof(LoginCommand).Assembly,
+    typeof(CreateWorkoutTemplateCommand).Assembly
 ));
 
 
@@ -64,7 +70,7 @@ var app = builder.Build();
 // Auto-create tables
 using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<BloomDbContext>();
-await context.Database.MigrateAsync();
+await context.Database.EnsureCreatedAsync();
 
 if (app.Environment.IsDevelopment())
 {

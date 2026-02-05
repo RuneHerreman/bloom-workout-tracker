@@ -14,6 +14,13 @@ public class MockUserRepository : IUserRepository
         return await Task.FromResult(CreatedUsers.FirstOrDefault(u => u.Email == email));
     }
 
+    public Task<User?> GetUserById(Guid userId, CancellationToken ct)
+    {
+        if (userId == Guid.Empty)
+            return Task.FromResult<User?>(null);
+        return Task.FromResult(CreatedUsers.FirstOrDefault(u => u.Id == userId));
+    }
+
     public Task RegisterUser(User user, CancellationToken ct)
     {
         CreatedUsers.Add(user);

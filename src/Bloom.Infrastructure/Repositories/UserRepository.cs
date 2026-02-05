@@ -16,6 +16,13 @@ public class UserRepository : IUserRepository
         return await _context.Users.SingleOrDefaultAsync(u => u.Email == email, ct);
     }
 
+    public async Task<User?> GetUserById(Guid userId, CancellationToken ct)
+    {
+        if (userId == Guid.Empty)
+            return null;
+        return await _context.Users.SingleOrDefaultAsync(u => u.Id == userId, ct);
+    }
+
     public async Task RegisterUser(User user, CancellationToken ct)
     {
         await _context.Users.AddAsync(user, ct);
