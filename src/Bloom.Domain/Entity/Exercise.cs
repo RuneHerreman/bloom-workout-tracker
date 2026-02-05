@@ -12,14 +12,16 @@ public class Exercise
     public string Name { get; set; } = null!;
     public string Description { get; set; } = null!;
     public ExerciseType Type { get; set; }
+    public string PrimaryMuscleGroup { get; set; } = null!;
     
     private Exercise() {}
     
-    public Exercise(Guid id, string name, string description, ExerciseType type)
+    public Exercise(Guid id, string name, string description, ExerciseType type, string primaryMuscleGroup)
     {
         Id = id;
         Name = name;
         Description = description;
         Type = type;
+        PrimaryMuscleGroup = primaryMuscleGroup;
     }
 }
