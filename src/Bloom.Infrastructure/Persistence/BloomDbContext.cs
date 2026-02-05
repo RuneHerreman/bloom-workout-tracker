@@ -6,6 +6,7 @@ namespace Bloom.Infrastructure.Persistence;
 public class BloomDbContext : DbContext
 {
     public DbSet<User> Users { get; set; } = null!;
+    public DbSet<BodyMetric> BodyMetrics { get; set; } = null!;
     
     public BloomDbContext(DbContextOptions<BloomDbContext> options) : base(options) { }
     
@@ -17,6 +18,19 @@ public class BloomDbContext : DbContext
             entity.HasIndex(u => u.Email).IsUnique();
             entity.Property(u => u.Height).HasPrecision(5, 2);
             entity.Property(u => u.Weight).HasPrecision(5, 2);        
+        });
+        
+        modelBuilder.Entity<BodyMetric>(entity =>
+        {
+            entity.HasKey(bm => bm.Id);
+            
+            entity.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(bm => bm.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.Property(bm => bm.Weight).HasPrecision(5, 2);
+            entity.Property(bm => bm.BodyFatPercentage).HasPrecision(5, 2);
         });
     }
 }
