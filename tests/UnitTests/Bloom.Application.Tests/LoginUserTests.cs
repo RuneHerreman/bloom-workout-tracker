@@ -1,6 +1,7 @@
 ﻿using Bloom.Application.Commands;
 using Bloom.Application.Common.Security;
 using UnitTests.Mock;
+using UnitTests.Mocks;
 using Xunit;
 
 namespace UnitTests.Bloom.Application.Tests;
@@ -12,8 +13,8 @@ public class LoginUserTests
     {
         var repo = new MockUserRepository();
         var jwt = new MockJwtGenerator();
-        var loginHandler = new LoginHandler(repo, jwt);
-        var registerHandler = new RegisterUserHandler(repo, jwt);
+        var loginHandler = new LoginHandler(repo, jwt, new MockLogger<LoginHandler>());
+        var registerHandler = new RegisterUserHandler(repo, jwt, new MockLogger<RegisterUserHandler>());
     
         await registerHandler.Handle(new RegisterUserCommand(
                 "test@bloom.com", "Test", 

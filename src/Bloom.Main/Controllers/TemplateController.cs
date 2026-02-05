@@ -1,5 +1,6 @@
 ﻿using Bloom.Application.Commands;
 using Bloom.Application.Common;
+using Bloom.Application.DTO.Templates;
 using Bloom.Application.Queries;
 using Bloom.Domain.Entity;
 using MediatR;
@@ -32,7 +33,7 @@ public class TemplateController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<Result<List<WorkoutTemplate>>>> GetWorkoutTemplates()
+    public async Task<ActionResult<Result<List<WorkoutTemplateDTO>>>> GetWorkoutTemplates()
     {
         var result = await _mediator.Send(new GetAllUserTemplatesQuery());
         return Ok(new { templates = result.Value });

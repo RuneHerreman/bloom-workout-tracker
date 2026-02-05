@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Bloom.Application.Common;
 using Bloom.Application.Common.Behaviours;
+using Bloom.Application.DTO.Templates;
 using Bloom.Domain.Entity;
 using Bloom.Domain.Repositories;
 using Bloom.Infrastructure.Persistence;
@@ -9,21 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Bloom.Application.Commands;
 
-public record TemplateExerciseSetDto(
-    int SetOrder,
-    int Reps,
-    int? RIR = null
-);
-
-public record TemplateExerciseDto(
-    Guid ExerciseId,
-    int Order,
-    List<TemplateExerciseSetDto> Sets
-);
-
 public record CreateWorkoutTemplateCommand(
     string Name,
-    List<TemplateExerciseDto> Exercises
+    List<WorkoutTemplateExerciseDTO> Exercises
 ) : IRequest<Result<Guid>>;
 
 public class CreateWorkoutTemplateCommandHandler : IRequestHandler<CreateWorkoutTemplateCommand, Result<Guid>>
