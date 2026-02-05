@@ -1,4 +1,3 @@
-
 services:
   bloom-api:
     build: .
@@ -7,8 +6,11 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
-        
+      postgres:
+        condition: service_healthy
+    networks:
+      - bloom-network
+
   postgres:
     image: postgres:16
     container_name: bloom-db
@@ -18,6 +20,17 @@ services:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bloom_user -d bloom_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - bloom-network
+
 volumes:
   postgres_data:
+
+networks:
+  bloom-network:
+    driver: bridge
