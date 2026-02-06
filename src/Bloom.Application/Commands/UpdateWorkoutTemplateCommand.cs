@@ -1,5 +1,6 @@
 ﻿using Bloom.Application.Common;
 using Bloom.Application.Common.Behaviours;
+using Bloom.Application.Common.Mappings;
 using Bloom.Domain.Entity;
 using Bloom.Domain.Repositories;
 using Bloom.Infrastructure.Persistence;
@@ -41,47 +42,15 @@ public class UpdateWorkoutTemplateCommandHandler : IRequestHandler<UpdateWorkout
         if (!userId.HasValue || await _userRepository.GetUserById(userId.Value, ct) is null)
             return Result.Failure("User not authenticated or not found");
         
-        var template = await _templateRepository.GetWorkoutTemplateById(request.Id);
-        if (template is null)
-            return Result.Failure("Template not found");
-        if (template.UserId != userId.Value)
-            return Result.Failure("This template does not belong to you");
-
-        await _templateRepository.DeleteWorkoutTemplateExercises(template.Exercises);
-        
         var exerciseIds = request.Template.Exercises.Select(e => e.ExerciseId).Distinct().ToList();
         var exercises = await _exerciseRepository.GetByIdsAsync(exerciseIds, ct);
         if (exercises.Count != exerciseIds.Count)
             return Result.Failure("One or more exercises not found");
         
-        var newTemplateExercises = request.Template.Exercises.Select(dto =>
-        {
-            var exercise = new WorkoutTemplateExercise
-            {
-                Id = Guid.NewGuid(),
-                ExerciseId = dto.ExerciseId,
-                Order = dto.Order
-            };
-
-            foreach (var s in dto.Sets)
-            {
-                exercise.Sets.Add(new TemplateExerciseSet
-                {
-                    SetOrder = s.SetOrder,
-                    Reps = s.Reps,
-                    RIR = s.RIR,
-                    WorkoutTemplateExercise = exercise
-                });
-            }
-
-            return exercise;
-        }).ToList();
+        var newExercises = ExerciseMappings.MapExercises(request.Template.Exercises, request.Id);
+    
+        await _templateRepository.UpdateWorkoutTemplate(request.Id, request.Template.Name, newExercises);
         
-        template.Name = request.Template.Name;
-        template.Exercises.Clear();
-        template.Exercises = newTemplateExercises;
-        
-        await _templateRepository.UpdateWorkoutTemplate(template);
         _logger.LogInformation("Workout template {TemplateId} updated by user {UserId}", request.Id, userId.Value);
         return Result.Success();
     }

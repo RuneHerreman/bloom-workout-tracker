@@ -6,9 +6,7 @@ public interface IWorkoutTemplateRepository
 {
     Task AddWorkoutTemplate(WorkoutTemplate template);
     Task DeleteWorkoutTemplate(WorkoutTemplate template);
-    Task DeleteWorkoutTemplateExercises(List<WorkoutTemplateExercise> exercises);
     Task<WorkoutTemplate?> GetWorkoutTemplateById(Guid id);
-    
-    Task UpdateWorkoutTemplate(WorkoutTemplate template);
-    
+    Task UpdateWorkoutTemplate(Guid templateId, string name, List<WorkoutTemplateExercise> newExercises);
+
 }
