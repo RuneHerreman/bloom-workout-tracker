@@ -38,20 +38,27 @@ public class UpdateWorkoutTemplateCommandHandler : IRequestHandler<UpdateWorkout
 
     public async Task<Result> Handle(UpdateWorkoutTemplateCommand request, CancellationToken ct)
     {
-        var userId = _currentUserService.UserId;
-        if (!userId.HasValue || await _userRepository.GetUserById(userId.Value, ct) is null)
-            return Result.Failure("User not authenticated or not found");
+        try
+        {
+            var userId = _currentUserService.UserId;
+            if (!userId.HasValue || await _userRepository.GetUserById(userId.Value, ct) is null)
+                return Result.Failure("User not authenticated or not found");
         
-        var exerciseIds = request.Template.Exercises.Select(e => e.ExerciseId).Distinct().ToList();
-        var exercises = await _exerciseRepository.GetByIdsAsync(exerciseIds, ct);
-        if (exercises.Count != exerciseIds.Count)
-            return Result.Failure("One or more exercises not found");
+            var exerciseIds = request.Template.Exercises.Select(e => e.ExerciseId).Distinct().ToList();
+            var exercises = await _exerciseRepository.GetByIdsAsync(exerciseIds, ct);
+            if (exercises.Count != exerciseIds.Count)
+                return Result.Failure("One or more exercises not found");
         
-        var newExercises = ExerciseMappings.MapExercises(request.Template.Exercises, request.Id);
+            var newExercises = ExerciseMappings.MapExercises(request.Template.Exercises, request.Id);
     
-        await _templateRepository.UpdateWorkoutTemplate(request.Id, request.Template.Name, newExercises);
+            await _templateRepository.UpdateWorkoutTemplate(request.Id, request.Template.Name, newExercises, userId.Value);
         
-        _logger.LogInformation("Workout template {TemplateId} updated by user {UserId}", request.Id, userId.Value);
-        return Result.Success();
+            _logger.LogInformation("Workout template {TemplateId} updated by user {UserId}", request.Id, userId.Value);
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            return Result.Failure(e.Message);
+        }
     }
 }

@@ -34,21 +34,27 @@ public class DeleteTemplateCommandHandler : IRequestHandler<DeleteTemplateComand
         DeleteTemplateComand request, 
         CancellationToken ct)
     {
-        var userId = _currentUserService.UserId;
-        if (!userId.HasValue || await _userRepository.GetUserById(userId.Value, ct) is null)
-            return Result.Failure("User not authenticated or not found");
+        try
+        {
+            var userId = _currentUserService.UserId;
+            if (!userId.HasValue || await _userRepository.GetUserById(userId.Value, ct) is null)
+                return Result.Failure("User not authenticated or not found");
 
-        var template = await _templateRepository.GetWorkoutTemplateById(request.Id);
-        if (template is null)
-            return Result.Failure("Template not found");
+            _logger.LogInformation("User {id} is deleting workout template {templateId}.", userId.Value, request.Id);
+            var template = await _templateRepository.GetWorkoutTemplateById(request.Id, userId.Value);
+            if (template is null)
+                return Result.Failure("Template not found");
 
-        if (template.UserId != userId.Value)
-            return Result.Failure("This template does not belong to you");
-
-        await _templateRepository.DeleteWorkoutTemplate(template);
+            await _templateRepository.DeleteWorkoutTemplate(template);
         
-        _logger.LogInformation("Workout template deleted: {template}", template.Id);
+            _logger.LogInformation("Workout template deleted: {template}", template.Id);
         
-        return Result.Success();
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            return Result.Failure(e.Message);
+        }
+
     }
 }
