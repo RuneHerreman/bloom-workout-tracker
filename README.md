@@ -18,14 +18,12 @@
 ### Prerequisites
 - [Docker](https://www.docker.com/)
 
-## Getting started
 1. Clone repo
 2. Copy `.env.example` → `.env`
 3. ```bash
     docker compose up --build
     ```
-
-
+### URLs
 - API: http://localhost:8080/swagger
 - Frontend: http://localhost:3000/
 - Database: http://localhost:5432/
