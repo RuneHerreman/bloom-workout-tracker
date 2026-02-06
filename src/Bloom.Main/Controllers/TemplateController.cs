@@ -20,6 +20,7 @@ public class TemplateController : ControllerBase
     public TemplateController(IMediator mediator) => _mediator = mediator;
 
     [HttpPost]
+    [EndpointDescription("Creates a new workout template.")]
     public async Task<ActionResult<Result<Guid>>> CreateWorkoutTemplate(
         [FromBody] CreateWorkoutTemplateCommand command
     )
@@ -39,6 +40,7 @@ public class TemplateController : ControllerBase
     }
 
     [HttpGet]
+    [EndpointDescription("Gets all workout templates for the current user.")]
     public async Task<ActionResult<Result<List<WorkoutTemplateDTO>>>> GetWorkoutTemplates()
     {
         var result = await _mediator.Send(new GetAllUserTemplatesQuery());
@@ -46,6 +48,7 @@ public class TemplateController : ControllerBase
     }
     
     [HttpGet("{id}")]
+    [EndpointDescription("Gets a workout template by ID.")]
     public async Task<ActionResult<Result<List<WorkoutTemplateDTO>>>> GetWorkoutTemplateById(
         [FromRoute] Guid id
     )
