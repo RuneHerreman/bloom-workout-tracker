@@ -38,12 +38,8 @@ public class GetAllUserTemplatesQueryHandler
     {
         var userId = _currentUserService.UserId;
 
-        if (!userId.HasValue ||
-            await _context.Users.FindAsync(userId.Value) is null)
-        {
-            return Result<List<WorkoutTemplateDTO>>
-                .Failure("User not authenticated or not found");
-        }
+        if (!userId.HasValue || await _context.Users.FindAsync(userId.Value) is null)
+            return Result<List<WorkoutTemplateDTO>>.Failure("User not authenticated or not found");
 
         var templates = await _context.WorkoutTemplates
             .Where(t => t.UserId == userId.Value)

@@ -20,7 +20,7 @@ public class TemplateController : ControllerBase
     public TemplateController(IMediator mediator) => _mediator = mediator;
 
     [HttpPost]
-    [EndpointDescription("Creates a new workout template.")]
+    [EndpointSummary("Creates a new workout template.")]
     public async Task<ActionResult<Result<Guid>>> CreateWorkoutTemplate(
         [FromBody] CreateWorkoutTemplateCommand command
     )
@@ -40,7 +40,7 @@ public class TemplateController : ControllerBase
     }
 
     [HttpGet]
-    [EndpointDescription("Gets all workout templates for the current user.")]
+    [EndpointSummary("Gets all workout templates for the current user.")]
     public async Task<ActionResult<Result<List<WorkoutTemplateDTO>>>> GetWorkoutTemplates()
     {
         var result = await _mediator.Send(new GetAllUserTemplatesQuery());
@@ -48,12 +48,22 @@ public class TemplateController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    [EndpointDescription("Gets a workout template by ID.")]
+    [EndpointSummary("Gets a workout template by ID.")]
     public async Task<ActionResult<Result<List<WorkoutTemplateDTO>>>> GetWorkoutTemplateById(
         [FromRoute] Guid id
     )
     {
         var result = await _mediator.Send(new GetTemplateByIdQuery(id));
         return result.IsSuccess ? Ok(result.Value) : NotFound(result.Errors);
+    }
+    
+    [HttpDelete("{id}")]
+    [EndpointSummary("Delete an endpoint by ID.")]
+    public async Task<ActionResult<Result<List<WorkoutTemplateDTO>>>> DeleteWorkoutTemplateById(
+        [FromRoute] Guid id
+    )
+    {
+        var result = await _mediator.Send(new DeleteTemplateComand(id));
+        return result.IsSuccess ? NoContent() : NotFound(result.Errors);
     }
 }

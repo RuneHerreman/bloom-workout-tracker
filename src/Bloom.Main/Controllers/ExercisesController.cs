@@ -16,7 +16,7 @@ public class ExercisesController : ControllerBase
     public ExercisesController(IMediator mediator) => _mediator = mediator;
     
     [HttpGet]
-    [EndpointDescription("Gets a list of exercises.")]
+    [EndpointSummary("Gets a list of exercises.")]
     public async Task<ActionResult<Result<List<ExerciseDTO>>>> GetExercises()
     {
         var result = await _mediator.Send(new GetAllExercisesQuery());

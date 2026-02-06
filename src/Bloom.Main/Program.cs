@@ -26,10 +26,8 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 // MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
-    typeof(GetAllExercisesQuery).Assembly,
-    typeof(RegisterUserCommand).Assembly,
-    typeof(LoginCommand).Assembly,
-    typeof(CreateWorkoutTemplateCommand).Assembly
+    typeof(Bloom.Application.AssemblyReference).Assembly
+    
 ));
 
 
