@@ -1,5 +1,5 @@
 # Bloom Workout Tracker
-**Free, simple workout logging for strength, cardio and more. No subscriptions**
+**Simple, private workout logging. Track strength, cardio, volume. Self-hosted**
 
 ## Features
 - **Workout Templates**: Create reusable routines with target sets/reps/RIR for strength. Duration / distance for cardio
@@ -8,19 +8,24 @@
 - **Privacy Focused**: Your data stays yours. Self hostable.
 
 ## Tech Stack
-- **Frontend**: React
+- **Frontend**: React + Vite + TypeScript
 - **Backend**: ASP.NET Core Web API
+- **Database**: PostgreSQL
 - **Auth**: JWT + BCrypt
 - **Deployment**: Docker Compose
 
-## Installation
+## Quick Start
 ### Prerequisites
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- [Node.js 20+](https://nodejs.org/)
 - [Docker](https://www.docker.com/)
 
-## Gettings started
-```bash
-    docker compose down
+## Getting started
+1. Clone repo
+2. Copy ´.env.example` → `.env`
+3. ```bash
     docker compose up --build
-```
+    ```
+
+
+- API: http://localhost:8080/swagger
+- Frontend: http://localhost:3000/
+- Database: http://localhost:5432/
