@@ -3,6 +3,7 @@
 public record WorkoutTemplateExerciseDTO
 (
     Guid ExerciseId,
+    string Name,
     int Order,
     List<TemplateExerciseSetDTO> Sets
 );

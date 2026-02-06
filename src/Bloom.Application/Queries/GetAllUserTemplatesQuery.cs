@@ -47,8 +47,21 @@ public class GetAllUserTemplatesQueryHandler
             .ThenInclude(e => e.Sets)
             .ToListAsync(cancellationToken);
 
-        var result = templates.Select(t => t.ToDto()).ToList();
+        var exerciseIds = templates
+            .SelectMany(t => t.Exercises)
+            .Select(e => e.ExerciseId)
+            .Distinct()
+            .ToList();
+        
+        var exercises = await _context.Exercises
+            .Where(e => exerciseIds.Contains(e.Id))
+            .ToDictionaryAsync(e => e.Id, e => e.Name, cancellationToken);
 
+        
+        var result = templates
+            .Select(t => t.ToDto(exercises))
+            .ToList();
+        
         _logger.LogInformation(
             "User found with {TemplateCount} templates.",
             result.Count);

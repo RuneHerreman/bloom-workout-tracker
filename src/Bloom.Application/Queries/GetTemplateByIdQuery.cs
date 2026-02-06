@@ -48,8 +48,17 @@ public class GetTemplateByIdQueryHandler
         if (template == null)
             return Result<WorkoutTemplateDTO>.Failure("Template not found");
         
+        var exerciseIds = template.Exercises
+            .Select(e => e.ExerciseId)
+            .Distinct()
+            .ToList();
+
+        var exerciseNames = await _context.Exercises
+            .Where(e => exerciseIds.Contains(e.Id))
+            .ToDictionaryAsync(e => e.Id, e => e.Name, cancellationToken);
+        
         _logger.LogInformation("Template found: {template}", template.Id);
         
-        return Result<WorkoutTemplateDTO>.Success(template.ToDto());
+        return Result<WorkoutTemplateDTO>.Success(template.ToDto(exerciseNames));
     }
 }
