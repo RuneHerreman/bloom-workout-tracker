@@ -14,18 +14,20 @@ public record DeleteTemplateComand(
 public class DeleteTemplateCommandHandler : IRequestHandler<DeleteTemplateComand, Result>
 {
     private readonly IWorkoutTemplateRepository _templateRepository;
+    private readonly IUserRepository _userRepository;
     private readonly ICurrentUserService _currentUserService;
-    private readonly BloomDbContext _context;
     private readonly ILogger<DeleteTemplateCommandHandler> _logger;
 
     public DeleteTemplateCommandHandler(
         IWorkoutTemplateRepository templateRepository, 
-        ILogger<DeleteTemplateCommandHandler> logger, ICurrentUserService currentUserService, BloomDbContext context)
+        ILogger<DeleteTemplateCommandHandler> logger, 
+        ICurrentUserService currentUserService, 
+        IUserRepository userRepository)
     {
         _templateRepository = templateRepository;
         _logger = logger;
         _currentUserService = currentUserService;
-        _context = context;
+        _userRepository = userRepository;
     }
 
     public async Task<Result> Handle(
@@ -33,18 +35,17 @@ public class DeleteTemplateCommandHandler : IRequestHandler<DeleteTemplateComand
         CancellationToken ct)
     {
         var userId = _currentUserService.UserId;
-        if (!userId.HasValue || await _context.Users.FindAsync(userId.Value) is null)
+        if (!userId.HasValue || await _userRepository.GetUserById(userId.Value, ct) is null)
             return Result.Failure("User not authenticated or not found");
-        
-        var template = await _context.WorkoutTemplates.FindAsync(request.Id, ct);
+
+        var template = await _templateRepository.GetWorkoutTemplateById(request.Id);
         if (template is null)
             return Result.Failure("Template not found");
 
         if (template.UserId != userId.Value)
             return Result.Failure("This template does not belong to you");
-        
-        _context.WorkoutTemplates.Remove(template);
-        await _context.SaveChangesAsync(ct);
+
+        await _templateRepository.DeleteWorkoutTemplate(template);
         
         _logger.LogInformation("Workout template deleted: {template}", template.Id);
         

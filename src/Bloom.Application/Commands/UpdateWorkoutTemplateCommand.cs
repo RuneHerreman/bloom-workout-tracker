@@ -15,43 +15,42 @@ public record UpdateWorkoutTemplateCommand(
 
 public class UpdateWorkoutTemplateCommandHandler : IRequestHandler<UpdateWorkoutTemplateCommand, Result>
 {
-    private readonly BloomDbContext _context;
     private readonly ICurrentUserService _currentUserService;
     private readonly ILogger<UpdateWorkoutTemplateCommandHandler> _logger;
     private readonly IWorkoutTemplateRepository _templateRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IExerciseRepository _exerciseRepository;
 
     public UpdateWorkoutTemplateCommandHandler(
-        BloomDbContext context, 
         ICurrentUserService currentUserService, 
         ILogger<UpdateWorkoutTemplateCommandHandler> logger, 
-        IWorkoutTemplateRepository templateRepository, IExerciseRepository exerciseRepository)
+        IWorkoutTemplateRepository templateRepository, 
+        IExerciseRepository exerciseRepository, 
+        IUserRepository userRepository)
     {
-        _context = context;
         _currentUserService = currentUserService;
         _logger = logger;
         _templateRepository = templateRepository;
         _exerciseRepository = exerciseRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<Result> Handle(UpdateWorkoutTemplateCommand request, CancellationToken ct)
     {
         var userId = _currentUserService.UserId;
-        if (!userId.HasValue || await _context.Users.FindAsync(userId.Value) is null)
+        if (!userId.HasValue || await _userRepository.GetUserById(userId.Value, ct) is null)
             return Result.Failure("User not authenticated or not found");
         
-        var template = await _context.WorkoutTemplates.FindAsync(request.Id, ct);
+        var template = await _templateRepository.GetWorkoutTemplateById(request.Id);
         if (template is null)
             return Result.Failure("Template not found");
-
         if (template.UserId != userId.Value)
             return Result.Failure("This template does not belong to you");
 
-        _context.WorkoutTemplateExercises.RemoveRange(template.Exercises);
+        await _templateRepository.DeleteWorkoutTemplateExercises(template.Exercises);
         
         var exerciseIds = request.Template.Exercises.Select(e => e.ExerciseId).Distinct().ToList();
         var exercises = await _exerciseRepository.GetByIdsAsync(exerciseIds, ct);
-        
         if (exercises.Count != exerciseIds.Count)
             return Result.Failure("One or more exercises not found");
         
@@ -82,7 +81,7 @@ public class UpdateWorkoutTemplateCommandHandler : IRequestHandler<UpdateWorkout
         template.Exercises.Clear();
         template.Exercises = newTemplateExercises;
         
-        await _context.SaveChangesAsync(ct);
+        await _templateRepository.UpdateWorkoutTemplate(template);
         _logger.LogInformation("Workout template {TemplateId} updated by user {UserId}", request.Id, userId.Value);
         return Result.Success();
     }
