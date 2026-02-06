@@ -25,9 +25,9 @@ public class UpdateWorkoutTemplateTests
         _handler = handler;
     }
 
-    [Fact]
-    public async Task Handle_WhenUserNotAuthenticated_ReturnsFailure()
-    {
-        
-    }
+    // [Fact]
+    // public async Task Handle_WhenUserNotAuthenticated_ReturnsFailure()
+    // {
+    //     
+    // }
 }
