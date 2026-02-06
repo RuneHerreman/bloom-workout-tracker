@@ -18,7 +18,6 @@ public static class TemplateMappings
 
     public static WorkoutTemplateExerciseDTO ToDto(this WorkoutTemplateExercise exercise)
         => new(
-            exercise.Id,
             exercise.ExerciseId,
             exercise.Order,
             exercise.Sets

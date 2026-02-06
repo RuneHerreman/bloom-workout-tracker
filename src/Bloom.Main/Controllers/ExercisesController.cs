@@ -1,4 +1,5 @@
 ﻿using Bloom.Application.Common;
+using Bloom.Application.DTO;
 using Bloom.Application.Queries;
 using Bloom.Domain.Entity;
 using MediatR;
@@ -15,9 +16,9 @@ public class ExercisesController : ControllerBase
     public ExercisesController(IMediator mediator) => _mediator = mediator;
     
     [HttpGet]
-    public async Task<ActionResult<Result<List<Exercise>>>> GetExercises()
+    public async Task<ActionResult<Result<List<ExerciseDTO>>>> GetExercises()
     {
         var result = await _mediator.Send(new GetAllExercisesQuery());
-        return Ok(new { exercises = result.Value });
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Errors);
     }
 }

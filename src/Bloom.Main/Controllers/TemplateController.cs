@@ -28,7 +28,13 @@ public class TemplateController : ControllerBase
         if (!result.IsSuccess)
             return BadRequest( new { error = result.Errors} );
 
-        return Ok(new { id = result.Value });
+        return result.IsSuccess 
+            ? CreatedAtAction(
+                nameof(GetWorkoutTemplateById),
+                new { id = result.Value },
+                result.Value
+            ) 
+            : BadRequest(result.Errors);
         
     }
 
@@ -36,6 +42,15 @@ public class TemplateController : ControllerBase
     public async Task<ActionResult<Result<List<WorkoutTemplateDTO>>>> GetWorkoutTemplates()
     {
         var result = await _mediator.Send(new GetAllUserTemplatesQuery());
-        return Ok(new { templates = result.Value });
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Errors);
+    }
+    
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Result<List<WorkoutTemplateDTO>>>> GetWorkoutTemplateById(
+        [FromRoute] Guid id
+    )
+    {
+        var result = await _mediator.Send(new GetTemplateByIdQuery(id));
+        return result.IsSuccess ? Ok(result.Value) : NotFound(result.Errors);
     }
 }
