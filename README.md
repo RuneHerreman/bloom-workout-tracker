@@ -20,7 +20,7 @@
 
 ## Getting started
 1. Clone repo
-2. Copy ´.env.example` → `.env`
+2. Copy `.env.example` → `.env`
 3. ```bash
     docker compose up --build
     ```
