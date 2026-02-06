@@ -70,10 +70,11 @@ public class TemplateController : ControllerBase
     [HttpPut("{id}")]
     [EndpointSummary("Update workout template by ID")]
     public async Task<ActionResult<Result<List<WorkoutTemplateDTO>>>> UpdateWorkoutTemplateById(
-        [FromRoute] Guid id
+        [FromRoute] Guid id,
+        [FromBody] CreateWorkoutTemplateCommand template
     )
     {
-        var result = await _mediator.Send(new DeleteTemplateComand(id));
-        return result.IsSuccess ? NoContent() : NotFound(result.Errors);
+        var result = await _mediator.Send(new UpdateWorkoutTemplateCommand(id, template));
+        return result.IsSuccess ? NoContent() : BadRequest(result.Errors);
     }
 }
