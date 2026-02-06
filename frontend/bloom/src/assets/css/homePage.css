@@ -87,7 +87,7 @@
 
 /*         OUR MISSION         */
 h2 {
-    font-size: 4rem;
+    font-size: 3.5rem;
     text-transform: uppercase;
     font-weight: 500;
     margin-bottom: 1rem;
@@ -176,14 +176,14 @@ h2 {
 }
 
 #features li{
-    padding-left: 4rem;
+    padding-left: 3rem;
     padding-bottom: 0.75rem;
     margin-bottom: 2rem;
 
     background-image: url("/media/bloom_bullet.svg");
     background-repeat: no-repeat;
-    background-position: 0 0.5rem;
-    background-size: 2.5rem;
+    background-position: 0 0.25rem;
+    background-size: 1.75rem;
 }
 
 #features li p {
