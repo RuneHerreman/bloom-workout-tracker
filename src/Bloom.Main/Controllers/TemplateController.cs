@@ -58,8 +58,18 @@ public class TemplateController : ControllerBase
     }
     
     [HttpDelete("{id}")]
-    [EndpointSummary("Delete an endpoint by ID.")]
+    [EndpointSummary("Delete an workout template by ID.")]
     public async Task<ActionResult<Result<List<WorkoutTemplateDTO>>>> DeleteWorkoutTemplateById(
+        [FromRoute] Guid id
+    )
+    {
+        var result = await _mediator.Send(new DeleteTemplateComand(id));
+        return result.IsSuccess ? NoContent() : NotFound(result.Errors);
+    }
+    
+    [HttpPut("{id}")]
+    [EndpointSummary("Update workout template by ID")]
+    public async Task<ActionResult<Result<List<WorkoutTemplateDTO>>>> UpdateWorkoutTemplateById(
         [FromRoute] Guid id
     )
     {
