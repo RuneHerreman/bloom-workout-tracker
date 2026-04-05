@@ -1,7 +1,7 @@
 ﻿using Bloom.Application.Common.Exceptions;
 using Bloom.Application.Common.Security;
 using Bloom.Domain.Entity;
-using Bloom.Domain.Repositories;
+using Bloom.Domain.Users;
 
 namespace UnitTests.Mock;
 
