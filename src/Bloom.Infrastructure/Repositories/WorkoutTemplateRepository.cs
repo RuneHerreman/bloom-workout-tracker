@@ -1,5 +1,5 @@
-﻿using Bloom.Domain.Entity;
-using Bloom.Domain.Repositories;
+﻿using Bloom.Domain.Templates;
+using Bloom.Domain.Users;
 using Bloom.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,48 +7,43 @@ namespace Bloom.Infrastructure.Repositories;
 
 public class WorkoutTemplateRepository : IWorkoutTemplateRepository
 {
-    private readonly BloomDbContext _context;
-    
-    public WorkoutTemplateRepository(BloomDbContext context) => _context = context;
-    
-    public async Task AddWorkoutTemplate(WorkoutTemplate template)
+    public Task<bool> Exists(WorkoutTemplateId id)
     {
-        await _context.WorkoutTemplates.AddAsync(template);
-        await _context.SaveChangesAsync();
+        throw new NotImplementedException();
     }
 
-    public async Task DeleteWorkoutTemplate(WorkoutTemplate template)
+    public Task<WorkoutTemplate> ById(WorkoutTemplateId id)
     {
-        _context.WorkoutTemplates.Remove(template);
-        await _context.SaveChangesAsync();
+        throw new NotImplementedException();
     }
 
-    public async Task<WorkoutTemplate?> GetWorkoutTemplateById(Guid id, Guid userId)
+    public Task Save(WorkoutTemplate aggregateRoot)
     {
-        if (id == Guid.Empty)
-            return null;
-        
-        return await _context.WorkoutTemplates
-            .Where(t => t.Id == id && t.UserId == userId)
-            .SingleOrDefaultAsync();
+        throw new NotImplementedException();
     }
 
-    public async Task UpdateWorkoutTemplate(Guid templateId, string name,
-        List<WorkoutTemplateExercise> newExercises, Guid userId)
+    public Task Remove(WorkoutTemplate aggregateRoot)
     {
-        var template = await GetWorkoutTemplateById(templateId, userId);
-        if (template == null)
-            throw new InvalidOperationException("Template not found or does not belong to you");
+        throw new NotImplementedException();
+    }
 
-        var existingExercises = await _context.WorkoutTemplateExercises
-            .Where(e => e.WorkoutTemplateId == templateId)
-            .Include(e => e.Sets)
-            .ToListAsync();
-        _context.RemoveRange(existingExercises);
+    public Task AddWorkoutTemplate(WorkoutTemplate template)
+    {
+        throw new NotImplementedException();
+    }
 
-        template.Name = name;
+    public Task DeleteWorkoutTemplate(WorkoutTemplate template)
+    {
+        throw new NotImplementedException();
+    }
 
-        await _context.WorkoutTemplateExercises.AddRangeAsync(newExercises);
-        await _context.SaveChangesAsync();
+    public Task<WorkoutTemplate?> GetWorkoutTemplateById(WorkoutTemplateId id, UserId userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task UpdateWorkoutTemplate(WorkoutTemplateId templateId, string name, List<WorkoutTemplateExercise> newExercises, UserId userId)
+    {
+        throw new NotImplementedException();
     }
 }

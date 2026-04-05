@@ -1,5 +1,4 @@
-﻿using Bloom.Domain.Entity;
-using Bloom.Domain.Repositories;
+﻿using Bloom.Domain.Users;
 using Bloom.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,25 +6,28 @@ namespace Bloom.Infrastructure.Repositories;
 
 public class UserRepository : IUserRepository
 {
-    private readonly BloomDbContext _context;
-    
-    public UserRepository(BloomDbContext context) => _context = context;
-    
-    public async Task<User?> GetUserByEmail(string email, CancellationToken ct)
+    public Task<bool> Exists(UserId id)
     {
-        return await _context.Users.SingleOrDefaultAsync(u => u.Email == email, ct);
+        throw new NotImplementedException();
     }
 
-    public async Task<User?> GetUserById(Guid userId, CancellationToken ct)
+    public Task<User> ById(UserId id)
     {
-        if (userId == Guid.Empty)
-            return null;
-        return await _context.Users.SingleOrDefaultAsync(u => u.Id == userId, ct);
+        throw new NotImplementedException();
     }
 
-    public async Task RegisterUser(User user, CancellationToken ct)
+    public Task Save(User aggregateRoot)
     {
-        await _context.Users.AddAsync(user, ct);
-        await _context.SaveChangesAsync(ct);
+        throw new NotImplementedException();
+    }
+
+    public Task Remove(User aggregateRoot)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<User?> GetUserByEmail(string email)
+    {
+        throw new NotImplementedException();
     }
 }

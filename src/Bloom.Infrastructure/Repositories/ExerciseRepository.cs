@@ -1,5 +1,4 @@
-﻿using Bloom.Domain.Entity;
-using Bloom.Domain.Repositories;
+﻿using Bloom.Domain.Exercises;
 using Bloom.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,12 +6,23 @@ namespace Bloom.Infrastructure.Repositories;
 
 public class ExerciseRepository : IExerciseRepository
 {
-    private readonly BloomDbContext _context;
-    
-    public ExerciseRepository(BloomDbContext context) => _context = context;
-    
-    public async Task<List<Exercise>> GetByIdsAsync(List<Guid> exerciseIds, CancellationToken ct)
+    public Task<bool> Exists(ExerciseId id)
     {
-        return await _context.Exercises.Where(e => exerciseIds.Contains(e.Id)).ToListAsync(ct);
+        throw new NotImplementedException();
+    }
+
+    public Task<Exercise> ById(ExerciseId id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task Save(Exercise aggregateRoot)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task Remove(Exercise aggregateRoot)
+    {
+        throw new NotImplementedException();
     }
 }

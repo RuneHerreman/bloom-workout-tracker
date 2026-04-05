@@ -1,5 +1,5 @@
-﻿using Bloom.Domain.Entity.Logs;
-using Bloom.Domain.Repositories;
+﻿using Bloom.Domain.LogBook;
+using Bloom.Domain.Users;
 using Bloom.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,13 +7,28 @@ namespace Bloom.Infrastructure.Repositories;
 
 public class LogBookRepository : ILogBookRepository
 {
-    private readonly BloomDbContext _context;
-    public LogBookRepository(BloomDbContext context) => _context = context;
-    
-    public async Task<List<LoggedWorkout>> GetAllUserWorkoutsAsync(Guid userId, CancellationToken ct)
+    public Task<bool> Exists(LoggedWorkoutId id)
     {
-        return await _context.LoggedWorkouts
-            .Where(w => w.UserId == userId)
-            .ToListAsync(ct);
+        throw new NotImplementedException();
+    }
+
+    public Task<LoggedWorkout> ById(LoggedWorkoutId id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task Save(LoggedWorkout aggregateRoot)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task Remove(LoggedWorkout aggregateRoot)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<List<LoggedWorkout>> ByUserId(UserId userId)
+    {
+        throw new NotImplementedException();
     }
 }

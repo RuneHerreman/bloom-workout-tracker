@@ -2,7 +2,6 @@
 using Bloom.Application.Common;
 using Bloom.Application.DTO.Templates;
 using Bloom.Application.Queries;
-using Bloom.Domain.Entity;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
