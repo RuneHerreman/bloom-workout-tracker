@@ -24,6 +24,6 @@
     docker compose up --build
     ```
 ### URLs
-- API: http://localhost:8080/swagger
+- API Docs (Scalar): http://localhost:8080/scalar
 - Frontend: http://localhost:3000/
 - Database: http://localhost:5432/
