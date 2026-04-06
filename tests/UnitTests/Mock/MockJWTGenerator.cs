@@ -1,5 +1,4 @@
 ﻿using Bloom.Application.Common.Behaviours;
-using Bloom.Domain.Entity;
 using Bloom.Domain.Users;
 
 namespace UnitTests.Mock;
