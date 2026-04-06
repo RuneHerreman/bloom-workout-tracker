@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bloom.Domain\Bloom.Domain.csproj" />
+    <ProjectReference Include="..\Bloom.Application\Bloom.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
