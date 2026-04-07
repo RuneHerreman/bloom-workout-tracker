@@ -1,8 +1,6 @@
 ﻿using Bloom.Domain.Exercises;
-using Bloom.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
-namespace Bloom.Infrastructure.Repositories;
+namespace Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
 
 public class ExerciseRepository : IExerciseRepository
 {

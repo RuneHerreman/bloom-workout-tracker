@@ -1,33 +1,13 @@
 ﻿using Bloom.Domain.Users;
-using Bloom.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Bloom.Infrastructure.Repositories;
+namespace Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
 
-public class UserRepository : IUserRepository
+public sealed class UserRepository(BloomDbContext context)
+    :  EfCoreGenericRepository<User, UserId>(context), IUserRepository
 {
-    public Task<bool> Exists(UserId id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<User> ById(UserId id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task Save(User aggregateRoot)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task Remove(User aggregateRoot)
-    {
-        throw new NotImplementedException();
-    }
-
     public Task<User?> GetUserByEmail(string email)
     {
-        throw new NotImplementedException();
+        return _context.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
     }
 }

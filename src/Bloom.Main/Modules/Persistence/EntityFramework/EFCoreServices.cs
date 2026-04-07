@@ -5,7 +5,7 @@ using Bloom.Domain.Templates;
 using Bloom.Domain.Users;
 using Bloom.Infrastructure.Persistence;
 using Bloom.Infrastructure.Persistence.EntityFramework;
-using Bloom.Infrastructure.Repositories;
+using Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bloom.Main.Modules.Persistence.EntityFramework;

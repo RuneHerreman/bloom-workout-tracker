@@ -1,9 +1,7 @@
 ﻿using Bloom.Domain.Templates;
 using Bloom.Domain.Users;
-using Bloom.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
-namespace Bloom.Infrastructure.Repositories;
+namespace Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
 
 public class WorkoutTemplateRepository : IWorkoutTemplateRepository
 {

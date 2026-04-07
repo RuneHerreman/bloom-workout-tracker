@@ -181,11 +181,6 @@ public class BloomDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(wte => wte.ExerciseId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
-            entity.HasMany(wte => wte.Sets)
-                .WithOne()
-                .HasForeignKey("WorkoutTemplateExerciseId")
-                .OnDelete(DeleteBehavior.Cascade);
         });
         
         modelBuilder.Entity<ExerciseSet>(entity => // EXERCISE SET (TPH)
@@ -198,21 +193,41 @@ public class BloomDbContext : DbContext
         {
             entity.Property(ls => ls.LoggedExerciseId).HasConversion(id => id.Value, d => new LoggedExerciseId(d));
             entity.Property(ls => ls.Weight).HasPrecision(6, 2);
+
+            entity.HasOne<LoggedExercise>()
+                .WithMany(le => le.StrengthSets)
+                .HasForeignKey(ls => ls.LoggedExerciseId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<LoggedCardioSet>(entity =>
         {
             entity.Property(ls => ls.LoggedExerciseId).HasConversion(id => id.Value, d => new LoggedExerciseId(d));
+
+            entity.HasOne<LoggedExercise>()
+                .WithMany(le => le.CardioSets)
+                .HasForeignKey(ls => ls.LoggedExerciseId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<TemplateStrengthSet>(entity =>
         {
             entity.Property(ls => ls.WorkoutTemplateExerciseId).HasConversion(id => id.Value, d => new WorkoutTemplateExerciseId(d));
+
+            entity.HasOne<WorkoutTemplateExercise>()
+                .WithMany(wte => wte.StrengthSets)
+                .HasForeignKey(ls => ls.WorkoutTemplateExerciseId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<TemplateCardioSet>(entity =>
         {
             entity.Property(ls => ls.WorkoutTemplateExerciseId).HasConversion(id => id.Value, d => new WorkoutTemplateExerciseId(d));
+
+            entity.HasOne<WorkoutTemplateExercise>()
+                .WithMany(wte => wte.CardioSets)
+                .HasForeignKey(ls => ls.WorkoutTemplateExerciseId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
         
         modelBuilder.Entity<LoggedWorkout>(entity => // LOGGED WORKOUT
@@ -244,11 +259,6 @@ public class BloomDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(le => le.ExerciseId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasMany(le => le.Sets)
-                .WithOne()
-                .HasForeignKey("LoggedExerciseId")
-                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
