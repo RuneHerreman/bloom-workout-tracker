@@ -10,12 +10,14 @@ public class LoggedExercise: Entity<LoggedExerciseId>
     public ExerciseId ExerciseId { get; private set; }
     public int Order { get; private set; }
     public LoggedWorkoutId LoggedWorkoutId { get; private set; }
-    public virtual List<ExerciseSet> Sets { get; private set; }
+    public virtual List<LoggedStrengthSet> StrengthSets { get; private set; }
+    public virtual List<LoggedCardioSet> CardioSets { get; private set; }
 
     // EF Core requires a parameterless constructor
     private LoggedExercise() 
     {
-        Sets = new List<ExerciseSet>();
+        StrengthSets = new List<LoggedStrengthSet>();
+        CardioSets = new List<LoggedCardioSet>();
     }
 
     private LoggedExercise(LoggedExerciseId id, LoggedWorkoutId loggedWorkoutId, ExerciseId exerciseId, int order) : base(id)
@@ -23,7 +25,8 @@ public class LoggedExercise: Entity<LoggedExerciseId>
         LoggedWorkoutId = loggedWorkoutId;
         ExerciseId = exerciseId;
         Order = order;
-        Sets = new List<ExerciseSet>();
+        StrengthSets = new List<LoggedStrengthSet>();
+        CardioSets = new List<LoggedCardioSet>();
     }
 
     public static LoggedExercise Create(LoggedWorkoutId loggedWorkoutId, ExerciseId exerciseId, int order, LoggedExerciseId? id = null)
@@ -38,12 +41,14 @@ public class LoggedExercise: Entity<LoggedExerciseId>
         return exercise;
     }
 
-    public void AddSet(ExerciseSet set)
+    public void AddSet(LoggedStrengthSet set)
     {
-        if (set is not LoggedStrengthSet && set is not LoggedCardioSet)
-            throw new ArgumentException("Only logged sets can be added to a logged exercise.", nameof(set));
-            
-        Sets.Add(set);
+        StrengthSets.Add(set);
+    }
+
+    public void AddSet(LoggedCardioSet set)
+    {
+        CardioSets.Add(set);
     }
 
     public override void ValidateState()

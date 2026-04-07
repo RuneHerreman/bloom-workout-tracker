@@ -12,7 +12,7 @@ public class LoggedWorkout: AggregateRoot<LoggedWorkoutId>
     public DateTime Date { get; private set; }
     public virtual List<LoggedExercise> Exercises { get; private set; }
     public decimal TotalVolume => Exercises
-        .SelectMany(e => e.Sets.OfType<LoggedStrengthSet>())
+        .SelectMany(e => e.StrengthSets)
         .Sum(s => s.CalculateVolume());
 
     // EF Core requires a parameterless constructor
