@@ -1,6 +1,6 @@
-﻿namespace Bloom.Application.Queries;
-
-public class GetLogBookQuery
-{
-    
-}
+﻿// namespace Bloom.Application.Queries;
+//
+// public class GetLogBookQuery
+// {
+//     
+// }

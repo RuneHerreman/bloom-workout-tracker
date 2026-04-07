@@ -1,8 +1,6 @@
-﻿using Bloom.Domain.Entity;
+﻿namespace Bloom.Application.Contracts.Data;
 
-namespace Bloom.Application.DTO;
-
-public record ExerciseDTO
+public record ExerciseData
 (
     Guid Id,
     string Name,

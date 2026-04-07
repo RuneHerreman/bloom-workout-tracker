@@ -25,4 +25,8 @@
         <ProjectReference Include="..\..\src\Bloom.Application\Bloom.Application.csproj" />
         <ProjectReference Include="..\..\src\Bloom.Domain\Bloom.Domain.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Bloom.Application.Tests\" />
+    </ItemGroup>
 </Project>

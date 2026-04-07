@@ -1,6 +1,6 @@
-﻿namespace Bloom.Application.DTO;
+﻿namespace Bloom.Application.Contracts.Data;
 
-public record UserDTO(
+public record UserData(
     Guid Id,
     string Email,
     string Name,

@@ -1,86 +1,88 @@
-﻿using System.Security.Claims;
-using Bloom.Application.Common;
-using Bloom.Application.Common.Behaviours;
-using Bloom.Application.DTO.Templates;
-using Bloom.Domain.Entity;
-using Bloom.Domain.Repositories;
-using Bloom.Infrastructure.Persistence;
-using MediatR;
-using Microsoft.Extensions.Logging;
-
-namespace Bloom.Application.Commands;
-
-public record CreateWorkoutTemplateCommand(
-    string Name,
-    List<WorkoutTemplateExerciseDTO> Exercises
-) : IRequest<Result<Guid>>;
-
-public class CreateWorkoutTemplateCommandHandler : IRequestHandler<CreateWorkoutTemplateCommand, Result<Guid>>
-{
-    private readonly IWorkoutTemplateRepository _workoutTemplateRepository;
-    private readonly IExerciseRepository _exerciseRepository;
-    private readonly IUserRepository _userRepository;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly ILogger<CreateWorkoutTemplateCommandHandler> _logger;
-
-    public CreateWorkoutTemplateCommandHandler(
-        IWorkoutTemplateRepository workoutTemplateRepository,
-        IExerciseRepository exerciseRepository,
-        IUserRepository userRepository,
-        ICurrentUserService currentUserService, ILogger<CreateWorkoutTemplateCommandHandler> logger)
-    {
-        _workoutTemplateRepository = workoutTemplateRepository;
-        _exerciseRepository = exerciseRepository;
-        _userRepository = userRepository;
-        _currentUserService = currentUserService;
-        _logger = logger;
-    }
-
-    public async Task<Result<Guid>> Handle(CreateWorkoutTemplateCommand request, CancellationToken cancellationToken)
-    {
-        var userId = _currentUserService.UserId;
-        if (!userId.HasValue || await _userRepository.GetUserById(userId.Value, cancellationToken) is null)
-            return Result<Guid>.Failure("User not authenticated or not found");
-
-        var exerciseIds = request.Exercises.Select(e => e.ExerciseId).Distinct().ToList();
-        var exercises = await _exerciseRepository.GetByIdsAsync(exerciseIds, cancellationToken);
-    
-        if (exercises.Count != exerciseIds.Count)
-            return Result<Guid>.Failure("One or more exercises not found");
-
-        var templateExercises = request.Exercises.Select(dto =>
-        {
-            var exercise = new WorkoutTemplateExercise
-            {
-                Id = Guid.NewGuid(),
-                ExerciseId = dto.ExerciseId,
-                Order = dto.Order
-            };
-
-            foreach (var s in dto.Sets)
-            {
-                exercise.Sets.Add(new TemplateExerciseSet
-                {
-                    SetOrder = s.SetOrder,
-                    Reps = s.Reps,
-                    RIR = s.RIR,
-                    WorkoutTemplateExercise = exercise
-                });
-            }
-
-            return exercise;
-        }).ToList();
-        
-        var template = new WorkoutTemplate
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId.Value,
-            Name = request.Name,
-            Exercises = templateExercises
-        };
-        
-        await _workoutTemplateRepository.AddWorkoutTemplate(template);
-        _logger.LogInformation("Workout template created: {template} with {exercises} exercise(s)", template.Id, template.Exercises.Count);
-        return Result<Guid>.Success(template.Id);
-    }
-}
+﻿// using System.Security.Claims;
+// using Bloom.Application.Common;
+// using Bloom.Application.Common.Behaviours;
+// using Bloom.Application.Contracts.Data.Templates;
+// using Bloom.Domain.Entity;
+// using Bloom.Domain.Exercises;
+// using Bloom.Domain.Templates;
+// using Bloom.Domain.Users;
+// using Bloom.Infrastructure.Persistence;
+// using MediatR;
+// using Microsoft.Extensions.Logging;
+//
+// namespace Bloom.Application.Commands;
+//
+// public record CreateWorkoutTemplateCommand(
+//     string Name,
+//     List<WorkoutTemplateExerciseData> Exercises
+// ) : IRequest<Result<Guid>>;
+//
+// public class CreateWorkoutTemplateCommandHandler : IRequestHandler<CreateWorkoutTemplateCommand, Result<Guid>>
+// {
+//     private readonly IWorkoutTemplateRepository _workoutTemplateRepository;
+//     private readonly IExerciseRepository _exerciseRepository;
+//     private readonly IUserRepository _userRepository;
+//     private readonly ICurrentUserService _currentUserService;
+//     private readonly ILogger<CreateWorkoutTemplateCommandHandler> _logger;
+//
+//     public CreateWorkoutTemplateCommandHandler(
+//         IWorkoutTemplateRepository workoutTemplateRepository,
+//         IExerciseRepository exerciseRepository,
+//         IUserRepository userRepository,
+//         ICurrentUserService currentUserService, ILogger<CreateWorkoutTemplateCommandHandler> logger)
+//     {
+//         _workoutTemplateRepository = workoutTemplateRepository;
+//         _exerciseRepository = exerciseRepository;
+//         _userRepository = userRepository;
+//         _currentUserService = currentUserService;
+//         _logger = logger;
+//     }
+//
+//     public async Task<Result<Guid>> Handle(CreateWorkoutTemplateCommand request, CancellationToken cancellationToken)
+//     {
+//         var userId = _currentUserService.UserId;
+//         if (!userId.HasValue || await _userRepository.GetUserById(userId.Value, cancellationToken) is null)
+//             return Result<Guid>.Failure("User not authenticated or not found");
+//
+//         var exerciseIds = request.Exercises.Select(e => e.ExerciseId).Distinct().ToList();
+//         var exercises = await _exerciseRepository.GetByIdsAsync(exerciseIds, cancellationToken);
+//     
+//         if (exercises.Count != exerciseIds.Count)
+//             return Result<Guid>.Failure("One or more exercises not found");
+//
+//         var templateExercises = request.Exercises.Select(dto =>
+//         {
+//             var exercise = new WorkoutTemplateExercise
+//             {
+//                 Id = Guid.NewGuid(),
+//                 ExerciseId = dto.ExerciseId,
+//                 Order = dto.Order
+//             };
+//
+//             foreach (var s in dto.Sets)
+//             {
+//                 exercise.Sets.Add(new TemplateExerciseSet
+//                 {
+//                     SetOrder = s.SetOrder,
+//                     Reps = s.Reps,
+//                     RIR = s.RIR,
+//                     WorkoutTemplateExercise = exercise
+//                 });
+//             }
+//
+//             return exercise;
+//         }).ToList();
+//         
+//         var template = new WorkoutTemplate
+//         {
+//             Id = Guid.NewGuid(),
+//             UserId = userId.Value,
+//             Name = request.Name,
+//             Exercises = templateExercises
+//         };
+//         
+//         await _workoutTemplateRepository.AddWorkoutTemplate(template);
+//         _logger.LogInformation("Workout template created: {template} with {exercises} exercise(s)", template.Id, template.Exercises.Count);
+//         return Result<Guid>.Success(template.Id);
+//     }
+// }

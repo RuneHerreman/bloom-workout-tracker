@@ -1,6 +1,6 @@
-﻿namespace Bloom.Application.DTO.LogBook;
+﻿namespace Bloom.Application.Contracts.Data.LogBook;
 
-public record LoggedSetDTO(
+public record LoggedSetData(
     int? SetOrder,
     int? Reps,
     int? Weight,

@@ -4,6 +4,7 @@
     <Project Path="src/Bloom.Domain/Bloom.Domain.csproj" />
     <Project Path="src/Bloom.Infrastructure/Bloom.Infrastructure.csproj" />
     <Project Path="src/Bloom.Main/Bloom.Main.csproj" />
+    <Project Path="src\Bloom.Shared\Bloom.Shared.csproj" Type="Classic C#" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests\UnitTests\UnitTests.csproj" Type="Classic C#" />

@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bloom.Domain\Bloom.Domain.csproj" />
+    <ProjectReference Include="..\Bloom.Shared\Bloom.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Contracts\Data\" />
+    <Folder Include="Common\Exceptions\" />
+    <Folder Include="Common\Services\" />
   </ItemGroup>
 
 </Project>

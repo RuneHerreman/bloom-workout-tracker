@@ -1,6 +1,6 @@
-﻿namespace Bloom.Application.Commands;
-
-public class LogWorkoutCommand
-{
-    
-}
+﻿// namespace Bloom.Application.Commands;
+//
+// public class LogWorkoutCommand
+// {
+//     
+// }

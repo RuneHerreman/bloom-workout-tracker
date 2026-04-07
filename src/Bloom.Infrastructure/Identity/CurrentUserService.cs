@@ -1,7 +1,8 @@
 ﻿using System.Security.Claims;
+using Bloom.Application.Contracts.Ports;
 using Microsoft.AspNetCore.Http;
 
-namespace Bloom.Application.Common.Behaviours;
+namespace Bloom.Infrastructure.Identity;
 
 public class CurrentUserService : ICurrentUserService
 {
@@ -12,12 +13,12 @@ public class CurrentUserService : ICurrentUserService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public Guid? UserId 
+    public string? UserId 
     { 
         get 
         {
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(userId, out var id) ? id : null;
+            return Guid.TryParse(userId, out var id) ? id.ToString() : null;
         }
     }
 

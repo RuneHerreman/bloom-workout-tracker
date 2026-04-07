@@ -1,9 +1,8 @@
-﻿using Bloom.Application.Common.Behaviours;
-using Bloom.Domain.Users;
+﻿using Bloom.Domain.Users;
 
 namespace UnitTests.Mock;
 
-public class MockJwtGenerator : IJwtTokenGenerator
+public class MockJwtGenerator
 {
     public string GenerateToken(User user) => "fake-jwt-token-123";
 }

@@ -1,14 +1,26 @@
-﻿using Bloom.Application.DTO;
-using Bloom.Application.DTO.LogBook;
+﻿using Bloom.Application.Contracts.Data;
+using Bloom.Application.Contracts.Data.LogBook;
+using Bloom.Application.Contracts.Data.Templates;
+using Bloom.Domain.Users;
 
 namespace Bloom.Application.Contracts.Ports;
 
 public interface IGetAllExercisesQuery
 {
-    public Task<List<ExerciseDTO>> Fetch();
+    public Task<List<ExerciseData>> Fetch();
 }
 
 public interface IGetAllUserLogsQuery
 {
-    public Task<List<LoggedWorkoutDTO>> Fetch(Guid userId);
+    public Task<List<LoggedWorkoutData>> Fetch(UserId userId);
+}
+
+public interface IGetAllUserTemplatesQuery
+{
+    public Task<List<WorkoutTemplateData>> Fetch(UserId userId);
+}
+
+public interface IGetTemplateByIdQuery
+{
+    public Task<WorkoutTemplateData?> Fetch(Guid templateId, UserId userId);
 }
