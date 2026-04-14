@@ -21,8 +21,8 @@ public class RegisterUserController
 {
     public static async Task<Results<Created<RegisterResponse>, BadRequest>> Invoke(
         [FromBody] RegisterRequest input,
-        [FromServices] IUseCase<RegisterUserInput, RegisterUserOutput> registerUser,
-        IConfiguration configuration)
+        [FromServices] IUseCase<RegisterUserInput, RegisterUserOutput> registerUser
+    )
     {
         var result = await registerUser.Execute(new RegisterUserInput(
             input.Email,

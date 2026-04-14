@@ -44,4 +44,57 @@ public static class JwtProvider
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    public static Guid? GetUserId(string token)
+    {
+        var jwt = TryReadToken(token);
+        if (jwt is null)
+        {
+            return null;
+        }
+
+        var userIdClaim = jwt.Claims.FirstOrDefault(c =>
+            c.Type == ClaimTypes.NameIdentifier || c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+
+        return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
+    }
+
+    public static string? GetEmail(string token)
+    {
+        var jwt = TryReadToken(token);
+        if (jwt is null)
+        {
+            return null;
+        }
+
+        return jwt.Claims.FirstOrDefault(c =>
+            c.Type == ClaimTypes.Email || c.Type == JwtRegisteredClaimNames.Email)?.Value;
+    }
+
+    private static JwtSecurityToken? TryReadToken(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return null;
+        }
+
+        var normalizedToken = token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+            ? token["Bearer ".Length..].Trim()
+            : token;
+
+        var handler = new JwtSecurityTokenHandler();
+        if (!handler.CanReadToken(normalizedToken))
+        {
+            return null;
+        }
+
+        try
+        {
+            return handler.ReadJwtToken(normalizedToken);
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }

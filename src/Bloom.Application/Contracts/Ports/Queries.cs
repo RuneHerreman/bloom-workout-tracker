@@ -7,7 +7,7 @@ namespace Bloom.Application.Contracts.Ports;
 
 public interface IGetAllExercisesQuery
 {
-    public Task<List<ExerciseData>> Fetch();
+    public Task<IEnumerable<ExerciseData>> Fetch();
 }
 
 public interface IGetAllUserLogsQuery

@@ -5,6 +5,7 @@ using Bloom.Domain.Templates;
 using Bloom.Domain.Users;
 using Bloom.Infrastructure.Persistence;
 using Bloom.Infrastructure.Persistence.EntityFramework;
+using Bloom.Infrastructure.Persistence.EntityFramework.Queries;
 using Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,7 @@ public static class EFCoreServices
         return services
             .AddDbContext(configuration)
             .AddRepositories()
+            .AddQueries()
             .AddUnitOfWork();
     }
 
@@ -49,6 +51,12 @@ public static class EFCoreServices
             .AddScoped<IExerciseRepository, ExerciseRepository>()
             .AddScoped<ILogBookRepository, LogBookRepository>()
             .AddScoped<IWorkoutTemplateRepository, WorkoutTemplateRepository>();
+    }
+
+    public static IServiceCollection AddQueries(this IServiceCollection services)
+    {
+        return services
+            .AddScoped<IGetAllExercisesQuery, GetAllExercisesQuery>();
     }
 
     private static IServiceCollection AddDbContext(
