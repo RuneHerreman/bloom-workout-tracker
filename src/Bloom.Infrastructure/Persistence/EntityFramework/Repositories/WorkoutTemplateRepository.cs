@@ -1,47 +1,39 @@
 ﻿using Bloom.Domain.Templates;
 using Bloom.Domain.Users;
+using Microsoft.EntityFrameworkCore;
 
 namespace Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
 
-public class WorkoutTemplateRepository : IWorkoutTemplateRepository
+public sealed class WorkoutTemplateRepository(BloomDbContext context)
+    : EfCoreGenericRepository<WorkoutTemplate, WorkoutTemplateId>(context), IWorkoutTemplateRepository
 {
-    public Task<bool> Exists(WorkoutTemplateId id)
-    {
-        throw new NotImplementedException();
-    }
+    public Task AddWorkoutTemplate(WorkoutTemplate template) => Save(template);
 
-    public Task<WorkoutTemplate> ById(WorkoutTemplateId id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task Save(WorkoutTemplate aggregateRoot)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task Remove(WorkoutTemplate aggregateRoot)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task AddWorkoutTemplate(WorkoutTemplate template)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task DeleteWorkoutTemplate(WorkoutTemplate template)
-    {
-        throw new NotImplementedException();
-    }
+    public Task DeleteWorkoutTemplate(WorkoutTemplate template) => Remove(template);
 
     public Task<WorkoutTemplate?> GetWorkoutTemplateById(WorkoutTemplateId id, UserId userId)
     {
-        throw new NotImplementedException();
+        return _context.WorkoutTemplates
+            .Include(t => t.Exercises)
+            .ThenInclude(e => e.StrengthSets)
+            .Include(t => t.Exercises)
+            .ThenInclude(e => e.CardioSets)
+            .FirstOrDefaultAsync(t => t.Id.Equals(id) && t.UserId.Equals(userId));
     }
 
-    public Task UpdateWorkoutTemplate(WorkoutTemplateId templateId, string name, List<WorkoutTemplateExercise> newExercises, UserId userId)
+    public async Task UpdateWorkoutTemplate(
+        WorkoutTemplateId templateId,
+        string name,
+        List<WorkoutTemplateExercise> newExercises,
+        UserId userId)
     {
-        throw new NotImplementedException();
+        var template = await GetWorkoutTemplateById(templateId, userId);
+        if (template is null)
+            throw new InvalidOperationException("Workout template not found.");
+
+        template.UpdateName(name);
+        // Replace child collection to match requested exercise list.
+        template.Exercises.Clear();
+        template.Exercises.AddRange(newExercises);
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System.Text;
 using Bloom.Infrastructure.Persistence;
 using Bloom.Infrastructure.WebApi;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 
 namespace Bloom.Main.Modules.WebApi;
@@ -48,9 +50,49 @@ public static class Module
                     .AllowCredentials();
             });
         });
-        services.AddOpenApi();
+        services.AddOpenApi(options =>
+        {
+            options.AddDocumentTransformer((document, _, _) =>
+            {
+                document.Components ??= new OpenApiComponents();
+                document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+                document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Name = "Authorization",
+                    Description = "Enter a valid JWT bearer token."
+                };
+
+                return Task.CompletedTask;
+            });
+
+            options.AddOperationTransformer((operation, context, _) =>
+            {
+                var endpointMetadata = context.Description.ActionDescriptor.EndpointMetadata;
+                var requiresAuth = endpointMetadata.OfType<IAuthorizeData>().Any();
+                var allowsAnonymous = endpointMetadata.OfType<IAllowAnonymous>().Any();
+
+                if (!requiresAuth || allowsAnonymous)
+                {
+                    return Task.CompletedTask;
+                }
+
+                // Override any pre-existing empty security entries so auth is required in Scalar.
+                operation.Security =
+                [
+                    new OpenApiSecurityRequirement
+                    {
+                        [new OpenApiSecuritySchemeReference("Bearer")] = []
+                    }
+                ];
+
+                return Task.CompletedTask;
+            });
+        });
         services.AddAuthorization();
-        
         services.AddValidation();
         
         return services;
@@ -66,7 +108,14 @@ public static class Module
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
-            app.MapScalarApiReference();
+            app.MapScalarApiReference(options =>
+            {
+                options.Title = "Bloom Workout Tracker API";
+                options.Authentication = new ScalarAuthenticationOptions
+                {
+                    PreferredSecuritySchemes = ["Bearer"]
+                };
+            });
         }
 
         app.UseCors("AllowLocalhost");

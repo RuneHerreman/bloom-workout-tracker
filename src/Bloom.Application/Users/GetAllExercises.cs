@@ -7,7 +7,7 @@ using Bloom.Shared.Exceptions;
 namespace Bloom.Application.Users;
 
 public sealed record GetAlLExercisesInput(
-    Guid userId
+    Guid UserId
 );
 
 public class GetAllExercises(
@@ -17,7 +17,7 @@ public class GetAllExercises(
 {
     public async Task<IEnumerable<ExerciseData>> Execute(GetAlLExercisesInput input)
     {
-        var exists = await unitOfWork.Repo<IUserRepository>().Exists(new UserId(input.userId));;
+        var exists = await unitOfWork.Repo<IUserRepository>().Exists(new UserId(input.UserId));;
         
         if (!exists)
             throw new UserDoesNotExistError($"This user is not valid.");

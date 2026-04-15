@@ -56,7 +56,8 @@ public static class EFCoreServices
     public static IServiceCollection AddQueries(this IServiceCollection services)
     {
         return services
-            .AddScoped<IGetAllExercisesQuery, GetAllExercisesQuery>();
+            .AddScoped<IGetAllExercisesQuery, GetAllExercisesQuery>()
+            .AddScoped<IGetAllUserTemplatesQuery, GetAllUserTemplatesQuery>();
     }
 
     private static IServiceCollection AddDbContext(

@@ -1,4 +1,5 @@
 ﻿using Bloom.Infrastructure.WebApi.Controllers.Exercises;
+using Bloom.Infrastructure.WebApi.Controllers.Templates;
 using Bloom.Infrastructure.WebApi.Controllers.Users;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,8 @@ public static class Routes
 
         webApi.MapUserRoutes();
         webApi.MapExerciseRoutes();
+        webApi.MapTemplateRoutes();
+        
         return app;
     }
 
@@ -38,9 +41,27 @@ public static class Routes
 
         exerciseGroup.MapGet("/", GetAllExercisesController.Invoke)
             .WithTags("Exercises")
-            .WithDescription("Retrieves a list of all exercises.");
+            .WithDescription("Retrieves a list of all exercises.")
+            .RequireAuthorization();
         
         return exerciseGroup;
     }
 
+
+    private static RouteGroupBuilder MapTemplateRoutes(this IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder templateGroup = app.MapGroup("/templates");
+
+        templateGroup.MapPost("/", CreateTemplateController.Invoke)
+            .WithTags("Templates")
+            .WithDescription("Creates a new workout template for the authenticated user.")
+            .RequireAuthorization();
+        
+        templateGroup.MapGet("/", GetAllUserTemplatesController.Invoke)
+            .WithTags("Templates")
+            .WithDescription("Retrieves a list of workout templates for the authenticated user.")
+            .RequireAuthorization();
+        
+        return templateGroup;
+    }
 }

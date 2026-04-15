@@ -44,11 +44,13 @@ public class WorkoutTemplateExercise: AggregateRoot<WorkoutTemplateExerciseId>
     public void AddSet(TemplateStrengthSet set)
     {
         StrengthSets.Add(set);
+        ValidateState();
     }
 
     public void AddSet(TemplateCardioSet set)
     {
         CardioSets.Add(set);
+        ValidateState();
     }
 
     public override void ValidateState()
@@ -58,5 +60,8 @@ public class WorkoutTemplateExercise: AggregateRoot<WorkoutTemplateExerciseId>
 
         if (Order < 0)
             throw new InvalidOperationException("Order must be a non-negative integer.");
+
+        if (StrengthSets.Count > 0 && CardioSets.Count > 0)
+            throw new InvalidOperationException("An exercise cannot contain both strength and cardio sets.");
     }
 }
