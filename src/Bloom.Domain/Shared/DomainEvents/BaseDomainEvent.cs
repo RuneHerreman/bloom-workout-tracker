@@ -3,7 +3,7 @@ namespace Bloom.Domain.Shared.DomainEvents;
 public class BaseDomainEvent(
     string eventName,
     string aggregateName,
-    string boundedContext = nameof(Bloom.Domain),
+    string boundedContext = nameof(Bloom),
     string companyName = nameof(Bloom)
 ) : IDomainEvent
 {

@@ -53,6 +53,15 @@ public static class Asserts
         if (value <= threshold)
             throw new ArgumentException($"Value must be greater than {threshold}.", paramName);
     }
+    
+    public static void EnsureGreaterThan(
+        TimeSpan value, 
+        TimeSpan threshold
+    ) 
+    {
+        if (value <= threshold)
+            throw new ArgumentException($"Value must be greater than {threshold}.", nameof(value));
+    }
 
     public static void EnsureNotNegative(
         int value,

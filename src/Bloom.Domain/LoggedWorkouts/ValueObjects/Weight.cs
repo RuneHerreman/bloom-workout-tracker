@@ -4,9 +4,9 @@ namespace Bloom.Domain.LoggedWorkouts.ValueObjects;
 
 public record Weight: ValueObject
 {
-    public decimal Value { get; init; }
-    public WeightUnit Unit { get; init; }
-    
+    public decimal Value { get; }
+    public WeightUnit Unit { get; }
+
     private Weight() { }
 
     private Weight(decimal value, WeightUnit unit)
@@ -14,13 +14,11 @@ public record Weight: ValueObject
         Value = value;
         Unit = unit;
     }
-    
+
     public static Weight Create(decimal value, WeightUnit unit)
     {
         var weight = new Weight(decimal.Round(value, 2), unit);
-        
         weight.Validate();
-        
         return weight;
     }
 
@@ -28,7 +26,6 @@ public record Weight: ValueObject
     {
         Asserts.EnsureGreaterThan(Value, 0m);
     }
-    
 }
 
 public enum WeightUnit
