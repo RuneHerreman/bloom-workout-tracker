@@ -6,12 +6,12 @@ using Microsoft.EntityFrameworkCore;
 namespace Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
 
 public abstract class EfCoreGenericRepository<TAggregateRoot, TId>(
-    BloomDbContext context
+    DomainDbContext context
 ): IRepository<TAggregateRoot, TId> 
     where TAggregateRoot: AggregateRoot<TId> 
     where TId: struct, IEntityId
 {
-    protected readonly BloomDbContext _context = context;
+    protected readonly DomainDbContext _context = context;
     
     public virtual Task<bool> Exists(TId id)
     {

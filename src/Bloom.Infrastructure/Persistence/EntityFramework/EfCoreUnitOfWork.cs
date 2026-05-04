@@ -6,7 +6,7 @@ using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 namespace Bloom.Infrastructure.Persistence.EntityFramework;
 
 public sealed class EfCoreUnitOfWork(
-    BloomDbContext dbContext,
+    DomainDbContext dbContext,
     ILogger<EfCoreUnitOfWork> logger
 ): IUnitOfWork
 {

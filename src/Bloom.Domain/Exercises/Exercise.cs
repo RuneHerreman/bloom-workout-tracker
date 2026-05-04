@@ -33,15 +33,16 @@ public class Exercise: AggregateRoot<ExerciseId>
         string name,
         string description,
         ExerciseType type,
-        MuscleGroup muscleGroup
+        string muscleGroup,
+        ExerciseId? id = null
     )
     {
         var exercise = new Exercise(
-            EntityId.New<ExerciseId>(),
+            id ?? EntityId.New<ExerciseId>(),
             ExerciseName.Create(name),
             ExerciseDescription.Create(description),
             type,
-            muscleGroup
+            MuscleGroup.Create(muscleGroup)
         );
         
         exercise.ValidateState();

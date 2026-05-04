@@ -14,11 +14,14 @@
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.5" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Persistence\EntityFramework\Configuration\Data\" />
     <Folder Include="Persistence\EntityFramework\Queries\" />
     <Folder Include="WebApi\Controllers\" />
   </ItemGroup>
