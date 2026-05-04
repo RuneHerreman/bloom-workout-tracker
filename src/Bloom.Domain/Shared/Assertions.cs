@@ -43,6 +43,16 @@ public static class Asserts
         if (value <= threshold)
             throw new ArgumentException($"Value must be greater than {threshold}.", paramName);
     }
+    
+    public static void EnsureGreaterThan(
+        decimal value,
+        decimal threshold,
+        [CallerArgumentExpression(nameof(value))] string? paramName = ""
+    )
+    {
+        if (value <= threshold)
+            throw new ArgumentException($"Value must be greater than {threshold}.", paramName);
+    }
 
     public static void EnsureNotNegative(
         int value,
