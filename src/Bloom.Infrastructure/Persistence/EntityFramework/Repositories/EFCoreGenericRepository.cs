@@ -1,4 +1,6 @@
-﻿using Bloom.Domain.Shared;
+﻿using Aornis;
+using Bloom.Domain.Shared;
+using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
@@ -15,12 +17,12 @@ public abstract class EfCoreGenericRepository<TAggregateRoot, TId>(
     {
         return _context
             .Set<TAggregateRoot>()
-            .AnyAsync(e => e.Id.Equals(id));
+            .AnyAsync(aggregateRoot => aggregateRoot.Id.Equals(id));
     }
 
-    public virtual Task<TAggregateRoot> ById(TId id)
+    public virtual Task<Optional<TAggregateRoot>> ById(TId id)
     {
-        return Task.FromResult(_context.Set<TAggregateRoot>().Find(id))!;
+        return Task.FromResult(Optional.Of(_context.Set<TAggregateRoot>().Find(id)));
     }
 
     public virtual Task Save(TAggregateRoot aggregateRoot)

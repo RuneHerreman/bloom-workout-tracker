@@ -1,7 +1,4 @@
-﻿using Bloom.Infrastructure.WebApi.Controllers.Exercises;
-using Bloom.Infrastructure.WebApi.Controllers.Templates;
-using Bloom.Infrastructure.WebApi.Controllers.Users;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
@@ -24,13 +21,6 @@ public static class Routes
     {
         RouteGroupBuilder userGroup = app.MapGroup("/users");
         
-        userGroup.MapPost("/register", RegisterUserController.Invoke)
-            .WithTags("Users")
-            .WithDescription("Registers a new user and returns an authentication token.");
-        
-        userGroup.MapPost("/login", LoginUserController.Invoke)
-            .WithTags("Users")
-            .WithDescription("Authenticates a user and returns an authentication token.");
         
         return userGroup;
     }
@@ -38,11 +28,6 @@ public static class Routes
     private static RouteGroupBuilder MapExerciseRoutes(this IEndpointRouteBuilder app)
     {
         RouteGroupBuilder exerciseGroup = app.MapGroup("/exercises");
-
-        exerciseGroup.MapGet("/", GetAllExercisesController.Invoke)
-            .WithTags("Exercises")
-            .WithDescription("Retrieves a list of all exercises.")
-            .RequireAuthorization();
         
         return exerciseGroup;
     }
@@ -51,16 +36,6 @@ public static class Routes
     private static RouteGroupBuilder MapTemplateRoutes(this IEndpointRouteBuilder app)
     {
         RouteGroupBuilder templateGroup = app.MapGroup("/templates");
-
-        templateGroup.MapPost("/", CreateTemplateController.Invoke)
-            .WithTags("Templates")
-            .WithDescription("Creates a new workout template for the authenticated user.")
-            .RequireAuthorization();
-        
-        templateGroup.MapGet("/", GetAllUserTemplatesController.Invoke)
-            .WithTags("Templates")
-            .WithDescription("Retrieves a list of workout templates for the authenticated user.")
-            .RequireAuthorization();
         
         return templateGroup;
     }

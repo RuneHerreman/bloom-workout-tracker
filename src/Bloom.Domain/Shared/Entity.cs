@@ -1,17 +1,18 @@
-﻿namespace Bloom.Domain.Shared;
+namespace Bloom.Domain.Shared;
 
+#pragma warning disable S4035 
 public abstract class Entity<TId> : IEquatable<Entity<TId>>
     where TId : struct, IEntityId
 {
-    public TId Id { get; protected set; }
-    
-    protected Entity() { }
-    
+    public TId Id { get; private set; }
+
     protected Entity(TId id)
     {
         Id = id;
     }
-    
+
+    protected Entity() { }
+
     public override bool Equals(object? obj)
     {
         if (obj is null) return false;
@@ -27,7 +28,6 @@ public abstract class Entity<TId> : IEquatable<Entity<TId>>
         if (ReferenceEquals(this, other)) return true;
         if (other.GetType() != GetType()) return false;
 
-        // Optimized: Compare the primitive GUID values directly
         return Id.Value.Equals(other.Id.Value);
     }
 
@@ -50,3 +50,4 @@ public abstract class Entity<TId> : IEquatable<Entity<TId>>
 
     public abstract void ValidateState();
 }
+#pragma warning restore S4035

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Domain.Shared;
+using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 
 namespace Bloom.Infrastructure.Persistence.EntityFramework;
 

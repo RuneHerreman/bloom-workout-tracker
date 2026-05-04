@@ -1,4 +1,4 @@
-﻿namespace Bloom.Application.Contracts.Ports;
+namespace Bloom.Application.Contracts.Ports;
 
 public interface IUseCase<in Input, Output>
 {

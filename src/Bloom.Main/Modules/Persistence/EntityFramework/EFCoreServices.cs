@@ -1,11 +1,7 @@
 ﻿using Bloom.Application.Contracts.Ports;
-using Bloom.Domain.Exercises;
-using Bloom.Domain.LogBook;
-using Bloom.Domain.Templates;
-using Bloom.Domain.Users;
 using Bloom.Infrastructure.Persistence;
 using Bloom.Infrastructure.Persistence.EntityFramework;
-using Bloom.Infrastructure.Persistence.EntityFramework.Queries;
+using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 using Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,10 +31,7 @@ public static class EFCoreServices
                 EfCoreUnitOfWork uow = new(context, logger);
                 
                 // Register repositories with the unit of work
-                uow.RegisterRepository(sp.GetRequiredService<IUserRepository>());
-                uow.RegisterRepository(sp.GetRequiredService<IExerciseRepository>());
-                uow.RegisterRepository(sp.GetRequiredService<ILogBookRepository>());
-                uow.RegisterRepository(sp.GetRequiredService<IWorkoutTemplateRepository>());
+                // uow.RegisterRepository(sp.GetRequiredService<IUserRepository>());
 
                 return uow;
             });
@@ -47,17 +40,13 @@ public static class EFCoreServices
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         return services
-            .AddScoped<IUserRepository, UserRepository>()
-            .AddScoped<IExerciseRepository, ExerciseRepository>()
-            .AddScoped<ILogBookRepository, LogBookRepository>()
-            .AddScoped<IWorkoutTemplateRepository, WorkoutTemplateRepository>();
+            // .AddScoped<IExerciseRepository, ExerciseRepository>();
     }
 
     public static IServiceCollection AddQueries(this IServiceCollection services)
     {
         return services
-            .AddScoped<IGetAllExercisesQuery, GetAllExercisesQuery>()
-            .AddScoped<IGetAllUserTemplatesQuery, GetAllUserTemplatesQuery>();
+            // .AddScoped<IGetAllUserTemplatesQuery, GetAllUserTemplatesQuery>();
     }
 
     private static IServiceCollection AddDbContext(

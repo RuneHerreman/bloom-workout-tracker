@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
 
 namespace Bloom.Domain.Shared;
@@ -24,7 +24,7 @@ public static class EntityId
     private static Func<Guid, TId> CreateFactory<TId>(Type type) where TId : struct
     {
         var constructor = type.GetConstructor([typeof(Guid)])
-                          ?? throw new InvalidOperationException($"Type {type.Name} must have a constructor accepting a Guid.");
+            ?? throw new InvalidOperationException($"Type {type.Name} must have a constructor accepting a Guid.");
 
         var param = Expression.Parameter(typeof(Guid), "value");
         var newExpr = Expression.New(constructor, param);

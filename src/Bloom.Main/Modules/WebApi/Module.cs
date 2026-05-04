@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Bloom.Infrastructure.Persistence;
+using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 using Bloom.Infrastructure.WebApi;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;

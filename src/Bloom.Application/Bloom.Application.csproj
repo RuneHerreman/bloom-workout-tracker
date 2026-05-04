@@ -26,8 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\Exceptions\" />
-    <Folder Include="Common\Services\" />
+    <Folder Include="Contracts\Data\" />
   </ItemGroup>
 
 </Project>

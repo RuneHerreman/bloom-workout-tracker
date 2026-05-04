@@ -1,13 +1,16 @@
-﻿namespace Bloom.Domain.Shared;
+using Aornis;
+using Bloom.Domain.Shared;
 
-public interface IRepository { }
+namespace Bloom.Domain.Shared;
 
-public interface IRepository<TAggregateRoot, TId>: IRepository
-    where TAggregateRoot: AggregateRoot<TId>
-    where TId: struct, IEntityId
+public interface IRepository {}
+
+public interface IRepository<TAggregateRoot, TId> : IRepository
+    where TAggregateRoot : AggregateRoot<TId>
+    where TId : struct, IEntityId
 {
     Task<bool> Exists(TId id);
-    Task<TAggregateRoot> ById(TId id);
+    Task<Optional<TAggregateRoot>> ById(TId id);
     Task Save(TAggregateRoot aggregateRoot);
     Task Remove(TAggregateRoot aggregateRoot);
 }
