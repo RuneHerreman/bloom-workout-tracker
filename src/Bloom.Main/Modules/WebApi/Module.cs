@@ -103,7 +103,7 @@ public static class Module
     {
         // Auto-create tables
         using var scope = app.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<BloomDbContext>();
+        var context = scope.ServiceProvider.GetRequiredService<DomainDbContext>();
         await context.Database.EnsureCreatedAsync();
 
         if (app.Environment.IsDevelopment())

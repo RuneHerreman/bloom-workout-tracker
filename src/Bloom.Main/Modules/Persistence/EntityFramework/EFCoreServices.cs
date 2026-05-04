@@ -1,8 +1,14 @@
 ﻿using Bloom.Application.Contracts.Ports;
+using Bloom.Domain.Exercises;
+using Bloom.Domain.LoggedWorkouts;
+using Bloom.Domain.Users;
+using Bloom.Domain.WorkoutTemplates;
 using Bloom.Infrastructure.Persistence;
 using Bloom.Infrastructure.Persistence.EntityFramework;
 using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
+using Bloom.Infrastructure.Persistence.EntityFramework.Interceptors;
 using Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
+using Bloom.Infrastructure.Persistence.EntityFramework.Seeders;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bloom.Main.Modules.Persistence.EntityFramework;
@@ -12,6 +18,8 @@ public static class EFCoreServices
     public static IServiceCollection AddEFCoreServices(this IServiceCollection services, IConfiguration configuration)
     {
         return services
+            .AddInterceptors()
+            .AddSeeders()
             .AddDbContext(configuration)
             .AddRepositories()
             .AddQueries()
@@ -26,7 +34,7 @@ public static class EFCoreServices
                 ILogger<EfCoreUnitOfWork> logger =
                     sp.GetRequiredService<ILogger<EfCoreUnitOfWork>>();
 
-                BloomDbContext context = sp.GetRequiredService<BloomDbContext>();
+                DomainDbContext context = sp.GetRequiredService<DomainDbContext>();
 
                 EfCoreUnitOfWork uow = new(context, logger);
                 
@@ -40,13 +48,31 @@ public static class EFCoreServices
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         return services
-            // .AddScoped<IExerciseRepository, ExerciseRepository>();
+            .AddScoped<IUserRepository, UserRepository>()
+            .AddScoped<IWorkoutTemplateRepository, WorkoutTemplateRepository>()
+            .AddScoped<IExerciseRepository, ExerciseRepository>()
+            .AddScoped<ILoggedWorkoutRepository, LoggedWorkoutRepository>();
     }
 
     public static IServiceCollection AddQueries(this IServiceCollection services)
     {
+        return services;
+        // .AddScoped<IGetAllUserTemplatesQuery, GetAllUserTemplatesQuery>();
+    }
+    
+    private static IServiceCollection AddSeeders(
+        this IServiceCollection services
+    )
+    {
+        return services.AddScoped<DomainDbSeeder>();
+    }
+    
+    private static IServiceCollection AddInterceptors(
+        this IServiceCollection services
+    )
+    {
         return services
-            // .AddScoped<IGetAllUserTemplatesQuery, GetAllUserTemplatesQuery>();
+            .AddScoped<PublishDomainEventsInterceptor>();
     }
 
     private static IServiceCollection AddDbContext(
@@ -55,6 +81,6 @@ public static class EFCoreServices
     )
     {
         string connectionString = configuration.GetConnectionString("DefaultConnection")!;
-        return services.AddDbContext<BloomDbContext>(options => options.UseNpgsql(connectionString));
+        return services.AddDbContext<DomainDbContext>(options => options.UseNpgsql(connectionString));
     }
 }
