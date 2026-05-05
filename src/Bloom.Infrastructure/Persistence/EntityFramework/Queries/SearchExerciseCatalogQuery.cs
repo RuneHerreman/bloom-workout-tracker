@@ -12,7 +12,7 @@ public class SearchExerciseCatalogQuery(QueryDbContext context): ISearchExercise
     {
         return await context.Exercises
             .Where(filter)
-            .OrderBy(e => e.TargetMuscles)
+            .OrderBy(e => e.Name)
             .ToListAsync();
     }
 }

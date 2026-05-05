@@ -18,6 +18,7 @@ public static class ApplicationModule
         // -------------------- Register query use cases --------------------
         // ------------------------------------------------------------------
         services.AddScoped<IUseCase<FindExerciseByIdInput, FindExerciseByIdOutput>, FindExerciseById>();
+        services.AddScoped<IUseCase<SearchExerciseCatalogInput, SearchExerciseCatalogOutput>, SearchExerciseCatalog>();
         
         return services;
     }

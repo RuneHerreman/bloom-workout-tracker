@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
+using Bloom.Infrastructure.Persistence.EntityFramework.Seeders;
+using Bloom.Main.Modules.Persistence.EntityFramework;
 
 namespace Bloom.Main.Modules.WebApi;
 
@@ -105,6 +107,9 @@ public static class Module
         using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<DomainDbContext>();
         await context.Database.EnsureCreatedAsync();
+
+        // Seed data
+        await app.SeedData();
 
         if (app.Environment.IsDevelopment())
         {

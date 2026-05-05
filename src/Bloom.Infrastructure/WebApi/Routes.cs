@@ -35,6 +35,9 @@ public static class Routes
             .WithName(nameof(FindExerciseByIdController))
             .WithDescription("Find an exercise by its unique identifier.");
         
+        exerciseGroup.MapGet("", SearchExerciseCatalogController.Invoke)
+            .WithName(nameof(SearchExerciseCatalogController))
+            .WithDescription("Search for exercises based on specified criteria.");
         
         return exerciseGroup;
     }

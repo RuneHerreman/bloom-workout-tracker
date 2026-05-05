@@ -1,5 +1,5 @@
 ﻿using Bloom.Application.Contracts;
-using Bloom.Application.Contracts.Filters;
+using Bloom.Application.Contracts.Data.Filters;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Domain.Exercises;
 using Bloom.Domain.Shared;

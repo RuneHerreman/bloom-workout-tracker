@@ -28,7 +28,7 @@ public abstract class DomainDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
-            .ApplyConfiguration(new UserConfiguration())
+            .ApplyConfiguration(new ExerciseConfiguration())
             .ApplyConfiguration(new LoggedWorkoutConfiguration())
             .ApplyConfiguration(new WorkoutTemplateConfiguration())
             .ApplyConfiguration(new UserConfiguration());

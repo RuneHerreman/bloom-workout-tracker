@@ -2,7 +2,7 @@
 using Bloom.Domain.Exercises;
 using Bloom.Domain.Exercises.Enums;
 
-namespace Bloom.Application.Contracts.Filters;
+namespace Bloom.Application.Contracts.Data.Filters;
 
 public static class ExerciseDataFilters
 {
@@ -18,6 +18,9 @@ public static class ExerciseDataFilters
         var cleanTypeStrings = types is { Count: > 0 }
             ? types.Select(t => t.ToString()).ToList()
             : null;
+
+        if (cleanName == null && cleanMuscleGroups == null && cleanTypeStrings == null)
+            return exercise => true;
 
         return exercise =>
             (cleanName == null || exercise.Name.ToLower().Contains(cleanName)) &&

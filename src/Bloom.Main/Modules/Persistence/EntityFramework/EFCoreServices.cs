@@ -71,6 +71,16 @@ public static class EFCoreServices
             .AddScoped<ISearchExerciseCatalogQuery, SearchExerciseCatalogQuery>();
     }
     
+    public static async Task<WebApplication> SeedData(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        DomainDbSeeder seeder = scope.ServiceProvider.GetRequiredService<DomainDbSeeder>();
+        
+        await seeder.Seed();
+
+        return app;
+    }
+
     private static IServiceCollection AddSeeders(
         this IServiceCollection services
     )
@@ -97,7 +107,13 @@ public static class EFCoreServices
         IConfiguration configuration
     )
     {
-        string databaseProvider = configuration.GetValue<string>("DefaultConnection:Provider")!;
+        string? databaseProvider = configuration.GetValue<string>("Database:Provider")
+                                  ?? configuration.GetValue<string>("DefaultConnection:Provider");
+
+        if (string.IsNullOrWhiteSpace(databaseProvider))
+            throw new InvalidOperationException(
+                "Missing database provider configuration. Configure either 'Database:Provider' or 'DefaultConnection:Provider'."
+            );
         switch (databaseProvider)
         {
             case "PostgreSQL":

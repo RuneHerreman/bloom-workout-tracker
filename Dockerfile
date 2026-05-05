@@ -18,6 +18,13 @@ RUN dotnet publish "src/Bloom.Main/Bloom.Main.csproj" -c Release -o /app/publish
 
 # Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+
+# Npgsql may attempt to load GSSAPI/Kerberos native libs (even when you don't explicitly use Kerberos).
+# The base ASP.NET image doesn't include them.
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+	&& rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 EXPOSE 5000
 COPY --from=build /app/publish .

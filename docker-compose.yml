@@ -3,17 +3,19 @@ services:
     build: .
     ports:
       - "8080:5000"
+    environment:
+      - Database__Username=${POSTGRES_USER}
+      - Database__Password=${POSTGRES_PASSWORD}
     env_file:
       - .env
     depends_on:
-      postgres:
+      bloom-db:
         condition: service_healthy
     networks:
       - bloom-network
 
-  postgres:
+  bloom-db:
     image: postgres:16
-    container_name: bloom-db
     env_file:
       - .env
     ports:
