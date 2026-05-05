@@ -5,31 +5,36 @@ namespace Bloom.Domain.LoggedWorkouts;
 
 public readonly record struct LoggedExerciseId(Guid Value) : IEntityId;
 
-public class LoggedExercise: Entity<LoggedExerciseId>
+public class LoggedExercise : Entity<LoggedExerciseId>
 {
-    private readonly List<LoggedSet> _sets = new();
-    
+    private readonly List<LoggedStrengthSet> _strengthSets = [];
+    private readonly List<LoggedCardioSet> _cardioSets = [];
+
     public ExerciseId ExerciseId { get; private set; }
-    public IReadOnlyList<LoggedSet> Sets => _sets.AsReadOnly();
-    
-    private LoggedExercise() {}
-    
-    private LoggedExercise(LoggedExerciseId id, ExerciseId exerciseId, List<LoggedSet> sets) : base(id)
+    public IReadOnlyList<LoggedStrengthSet> StrengthSets => _strengthSets.AsReadOnly();
+    public IReadOnlyList<LoggedCardioSet> CardioSets => _cardioSets.AsReadOnly();
+    public IReadOnlyList<LoggedSet> Sets => [.._strengthSets, .._cardioSets];
+
+    private LoggedExercise() { }
+
+    private LoggedExercise(
+        LoggedExerciseId id,
+        ExerciseId exerciseId,
+        List<LoggedStrengthSet> strengthSets,
+        List<LoggedCardioSet> cardioSets) : base(id)
     {
         ExerciseId = exerciseId;
-        _sets = sets;
+        _strengthSets = strengthSets;
+        _cardioSets = cardioSets;
     }
 
-    public static LoggedExercise Create(ExerciseId exerciseId, List<LoggedSet> sets)
+    public static LoggedExercise Create(ExerciseId exerciseId, List<LoggedStrengthSet> strengthSets, List<LoggedCardioSet> cardioSets)
     {
-        var id = EntityId.New<LoggedExerciseId>();
-        var loggedExercise = new LoggedExercise(id, exerciseId, sets);
-        
+        var loggedExercise = new LoggedExercise(EntityId.New<LoggedExerciseId>(), exerciseId, strengthSets, cardioSets);
         loggedExercise.ValidateState();
-        
         return loggedExercise;
     }
-    
+
     public override void ValidateState()
     {
         Asserts.EnsureNotEmpty(ExerciseId);
