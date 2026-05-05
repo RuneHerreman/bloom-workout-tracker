@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bloom.Infrastructure.WebApi.Controllers.Exercises;
 
 public sealed record SearchExerciseCatalogRequest(
-    [FromQuery] [MinLength(1), MaxLength(128)] string? Name,
-    [FromQuery] [MinLength(1), MaxLength(128)] string[]? TargetMuscleGroups,
-    [FromQuery] [MinLength(1), MaxLength(128)] string[]? ExerciseTypes,
+    [FromQuery] string? Name,
+    [FromQuery] string[]? TargetMuscleGroups,
+    [FromQuery] string[]? ExerciseTypes,
     [FromServices] IUseCase<SearchExerciseCatalogInput, SearchExerciseCatalogOutput> UseCase
 );
 
