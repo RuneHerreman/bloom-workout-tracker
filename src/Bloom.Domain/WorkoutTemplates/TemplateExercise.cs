@@ -5,48 +5,34 @@ namespace Bloom.Domain.WorkoutTemplates;
 
 public readonly record struct TemplateExerciseId(Guid Value) : IEntityId;
 
-public class TemplateExercise: Entity<TemplateExerciseId>
+public class TemplateExercise : Entity<TemplateExerciseId>
 {
-    private readonly List<PlannedCardioSet> _plannedCardioSets = [];
-    private readonly List<PlannedStrengthSet> _plannedStrengthSets = [];
-    
+    private readonly List<PlannedSet> _sets = [];
+
     public ExerciseId ExerciseId { get; private set; }
-    public IEnumerable<PlannedCardioSet> PlannedCardioSets => _plannedCardioSets.AsReadOnly();
-    public IEnumerable<PlannedStrengthSet> PlannedStrengthSets => _plannedStrengthSets.AsReadOnly();
-    public IEnumerable<PlannedSet> PlannedSets => [.._plannedCardioSets, .._plannedStrengthSets];
+    public int Order { get; private set; }
+    public IReadOnlyList<PlannedSet> Sets => _sets.AsReadOnly();
+
     private TemplateExercise() { }
-    
-    private TemplateExercise(
-        TemplateExerciseId id, 
-        ExerciseId exerciseId, 
-        List<PlannedCardioSet> plannedCardioSets,
-        List<PlannedStrengthSet> plannedStrengthSets) : base(id)
+
+    private TemplateExercise(TemplateExerciseId id, ExerciseId exerciseId, int order, List<PlannedSet> sets) : base(id)
     {
         ExerciseId = exerciseId;
-        _plannedCardioSets = plannedCardioSets;
-        _plannedStrengthSets = plannedStrengthSets;
+        Order = order;
+        _sets = sets;
     }
 
-    public static TemplateExercise Create(
-        ExerciseId exerciseId, 
-        List<PlannedCardioSet> plannedCardioSets,
-        List<PlannedStrengthSet> plannedStrengthSets,
-        TemplateExerciseId? templateExerciseId = null)
+    public static TemplateExercise Create(ExerciseId exerciseId, int order, List<PlannedSet> sets, TemplateExerciseId? id = null)
     {
-        var templateExercise = new TemplateExercise(
-            templateExerciseId ?? EntityId.New<TemplateExerciseId>(),
-            exerciseId,
-            plannedCardioSets,
-            plannedStrengthSets);
-        
-        templateExercise.ValidateState();
-        return templateExercise;
+        var te = new TemplateExercise(id ?? EntityId.New<TemplateExerciseId>(), exerciseId, order, sets);
+        te.ValidateState();
+        return te;
     }
-    
-    
+
     public override void ValidateState()
     {
         Asserts.EnsureNotEmpty(ExerciseId);
-        Asserts.EnsureNotEmpty(PlannedSets);
+        Asserts.EnsureNotNegative(Order);
+        Asserts.EnsureNotEmpty(_sets);
     }
 }

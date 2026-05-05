@@ -9,35 +9,39 @@ public class WorkoutTemplateConfiguration: IEntityTypeConfiguration<WorkoutTempl
     public void Configure(EntityTypeBuilder<WorkoutTemplate> builder)
     {
         builder.ToTable("WorkoutTemplates");
-        
-        builder.HasKey(wt => wt.Id);
-        builder.Property(wt => wt.Id).ValueGeneratedNever();
-        
-        builder.Property(wt => wt.UserId).IsRequired();
-        builder.Property(wt => wt.Name).IsRequired();
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).ValueGeneratedNever();
 
-        builder.ComplexCollection(wt => wt.TemplateExercises, teBuilder =>
+        builder.Property(x => x.UserId).IsRequired();
+        builder.Property(x => x.Name).IsRequired();
+
+        builder.OwnsMany(x => x.TemplateExercises, exercises =>
         {
-            teBuilder.ToJson();
-            teBuilder.Property(te => te.ExerciseId).IsRequired();
-            teBuilder.Ignore(te => te.PlannedSets);
+            exercises.ToJson();
 
-            teBuilder.ComplexCollection(te => te.PlannedStrengthSets, psBuilder =>
-            {
-                psBuilder.Property(ps => ps.Id).IsRequired();
-                psBuilder.Property(ps => ps.Reps).IsRequired();
-            });
+            exercises.Property(x => x.Id).IsRequired();
+            exercises.Property(x => x.ExerciseId).IsRequired();
+            exercises.Property(x => x.Order).IsRequired();
 
-            teBuilder.ComplexCollection(te => te.PlannedCardioSets, peBuilder =>
+            exercises.OwnsMany(x => x.Sets, sets =>
             {
-                peBuilder.Property(pe => pe.Id).IsRequired();
-                peBuilder.ComplexProperty(pe => pe.Distance, dBuilder =>
+                sets.Property(x => x.Id).IsRequired();
+                sets.Property(x => x.Type).HasConversion<int>().IsRequired();
+                sets.Property(x => x.Order).IsRequired();
+
+                sets.Property(x => x.Duration).IsRequired(false);
+                sets.Property(x => x.Reps).IsRequired(false);
+
+                // Multi-property VO => owned
+                sets.OwnsOne(x => x.Distance, d =>
                 {
-                    dBuilder.Property(d => d.Value).IsRequired();
-                    dBuilder.Property(d => d.Unit).IsRequired();
-                }).IsRequired();
-                peBuilder.Property(pe => pe.Duration).IsRequired();
+                    d.Property(p => p.Value);
+                    d.Property(p => p.Unit).HasConversion<int>();
+                });
             });
         });
+
+        builder.Navigation(x => x.TemplateExercises)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

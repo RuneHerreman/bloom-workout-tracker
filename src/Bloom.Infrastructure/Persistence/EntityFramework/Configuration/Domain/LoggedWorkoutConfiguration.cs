@@ -22,11 +22,13 @@ public class LoggedWorkoutConfiguration : IEntityTypeConfiguration<LoggedWorkout
 
             leBuilder.Property(le => le.Id).IsRequired();
             leBuilder.Property(le => le.ExerciseId).IsRequired();
+            leBuilder.Property(le => le.Order).IsRequired();
 
             leBuilder.OwnsMany(le => le.Sets, sets =>
             {
                 sets.Property(s => s.Id).IsRequired();
                 sets.Property(s => s.Type).HasConversion<string>().IsRequired();
+                sets.Property(s => s.Order).IsRequired();
 
                 sets.Property(x => x.Duration).IsRequired(false);
                 sets.Property(x => x.Reps).IsRequired(false);    

@@ -9,6 +9,7 @@ public readonly record struct LoggedSetId(Guid Value) : IEntityId;
 public class LoggedSet : Entity<LoggedSetId>
 {
     public ExerciseType Type { get; private set; }
+    public int Order { get; private set; }
 
     // Cardio fields (required when Type == Cardio)
     public Duration? Duration { get; private set; }
@@ -21,14 +22,15 @@ public class LoggedSet : Entity<LoggedSetId>
 
     private LoggedSet() { }
 
-    private LoggedSet(LoggedSetId id, ExerciseType type) : base(id)
+    private LoggedSet(LoggedSetId id, ExerciseType type, int order) : base(id)
     {
         Type = type;
+        Order = order;
     }
 
-    public static LoggedSet CreateCardio(TimeSpan duration, decimal distance, DistanceUnit unit)
+    public static LoggedSet CreateCardio(int order, TimeSpan duration, decimal distance, DistanceUnit unit)
     {
-        var set = new LoggedSet(EntityId.New<LoggedSetId>(), ExerciseType.Cardio)
+        var set = new LoggedSet(EntityId.New<LoggedSetId>(), ExerciseType.Cardio, order)
         {
             Duration = ValueObjects.Duration.Create(duration),
             Distance = ValueObjects.Distance.Create(distance, unit),
@@ -42,14 +44,15 @@ public class LoggedSet : Entity<LoggedSetId>
         return set;
     }
 
-    public static LoggedSet CreateStrength(int reps, decimal weight, WeightUnit unit, int rir)
-        => CreateStrengthLike(ExerciseType.Strength, reps, weight, unit, rir);
+    public static LoggedSet CreateStrength(int order, int reps, decimal weight, WeightUnit unit, int rir)
+        => CreateStrengthLike(ExerciseType.Strength, order, reps, weight, unit, rir);
 
-    public static LoggedSet CreatePlyometric(int reps, decimal weight, WeightUnit unit, int rir)
-        => CreateStrengthLike(ExerciseType.Plyometric, reps, weight, unit, rir);
+    public static LoggedSet CreatePlyometric(int order, int reps, decimal weight, WeightUnit unit, int rir)
+        => CreateStrengthLike(ExerciseType.Plyometric, order, reps, weight, unit, rir);
 
     private static LoggedSet CreateStrengthLike(
         ExerciseType type,
+        int order,
         int reps,
         decimal weight,
         WeightUnit unit,
@@ -58,7 +61,7 @@ public class LoggedSet : Entity<LoggedSetId>
         if (type is not (ExerciseType.Strength or ExerciseType.Plyometric))
             throw new ArgumentOutOfRangeException(nameof(type), type, "Type must be Strength or Plyometric.");
 
-        var set = new LoggedSet(EntityId.New<LoggedSetId>(), type)
+        var set = new LoggedSet(EntityId.New<LoggedSetId>(), type, order)
         {
             Reps = ValueObjects.Reps.Create(reps),
             Weight = ValueObjects.Weight.Create(weight, unit),
@@ -74,6 +77,8 @@ public class LoggedSet : Entity<LoggedSetId>
 
     public override void ValidateState()
     {
+        Asserts.EnsureNotNegative(Order);
+
         switch (Type)
         {
             case ExerciseType.Cardio:
