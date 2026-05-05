@@ -6,34 +6,36 @@ namespace Bloom.Domain.Exercises;
 
 public readonly record struct ExerciseId(Guid Value) : IEntityId;
 
-public class Exercise: AggregateRoot<ExerciseId>
+public class Exercise : AggregateRoot<ExerciseId>
 {
+    private readonly List<TargetMuscle> _targetMuscles = [];
+
     public ExerciseName Name { get; private set; }
     public ExerciseDescription Description { get; private set; }
     public ExerciseType Type { get; private set; }
-    public MuscleGroup MuscleGroup { get; private set; }
-    
-    private Exercise() {}
+    public IReadOnlyList<TargetMuscle> TargetMuscles => _targetMuscles.AsReadOnly();
+
+    private Exercise() { }
 
     private Exercise(
-        ExerciseId  id,  
+        ExerciseId id,
         ExerciseName name,
         ExerciseDescription description,
         ExerciseType type,
-        MuscleGroup muscleGroup
+        List<TargetMuscle> targetMuscles
     ) : base(id)
     {
         Name = name;
         Description = description;
         Type = type;
-        MuscleGroup = muscleGroup;
+        _targetMuscles = targetMuscles;
     }
 
     public static Exercise Create(
         string name,
         string description,
         ExerciseType type,
-        string muscleGroup,
+        IEnumerable<string> muscleGroups,
         ExerciseId? id = null
     )
     {
@@ -42,17 +44,13 @@ public class Exercise: AggregateRoot<ExerciseId>
             ExerciseName.Create(name),
             ExerciseDescription.Create(description),
             type,
-            MuscleGroup.Create(muscleGroup)
+            muscleGroups.Select(TargetMuscle.Create).ToList()
         );
-        
+
         exercise.ValidateState();
-        
-        return exercise;;
+
+        return exercise;
     }
-    
-    
-    public override void ValidateState()
-    {
-        
-    }
+
+    public override void ValidateState() { }
 }
