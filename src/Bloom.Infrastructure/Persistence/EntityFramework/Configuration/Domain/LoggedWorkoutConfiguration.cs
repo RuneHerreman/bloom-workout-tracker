@@ -16,32 +16,34 @@ public class LoggedWorkoutConfiguration : IEntityTypeConfiguration<LoggedWorkout
         builder.Property(lw => lw.UserId).IsRequired();
         builder.Property(lw => lw.LoggedAt).IsRequired();
 
-        builder.ComplexCollection(lw => lw.LoggedExercises, leBuilder =>
+        builder.OwnsMany(lw => lw.LoggedExercises, leBuilder =>
         {
             leBuilder.ToJson();
+
             leBuilder.Property(le => le.Id).IsRequired();
             leBuilder.Property(le => le.ExerciseId).IsRequired();
-            leBuilder.Ignore(le => le.Sets);
 
-            leBuilder.ComplexCollection(le => le.StrengthSets, ssBuilder =>
+            leBuilder.OwnsMany(le => le.Sets, sets =>
             {
-                ssBuilder.Property(ss => ss.Id).IsRequired();
-                
-                ssBuilder.ComplexProperty(ss => ss.Weight).IsRequired();
-                ssBuilder.ComplexProperty(ss => ss.Reps).IsRequired();
-                ssBuilder.ComplexProperty(ss => ss.RIR).IsRequired();
-            });
-            
-            leBuilder.ComplexCollection(le => le.CardioSets, csBuilder =>
-            {
-                csBuilder.Property(cs => cs.Id).IsRequired();
-                
-                csBuilder.ComplexProperty(cs => cs.Distance, dBuilder =>
+                sets.Property(s => s.Id).IsRequired();
+                sets.Property(s => s.Type).HasConversion<string>().IsRequired();
+
+                sets.Property(x => x.Duration).IsRequired(false);
+                sets.Property(x => x.Reps).IsRequired(false);    
+                sets.Property(x => x.Rir).IsRequired(false);     
+
+                sets.OwnsOne(x => x.Distance, d =>
                 {
-                    dBuilder.Property(d => d.Value).IsRequired();
-                    dBuilder.Property(d => d.Unit).IsRequired();
-                }).IsRequired();
-                csBuilder.Property(cs => cs.Duration).IsRequired();
+                    d.Property(p => p.Value);
+                    d.Property(p => p.Unit).HasConversion<string>();
+                });
+
+                sets.OwnsOne(x => x.Weight, w =>
+                {
+                    w.Property(p => p.Value);
+                    w.Property(p => p.Unit).HasConversion<string>();
+                });
+
             });
         });
     }

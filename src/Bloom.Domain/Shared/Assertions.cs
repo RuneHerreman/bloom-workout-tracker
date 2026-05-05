@@ -81,4 +81,10 @@ public static class Asserts
         if (value >= threshold)
             throw new ArgumentException($"Value must be less than {threshold}.", paramName);
     }
+
+    public static void EnsureTrue(bool condition)
+    {
+        if (!condition)
+            throw new ArgumentException("Condition must be true.");
+    }
 }

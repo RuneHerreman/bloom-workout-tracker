@@ -3,7 +3,7 @@ using Bloom.Domain.Shared;
 
 namespace Bloom.Domain.LoggedWorkouts;
 
-public class LoggedStrengthSet: LoggedSet
+public record LoggedStrengthSet: ValueObject
 {
     public Reps Reps { get; init; }
     public Weight Weight { get; init; }
@@ -15,7 +15,8 @@ public class LoggedStrengthSet: LoggedSet
         LoggedSetId id,
         Reps reps,
         Weight weight,
-        RIR rir) : base(id)
+        RIR rir
+    )
     {
         Reps = reps;
         Weight = weight;
@@ -26,7 +27,8 @@ public class LoggedStrengthSet: LoggedSet
         int reps,
         decimal weight,
         WeightUnit weightUnit,
-        int rir)
+        int rir
+    )
     {
         var set = new LoggedStrengthSet(
             EntityId.New<LoggedSetId>(),
@@ -38,8 +40,7 @@ public class LoggedStrengthSet: LoggedSet
         return set;
     }
     
-    
-    public override void ValidateState()
+    private void ValidateState()
     {
         Asserts.EnsureNotEmpty(Reps);
         Asserts.EnsureNotEmpty(Weight);
