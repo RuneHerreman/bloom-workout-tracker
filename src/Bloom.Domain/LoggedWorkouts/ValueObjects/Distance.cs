@@ -4,8 +4,8 @@ namespace Bloom.Domain.LoggedWorkouts.ValueObjects;
 
 public record Distance: ValueObject
 {
-    public decimal Value { get; }
-    public DistanceUnit Unit { get; }
+    public decimal Value { get; init; }
+    public DistanceUnit Unit { get; init; }
 
     private Distance() { }
 

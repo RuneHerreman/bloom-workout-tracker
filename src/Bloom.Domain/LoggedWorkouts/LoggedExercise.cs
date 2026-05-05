@@ -11,9 +11,9 @@ public class LoggedExercise : Entity<LoggedExerciseId>
     private readonly List<LoggedCardioSet> _cardioSets = [];
 
     public ExerciseId ExerciseId { get; private set; }
-    public IReadOnlyList<LoggedStrengthSet> StrengthSets => _strengthSets.AsReadOnly();
-    public IReadOnlyList<LoggedCardioSet> CardioSets => _cardioSets.AsReadOnly();
-    public IReadOnlyList<LoggedSet> Sets => [.._strengthSets, .._cardioSets];
+    public IEnumerable<LoggedStrengthSet> StrengthSets => _strengthSets.AsReadOnly();
+    public IEnumerable<LoggedCardioSet> CardioSets => _cardioSets.AsReadOnly();
+    public IEnumerable<LoggedSet> Sets => [.._strengthSets, .._cardioSets];
 
     private LoggedExercise() { }
 
@@ -28,7 +28,10 @@ public class LoggedExercise : Entity<LoggedExerciseId>
         _cardioSets = cardioSets;
     }
 
-    public static LoggedExercise Create(ExerciseId exerciseId, List<LoggedStrengthSet> strengthSets, List<LoggedCardioSet> cardioSets)
+    public static LoggedExercise Create(
+        ExerciseId exerciseId,
+        List<LoggedStrengthSet> strengthSets,
+        List<LoggedCardioSet> cardioSets)
     {
         var loggedExercise = new LoggedExercise(EntityId.New<LoggedExerciseId>(), exerciseId, strengthSets, cardioSets);
         loggedExercise.ValidateState();

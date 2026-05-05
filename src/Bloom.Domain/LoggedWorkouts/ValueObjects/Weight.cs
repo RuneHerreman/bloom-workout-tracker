@@ -4,8 +4,8 @@ namespace Bloom.Domain.LoggedWorkouts.ValueObjects;
 
 public record Weight: ValueObject
 {
-    public decimal Value { get; }
-    public WeightUnit Unit { get; }
+    public decimal Value { get; init; }
+    public WeightUnit Unit { get; init; }
 
     private Weight() { }
 

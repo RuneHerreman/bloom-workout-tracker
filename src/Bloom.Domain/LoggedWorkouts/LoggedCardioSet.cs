@@ -5,8 +5,8 @@ namespace Bloom.Domain.LoggedWorkouts;
 
 public class LoggedCardioSet : LoggedSet
 {
-    public Duration Duration { get; private set; }
-    public Distance Distance { get; private set; }
+    public Duration Duration { get; init; }
+    public Distance Distance { get; init; }
 
     private LoggedCardioSet() { }
 

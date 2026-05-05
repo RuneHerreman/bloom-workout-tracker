@@ -4,7 +4,7 @@ namespace Bloom.Domain.LoggedWorkouts.ValueObjects;
 
 public record RIR: ValueObject
 {
-    public int Value { get; }
+    public int Value { get; init; }
 
     private RIR() { }
 

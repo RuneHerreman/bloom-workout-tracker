@@ -4,7 +4,7 @@ namespace Bloom.Domain.LoggedWorkouts.ValueObjects;
 
 public record Duration: ValueObject
 {
-    public TimeSpan Value { get; }
+    public TimeSpan Value { get; init; }
 
     private Duration() { }
 

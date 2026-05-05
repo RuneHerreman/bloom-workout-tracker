@@ -5,9 +5,9 @@ namespace Bloom.Domain.LoggedWorkouts;
 
 public class LoggedStrengthSet: LoggedSet
 {
-    public Reps Reps { get; private set; }
-    public Weight Weight { get; private set; }
-    public RIR RIR { get; private set; }
+    public Reps Reps { get; init; }
+    public Weight Weight { get; init; }
+    public RIR RIR { get; init; }
     
     private LoggedStrengthSet() { }
 

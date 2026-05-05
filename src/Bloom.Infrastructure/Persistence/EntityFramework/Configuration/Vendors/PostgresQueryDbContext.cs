@@ -14,9 +14,9 @@ public sealed class PostgresQueryDbContext(
 
     private string BuildConnectionString()
     {
-        string connectionString = configuration.GetValue<string>("Database:ConnectionString")!;
-        string username = configuration.GetValue<string>("Database:Username")!;
-        string password = configuration.GetValue<string>("Database:Password")!;
+        string connectionString = configuration.GetValue<string>("DefaultConnection:ConnectionString")!;
+        string username = configuration.GetValue<string>("DefaultConnection:Username")!;
+        string password = configuration.GetValue<string>("DefaultConnection:Password")!;
 
         return connectionString.Replace("{username}", username).Replace("{password}", password);
     }

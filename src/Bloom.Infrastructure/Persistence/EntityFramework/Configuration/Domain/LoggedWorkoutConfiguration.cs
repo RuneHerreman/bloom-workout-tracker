@@ -19,9 +19,30 @@ public class LoggedWorkoutConfiguration : IEntityTypeConfiguration<LoggedWorkout
         builder.ComplexCollection(lw => lw.LoggedExercises, leBuilder =>
         {
             leBuilder.ToJson();
+            leBuilder.Property(le => le.Id).IsRequired();
+            leBuilder.Property(le => le.ExerciseId).IsRequired();
             leBuilder.Ignore(le => le.Sets);
-            leBuilder.ComplexCollection(le => le.StrengthSets);
-            leBuilder.ComplexCollection(le => le.CardioSets);
+
+            leBuilder.ComplexCollection(le => le.StrengthSets, ssBuilder =>
+            {
+                ssBuilder.Property(ss => ss.Id).IsRequired();
+                
+                ssBuilder.ComplexProperty(ss => ss.Weight).IsRequired();
+                ssBuilder.ComplexProperty(ss => ss.Reps).IsRequired();
+                ssBuilder.ComplexProperty(ss => ss.RIR).IsRequired();
+            });
+            
+            leBuilder.ComplexCollection(le => le.CardioSets, csBuilder =>
+            {
+                csBuilder.Property(cs => cs.Id).IsRequired();
+                
+                csBuilder.ComplexProperty(cs => cs.Distance, dBuilder =>
+                {
+                    dBuilder.Property(d => d.Value).IsRequired();
+                    dBuilder.Property(d => d.Unit).IsRequired();
+                }).IsRequired();
+                csBuilder.Property(cs => cs.Duration).IsRequired();
+            });
         });
     }
 }

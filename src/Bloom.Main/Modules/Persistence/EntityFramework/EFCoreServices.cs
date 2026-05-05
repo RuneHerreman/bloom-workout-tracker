@@ -5,7 +5,9 @@ using Bloom.Domain.Users;
 using Bloom.Domain.WorkoutTemplates;
 using Bloom.Infrastructure.Persistence;
 using Bloom.Infrastructure.Persistence.EntityFramework;
+using Bloom.Domain.Shared.DomainEvents;
 using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
+using Bloom.Infrastructure.Persistence.EntityFramework.Configuration.Vendors;
 using Bloom.Infrastructure.Persistence.EntityFramework.Interceptors;
 using Bloom.Infrastructure.Persistence.EntityFramework.Queries;
 using Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
@@ -80,8 +82,14 @@ public static class EFCoreServices
         this IServiceCollection services
     )
     {
-        return services
-            .AddScoped<PublishDomainEventsInterceptor>();
+        services.AddSingleton<IDomainEventPublisher, NoOpDomainEventPublisher>();
+        return services.AddScoped<PublishDomainEventsInterceptor>();
+    }
+
+    private sealed class NoOpDomainEventPublisher : IDomainEventPublisher
+    {
+        public Task Publish(IDomainEvent domainEvent) => Task.CompletedTask;
+        public void Register(IDomainEventListener listener) { }
     }
 
     private static IServiceCollection AddDbContext(
@@ -89,7 +97,17 @@ public static class EFCoreServices
         IConfiguration configuration
     )
     {
-        string connectionString = configuration.GetConnectionString("DefaultConnection")!;
-        return services.AddDbContext<DomainDbContext>(options => options.UseNpgsql(connectionString));
+        string databaseProvider = configuration.GetValue<string>("DefaultConnection:Provider")!;
+        switch (databaseProvider)
+        {
+            case "PostgreSQL":
+                services.AddDbContext<DomainDbContext, PostgresDomainDbContext>();
+                services.AddDbContext<QueryDbContext, PostgresQueryDbContext>();
+                break;
+            default:
+                throw new NotSupportedException($"Database provider '{databaseProvider}' is not supported.");
+        }
+
+        return services;
     }
 }
