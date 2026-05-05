@@ -7,6 +7,7 @@ using Bloom.Infrastructure.Persistence;
 using Bloom.Infrastructure.Persistence.EntityFramework;
 using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 using Bloom.Infrastructure.Persistence.EntityFramework.Interceptors;
+using Bloom.Infrastructure.Persistence.EntityFramework.Queries;
 using Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
 using Bloom.Infrastructure.Persistence.EntityFramework.Seeders;
 using Microsoft.EntityFrameworkCore;
@@ -35,11 +36,19 @@ public static class EFCoreServices
                     sp.GetRequiredService<ILogger<EfCoreUnitOfWork>>();
 
                 DomainDbContext context = sp.GetRequiredService<DomainDbContext>();
+                
+                IUserRepository userRepository = sp.GetRequiredService<IUserRepository>();
+                IWorkoutTemplateRepository workoutTemplateRepository = sp.GetRequiredService<IWorkoutTemplateRepository>();
+                IExerciseRepository exerciseRepository = sp.GetRequiredService<IExerciseRepository>();
+                ILoggedWorkoutRepository loggedWorkoutRepository = sp.GetRequiredService<ILoggedWorkoutRepository>();
 
                 EfCoreUnitOfWork uow = new(context, logger);
                 
                 // Register repositories with the unit of work
-                // uow.RegisterRepository(sp.GetRequiredService<IUserRepository>());
+                uow.RegisterRepository(userRepository);
+                uow.RegisterRepository(workoutTemplateRepository);
+                uow.RegisterRepository(exerciseRepository);
+                uow.RegisterRepository(loggedWorkoutRepository);
 
                 return uow;
             });
@@ -56,8 +65,8 @@ public static class EFCoreServices
 
     public static IServiceCollection AddQueries(this IServiceCollection services)
     {
-        return services;
-        // .AddScoped<IGetAllUserTemplatesQuery, GetAllUserTemplatesQuery>();
+        return services
+            .AddScoped<ISearchExerciseCatalogQuery, SearchExerciseCatalogQuery>();
     }
     
     private static IServiceCollection AddSeeders(

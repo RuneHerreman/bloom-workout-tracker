@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Bloom.Infrastructure.WebApi.Controllers.Exercises;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
@@ -27,7 +28,13 @@ public static class Routes
 
     private static RouteGroupBuilder MapExerciseRoutes(this IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder exerciseGroup = app.MapGroup("/exercises");
+        RouteGroupBuilder exerciseGroup = app.MapGroup("/exercises")
+            .WithTags("Exercises");
+
+        exerciseGroup.MapGet("/{ExerciseId:guid}", FindExerciseByIdController.Invoke)
+            .WithName(nameof(FindExerciseByIdController))
+            .WithDescription("Find an exercise by its unique identifier.");
+        
         
         return exerciseGroup;
     }

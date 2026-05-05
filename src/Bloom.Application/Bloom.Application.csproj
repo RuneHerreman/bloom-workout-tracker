@@ -25,8 +25,4 @@
     <Compile Remove="Commands\ICommandHandler.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Contracts\Data\" />
-  </ItemGroup>
-
 </Project>

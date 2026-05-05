@@ -27,3 +27,9 @@
 - API Docs (Scalar): http://localhost:8080/scalar
 - Frontend: http://localhost:3000/
 - Database: http://localhost:5432/
+
+### Extra
+If you need to reapply the migrations use delete the old psql directory in infrasturucture and run the following command:
+```bash
+dotnet ef migrations add InitialCreate -p src/Bloom.Infrastructure -s src/Bloom.Main --context PostgresDomainDbContext --output-dir Persistence/EntityFramework/Migrations/PostgreSQL
+```

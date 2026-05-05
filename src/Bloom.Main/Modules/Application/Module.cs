@@ -1,4 +1,5 @@
 ﻿using Bloom.Application.Contracts.Ports;
+using Bloom.Application.Exercises;
 
 namespace Bloom.Main.Modules.Application;
 
@@ -16,6 +17,7 @@ public static class ApplicationModule
         // ------------------------------------------------------------------
         // -------------------- Register query use cases --------------------
         // ------------------------------------------------------------------
+        services.AddScoped<IUseCase<FindExerciseByIdInput, FindExerciseByIdOutput>, FindExerciseById>();
         
         return services;
     }
