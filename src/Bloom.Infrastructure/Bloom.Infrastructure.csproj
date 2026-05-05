@@ -21,9 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Persistence\EntityFramework\Configuration\Data\" />
-    <Folder Include="Persistence\EntityFramework\Queries\" />
-    <Folder Include="WebApi\Controllers\" />
+    <Folder Include="Persistence\EntityFramework\Migrations\" />
   </ItemGroup>
 
 </Project>
