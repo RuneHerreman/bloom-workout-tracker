@@ -1,5 +1,6 @@
 ﻿using Bloom.Application.Contracts.Ports;
 using Bloom.Application.Exercises;
+using Bloom.Application.LoggedWorkouts;
 using Bloom.Application.WorkoutTemplates;
 
 namespace Bloom.Main.Modules.Application;
@@ -18,6 +19,10 @@ public static class ApplicationModule
         services.AddScoped<IUseCase<CreateWorkoutTemplateInput, CreateWorkoutTemplateOutput>, CreateWorkoutTemplate>();
         services.AddScoped<IUseCase<UpdateWorkoutTemplateInput, UpdateWorkoutTemplateOutput>, UpdateWorkoutTemplate>();
         services.AddScoped<IUseCase<DeleteWorkoutTemplateInput>, DeleteWorkoutTemplate>();
+        //      LOGS
+        services.AddScoped<IUseCase<CreateLoggedWorkoutInput, CreateLoggedWorkoutOutput>, CreateLoggedWorkout>();
+        services.AddScoped<IUseCase<UpdateLoggedWorkoutInput, UpdateLoggedWorkoutOutput>, UpdateLoggedWorkout>();
+        services.AddScoped<IUseCase<DeleteLoggedWorkoutInput>, DeleteLoggedWorkout>();
 
 
 
@@ -30,7 +35,10 @@ public static class ApplicationModule
         //      TEMPLATES
         services.AddScoped<IUseCase<FindUserWorkoutTemplatesInput, FindUserWorkoutTemplatesOutput>, FindUserWorkoutTemplates>();
         services.AddScoped<IUseCase<FindWorkoutTemplateByIdInput, FindWorkoutTemplateByIdOutput>, FindWorkoutTemplateById>();
-        
+        //      LOGS
+        services.AddScoped<IUseCase<FindUserLoggedWorkoutsInput, FindUserLoggedWorkoutsOutput>, FindUserLoggedWorkouts>();
+        services.AddScoped<IUseCase<FindLoggedWorkoutByIdInput, FindLoggedWorkoutByIdOutput>, FindLoggedWorkoutById>();
+
         return services;
     }
 }
