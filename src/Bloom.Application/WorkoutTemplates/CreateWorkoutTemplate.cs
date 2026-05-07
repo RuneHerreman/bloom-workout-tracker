@@ -45,7 +45,7 @@ public class CreateWorkoutTemplate(
         var templateRepo = uow.Repo<IWorkoutTemplateRepository>();
         var userExists = await uow.Repo<IUserRepository>().Exists(EntityId.New<UserId>(input.UserId));
 
-        if (userExists)
+        if (!userExists)
             throw new UserNotFoundException($"User not found | Id: {input.UserId}");
 
         var exercises = input.Exercises.Select(MapExercise).ToList();

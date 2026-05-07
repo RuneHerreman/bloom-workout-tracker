@@ -1,0 +1,4 @@
+@baseUrl = http://localhost:8080/api/exercises
+
+### Get exercise by id
+GET {{baseUrl}}/019d059e-d220-71db-8a1a-ec7569490038

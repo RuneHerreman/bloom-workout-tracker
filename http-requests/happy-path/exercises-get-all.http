@@ -1,0 +1,5 @@
+@baseUrl = http://localhost:8080/api/exercises
+
+### Get all exercises
+GET {{baseUrl}}
+Accept: application/json

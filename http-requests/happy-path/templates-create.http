@@ -1,0 +1,36 @@
+@baseUrl = http://localhost:8080/api/templates
+
+### Create workout template
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "userId": "019d059e-d220-71db-8a1a-ec7569490000",
+  "name": "Push + Cardio",
+  "exercises": [
+    {
+      "exerciseId": "019d059e-d220-71db-8a1a-ec7569490001",
+      "order": 0,
+      "sets": [
+        { "type": "Strength", "order": 0, "reps": 8 },
+        { "type": "Strength", "order": 1, "reps": 8 },
+        { "type": "Strength", "order": 2, "reps": 6 }
+      ]
+    },
+    {
+      "exerciseId": "019d059e-d220-71db-8a1a-ec7569490061",
+      "order": 1,
+      "sets": [
+        { "type": "Plyometric", "order": 0, "reps": 10 },
+        { "type": "Plyometric", "order": 1, "reps": 10 }
+      ]
+    },
+    {
+      "exerciseId": "019d059e-d220-71db-8a1a-ec7569490051",
+      "order": 2,
+      "sets": [
+        { "type": "Cardio", "order": 0, "duration": "00:20:00", "distance": 3.5, "distanceUnit": "Km" }
+      ]
+    }
+  ]
+}

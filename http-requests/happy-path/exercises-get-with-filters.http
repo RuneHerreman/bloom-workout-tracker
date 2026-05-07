@@ -1,0 +1,8 @@
+@baseUrl = http://localhost:8080/api/exercises
+@Name = Press
+@MuscleGroup = Chest
+@ExerciseType = Strength
+
+### Get exercises with filters
+GET {{baseUrl}}?Name={{Name}}&TargetMuscleGroups={{MuscleGroup}}&ExerciseTypes={{ExerciseType}}
+Accept: application/json
