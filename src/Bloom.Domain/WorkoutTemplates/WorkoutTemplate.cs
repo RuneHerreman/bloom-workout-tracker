@@ -45,6 +45,16 @@ public class WorkoutTemplate: AggregateRoot<WorkoutTemplateId>
         return template;
     }
 
+    public void Update(string name, List<TemplateExercise> templateExercises)
+    {
+        Name = WorkoutTemplateName.Create(name);
+        _templateExercises.Clear();
+        _templateExercises.AddRange(templateExercises);
+
+        ValidateState();
+        RaiseDomainEvent(new WorkoutTemplateUpdated(Id));
+    }
+
     public override void ValidateState()
     {
         Asserts.EnsureNotEmpty(UserId);

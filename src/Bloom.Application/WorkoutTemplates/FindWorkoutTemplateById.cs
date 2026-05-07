@@ -1,0 +1,29 @@
+using Bloom.Application.Contracts;
+using Bloom.Application.Contracts.Data.Filters;
+using Bloom.Application.Contracts.Ports;
+using Bloom.Domain.Shared;
+using Bloom.Domain.WorkoutTemplates;
+using Bloom.Shared.Exceptions;
+
+namespace Bloom.Application.WorkoutTemplates;
+
+public sealed record FindWorkoutTemplateByIdInput(Guid TemplateId);
+
+public sealed record FindWorkoutTemplateByIdOutput(WorkoutTemplateData Template);
+
+public class FindWorkoutTemplateById(
+    IFindWorkoutTemplatesQuery query
+) : IUseCase<FindWorkoutTemplateByIdInput, FindWorkoutTemplateByIdOutput>
+{
+    public async Task<FindWorkoutTemplateByIdOutput> Execute(FindWorkoutTemplateByIdInput input)
+    {
+        var templates = await query.Fetch(
+            WorkoutTemplateDataFilters.ById(EntityId.New<WorkoutTemplateId>(input.TemplateId))
+        );
+
+        var result = templates.FirstOrDefault()
+            ?? throw new WorkoutTemplateNotFoundException($"Template not found | Id: {input.TemplateId}");
+
+        return new FindWorkoutTemplateByIdOutput(result);
+    }
+}

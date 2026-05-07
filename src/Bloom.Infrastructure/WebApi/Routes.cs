@@ -46,12 +46,29 @@ public static class Routes
 
     private static RouteGroupBuilder MapTemplateRoutes(this IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder templateGroup = app.MapGroup("/templates");
-        
+        RouteGroupBuilder templateGroup = app.MapGroup("/templates")
+            .WithTags("Templates");
+
+        templateGroup.MapGet("", GetUserWorkoutTemplatesController.Invoke)
+            .WithName(nameof(GetUserWorkoutTemplatesController))
+            .WithDescription("Get workout templates for a user with optional name search.");
+
+        templateGroup.MapGet("/{TemplateId:guid}", FindWorkoutTemplateByIdController.Invoke)
+            .WithName(nameof(FindWorkoutTemplateByIdController))
+            .WithDescription("Find a workout template by its unique identifier.");
+
         templateGroup.MapPost("", CreateWorkoutTemplateController.Invoke)
             .WithName(nameof(CreateWorkoutTemplateController))
             .WithDescription("Create a new workout template.");
-        
+
+        templateGroup.MapPut("/{TemplateId:guid}", UpdateWorkoutTemplateController.Invoke)
+            .WithName(nameof(UpdateWorkoutTemplateController))
+            .WithDescription("Update an existing workout template by id (full overwrite).");
+
+        templateGroup.MapDelete("/{TemplateId:guid}", DeleteWorkoutTemplateController.Invoke)
+            .WithName(nameof(DeleteWorkoutTemplateController))
+            .WithDescription("Delete a workout template by id.");
+
         return templateGroup;
     }
 }

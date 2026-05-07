@@ -5,6 +5,13 @@ namespace Bloom.Application.Contracts.Ports;
 public interface ISearchExerciseCatalogQuery
 {
     public Task<IReadOnlyList<ExerciseData>> Fetch(
-        Expression<Func<ExerciseData, bool>> filter 
+        Expression<Func<ExerciseData, bool>> filter
+    );
+}
+
+public interface IFindWorkoutTemplatesQuery
+{
+    Task<IReadOnlyList<WorkoutTemplateData>> Fetch(
+        Expression<Func<WorkoutTemplateData, bool>> filter
     );
 }

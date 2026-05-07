@@ -68,7 +68,8 @@ public static class EFCoreServices
     public static IServiceCollection AddQueries(this IServiceCollection services)
     {
         return services
-            .AddScoped<ISearchExerciseCatalogQuery, SearchExerciseCatalogQuery>();
+            .AddScoped<ISearchExerciseCatalogQuery, SearchExerciseCatalogQuery>()
+            .AddScoped<IFindWorkoutTemplatesQuery, FindWorkoutTemplatesQuery>();
     }
     
     public static async Task<WebApplication> SeedData(this WebApplication app)
