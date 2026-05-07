@@ -1,0 +1,6 @@
+@baseUrl = http://localhost:8080/api/templates
+@templateId = REPLACE_AFTER_CREATE
+
+### Get template by id
+GET {{baseUrl}}/{{templateId}}
+Accept: application/json

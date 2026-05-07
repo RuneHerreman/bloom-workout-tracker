@@ -1,0 +1,7 @@
+@baseUrl = http://localhost:8080/api/templates
+@userId = 019d059e-d220-71db-8a1a-ec7569490000
+@name = push
+
+### Get templates for a user with name filter
+GET {{baseUrl}}?userId={{userId}}&name={{name}}
+Accept: application/json

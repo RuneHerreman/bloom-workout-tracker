@@ -1,0 +1,6 @@
+@baseUrl = http://localhost:8080/api/logs
+@logId = REPLACE_AFTER_CREATE
+
+### Get log by id
+GET {{baseUrl}}/{{logId}}
+Accept: application/json

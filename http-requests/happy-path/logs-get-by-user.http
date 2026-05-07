@@ -1,0 +1,6 @@
+@baseUrl = http://localhost:8080/api/logs
+@userId = 019d059e-d220-71db-8a1a-ec7569490000
+
+### Get all logs for a user
+GET {{baseUrl}}?userId={{userId}}
+Accept: application/json

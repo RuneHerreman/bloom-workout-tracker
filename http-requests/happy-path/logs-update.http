@@ -1,0 +1,29 @@
+@baseUrl = http://localhost:8080/api/logs
+@logId = REPLACE_AFTER_CREATE
+
+### Update workout log (full overwrite)
+PUT {{baseUrl}}/{{logId}}
+Content-Type: application/json
+
+{
+  "userId": "019d059e-d220-71db-8a1a-ec7569490000",
+  "loggedAt": "2026-05-07T18:30:00Z",
+  "exercises": [
+    {
+      "exerciseId": "019d059e-d220-71db-8a1a-ec7569490001",
+      "order": 0,
+      "sets": [
+        { "type": "Strength", "order": 0, "reps": 8, "weight": 82.5, "weightUnit": "Kg", "rir": 2 },
+        { "type": "Strength", "order": 1, "reps": 8, "weight": 82.5, "weightUnit": "Kg", "rir": 1 },
+        { "type": "Strength", "order": 2, "reps": 5, "weight": 90, "weightUnit": "Kg", "rir": 0 }
+      ]
+    },
+    {
+      "exerciseId": "019d059e-d220-71db-8a1a-ec7569490051",
+      "order": 1,
+      "sets": [
+        { "type": "Cardio", "order": 0, "duration": "00:25:00", "distance": 4.2, "distanceUnit": "Km" }
+      ]
+    }
+  ]
+}

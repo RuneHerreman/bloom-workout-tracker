@@ -1,0 +1,27 @@
+@baseUrl = http://localhost:8080/api/logs
+
+### Create workout log
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "userId": "019d059e-d220-71db-8a1a-ec7569490000",
+  "exercises": [
+    {
+      "exerciseId": "019d059e-d220-71db-8a1a-ec7569490001",
+      "order": 0,
+      "sets": [
+        { "type": "Strength", "order": 0, "reps": 8, "weight": 80, "weightUnit": "Kg", "rir": 2 },
+        { "type": "Strength", "order": 1, "reps": 8, "weight": 80, "weightUnit": "Kg", "rir": 1 },
+        { "type": "Strength", "order": 2, "reps": 6, "weight": 85, "weightUnit": "Kg", "rir": 0 }
+      ]
+    },
+    {
+      "exerciseId": "019d059e-d220-71db-8a1a-ec7569490051",
+      "order": 1,
+      "sets": [
+        { "type": "Cardio", "order": 0, "duration": "00:20:00", "distance": 3.5, "distanceUnit": "Km" }
+      ]
+    }
+  ]
+}
