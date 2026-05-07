@@ -2,6 +2,8 @@
 using Bloom.Domain.Exercises.Enums;
 using Bloom.Domain.Exercises.ValueObjects;
 using Bloom.Domain.Shared;
+using Bloom.Domain.Users;
+using Bloom.Domain.Users.ValueObjects;
 using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -13,6 +15,21 @@ public class DomainDbSeeder(DomainDbContext context, ILogger<DomainDbSeeder> log
     public async Task Seed()
     {
         await SeedExercises();
+        await SeedUsers();
+    }
+
+    private async Task SeedUsers()
+    {
+        if (await context.Users.AnyAsync())
+            return;
+
+        var users = new List<User>
+        {
+            User.Create("frans.appelmans@gmail.com", "FransAppelmans", "test", EntityId.New<UserId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490000"))),
+        };
+        
+        context.Users.AddRange(users);
+        await context.SaveChangesAsync();
     }
 
     private async Task SeedExercises()

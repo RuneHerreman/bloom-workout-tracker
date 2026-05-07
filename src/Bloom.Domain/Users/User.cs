@@ -28,10 +28,12 @@ public class User: AggregateRoot<UserId>
     public static User Create(
         string email,
         string username,
-        string hashedPassword)
+        string hashedPassword,
+        UserId? id = null
+    )
     {
         var user = new User(
-            EntityId.New<UserId>(),
+            id ?? EntityId.New<UserId>(),
             Email.Create(email),
             Username.Create(username),
             HashedPassword.Create(hashedPassword));

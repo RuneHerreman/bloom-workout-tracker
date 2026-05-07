@@ -1,4 +1,5 @@
 ﻿using Bloom.Infrastructure.WebApi.Controllers.Exercises;
+using Bloom.Infrastructure.WebApi.Controllers.WorkoutTemplates;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -46,6 +47,10 @@ public static class Routes
     private static RouteGroupBuilder MapTemplateRoutes(this IEndpointRouteBuilder app)
     {
         RouteGroupBuilder templateGroup = app.MapGroup("/templates");
+        
+        templateGroup.MapPost("", CreateWorkoutTemplateController.Invoke)
+            .WithName(nameof(CreateWorkoutTemplateController))
+            .WithDescription("Create a new workout template.");
         
         return templateGroup;
     }
