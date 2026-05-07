@@ -34,7 +34,7 @@ public static class LoggedWorkoutExtensions
             data.Id,
             data.UserId,
             data.LoggedAt,
-            data.Exercises.Select(e => e.ToResponse()).ToList()
+            data.LoggedExercises.Select(e => e.ToResponse()).ToList()
         );
 
     public static LoggedExercise ToResponse(this LoggedExerciseData data) =>
@@ -46,14 +46,14 @@ public static class LoggedWorkoutExtensions
 
     public static LoggedSet ToResponse(this LoggedSetData data) =>
         new(
-            data.Type,
+            data.Type.ToString(),
             data.Order,
             data.Duration,
-            data.Distance,
-            data.DistanceUnit,
+            data.Distance?.Value,
+            data.Distance?.Unit.ToString(),
             data.Reps,
-            data.Weight,
-            data.WeightUnit,
+            data.Weight?.Value,
+            data.Weight?.Unit.ToString(),
             data.Rir
         );
 }

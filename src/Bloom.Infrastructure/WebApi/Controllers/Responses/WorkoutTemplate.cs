@@ -31,7 +31,7 @@ public static class WorkoutTemplateExtensions
             data.Id,
             data.UserId,
             data.Name,
-            data.Exercises.Select(e => e.ToResponse()).ToList()
+            data.TemplateExercises.Select(e => e.ToResponse()).ToList()
         );
 
     public static TemplateExercise ToResponse(this TemplateExerciseData data) =>
@@ -43,11 +43,11 @@ public static class WorkoutTemplateExtensions
 
     public static PlannedSet ToResponse(this PlannedSetData data) =>
         new(
-            data.Type,
+            data.Type.ToString(),
             data.Order,
             data.Reps,
             data.Duration,
-            data.Distance,
-            data.DistanceUnit
+            data.Distance?.Value,
+            data.Distance?.Unit.ToString()
         );
 }
