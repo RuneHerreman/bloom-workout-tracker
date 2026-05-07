@@ -1,4 +1,5 @@
 ﻿using Bloom.Infrastructure.WebApi.Controllers.Exercises;
+using Bloom.Infrastructure.WebApi.Controllers.LoggedWorkouts;
 using Bloom.Infrastructure.WebApi.Controllers.WorkoutTemplates;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +16,8 @@ public static class Routes
         webApi.MapUserRoutes();
         webApi.MapExerciseRoutes();
         webApi.MapTemplateRoutes();
-        
+        webApi.MapLogRoutes();
+
         return app;
     }
 
@@ -70,5 +72,33 @@ public static class Routes
             .WithDescription("Delete a workout template by id.");
 
         return templateGroup;
+    }
+
+    private static RouteGroupBuilder MapLogRoutes(this IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder logGroup = app.MapGroup("/logs")
+            .WithTags("Logs");
+
+        logGroup.MapGet("", GetUserLoggedWorkoutsController.Invoke)
+            .WithName(nameof(GetUserLoggedWorkoutsController))
+            .WithDescription("Get workout logs for a user.");
+
+        logGroup.MapGet("/{LoggedWorkoutId:guid}", FindLoggedWorkoutByIdController.Invoke)
+            .WithName(nameof(FindLoggedWorkoutByIdController))
+            .WithDescription("Find a workout log by its unique identifier.");
+
+        logGroup.MapPost("", CreateLoggedWorkoutController.Invoke)
+            .WithName(nameof(CreateLoggedWorkoutController))
+            .WithDescription("Create a new workout log.");
+
+        logGroup.MapPut("/{LoggedWorkoutId:guid}", UpdateLoggedWorkoutController.Invoke)
+            .WithName(nameof(UpdateLoggedWorkoutController))
+            .WithDescription("Update an existing workout log by id (full overwrite).");
+
+        logGroup.MapDelete("/{LoggedWorkoutId:guid}", DeleteLoggedWorkoutController.Invoke)
+            .WithName(nameof(DeleteLoggedWorkoutController))
+            .WithDescription("Delete a workout log by id.");
+
+        return logGroup;
     }
 }
