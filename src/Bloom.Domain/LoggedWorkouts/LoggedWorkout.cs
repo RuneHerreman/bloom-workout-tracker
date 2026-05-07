@@ -43,7 +43,17 @@ public class LoggedWorkout: AggregateRoot<LoggedWorkoutId>
 
         return loggedWorkout;
     }
-    
+
+    public void Update(DateTime loggedAt, List<LoggedExercise> loggedExercises)
+    {
+        LoggedAt = loggedAt;
+        _loggedExercises.Clear();
+        _loggedExercises.AddRange(loggedExercises);
+
+        ValidateState();
+        RaiseDomainEvent(new LoggedWorkoutUpdated(Id));
+    }
+
     public override void ValidateState()
     {
         Asserts.EnsureNotEmpty(UserId);
