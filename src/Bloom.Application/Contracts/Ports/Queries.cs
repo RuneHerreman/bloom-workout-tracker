@@ -15,3 +15,10 @@ public interface IFindWorkoutTemplatesQuery
         Expression<Func<WorkoutTemplateData, bool>> filter
     );
 }
+
+public interface IFindLoggedWorkoutsQuery
+{
+    Task<IReadOnlyList<LoggedWorkoutData>> Fetch(
+        Expression<Func<LoggedWorkoutData, bool>> filter
+    );
+}
