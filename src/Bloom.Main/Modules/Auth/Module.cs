@@ -10,7 +10,10 @@ public static class AuthModule
         IConfiguration configuration
     )
     {
+        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
+        services.AddSingleton<ITokenIssuer, JwtTokenIssuer>();
 
         return services;
     }

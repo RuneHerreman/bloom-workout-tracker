@@ -14,12 +14,14 @@ public sealed record LoginUserInput(
 public sealed record LoginUserOutput(
     Guid UserId,
     string Username,
-    string Email
+    string Email,
+    string Token
 );
 
 public class LoginUser(
     IUnitOfWork uow,
     IPasswordHasher passwordHasher,
+    ITokenIssuer tokenIssuer,
     ILogger<LoginUser> logger
 ) : IUseCase<LoginUserInput, LoginUserOutput>
 {
@@ -40,12 +42,15 @@ public class LoginUser(
         if (!passwordHasher.VerifyHashedPassword(user.HashedPassword.Value, input.Password))
             throw new InvalidCredentialsException("Invalid email or password.");
 
+        var token = tokenIssuer.Issue(user.Id, user.Email, user.Username);
+
         logger.LogInformation("Login successful | Id: {UserId}", user.Id);
 
         return new LoginUserOutput(
             user.Id.Value,
             user.Username.Value,
-            user.Email.Value
+            user.Email.Value,
+            token
         );
     }
 }

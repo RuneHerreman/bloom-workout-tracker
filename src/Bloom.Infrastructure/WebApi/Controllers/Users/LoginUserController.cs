@@ -20,7 +20,8 @@ public sealed record LoginUserBody(
 public sealed record LoginUserResponse(
     Guid UserId,
     string Username,
-    string Email
+    string Email,
+    string Token
 );
 
 public static class LoginUserController
@@ -37,7 +38,8 @@ public static class LoginUserController
         return TypedResults.Ok(new LoginUserResponse(
             output.UserId,
             output.Username,
-            output.Email
+            output.Email,
+            output.Token
         ));
     }
 }

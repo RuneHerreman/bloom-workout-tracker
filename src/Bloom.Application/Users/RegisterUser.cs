@@ -12,11 +12,12 @@ public sealed record RegisterUserInput(
     string Password
 );
 
-public sealed record RegisterUserOutput(Guid UserId);
+public sealed record RegisterUserOutput(Guid UserId, string Token);
 
 public class RegisterUser(
     IUnitOfWork uow,
     IPasswordHasher passwordHasher,
+    ITokenIssuer tokenIssuer,
     ILogger<RegisterUser> logger
 ) : IUseCase<RegisterUserInput, RegisterUserOutput>
 {
@@ -41,8 +42,10 @@ public class RegisterUser(
         await userRepo.Save(user);
         await uow.Do();
 
+        var token = tokenIssuer.Issue(user.Id, user.Email, user.Username);
+
         logger.LogInformation("User registered | Id: {UserId}", user.Id);
 
-        return new RegisterUserOutput(user.Id.Value);
+        return new RegisterUserOutput(user.Id.Value, token);
     }
 }

@@ -18,7 +18,7 @@ public sealed record RegisterUserBody(
     [Required, MinLength(8)] string Password
 );
 
-public sealed record RegisterUserResponse(Guid UserId);
+public sealed record RegisterUserResponse(Guid UserId, string Token);
 
 public static class RegisterUserController
 {
@@ -32,6 +32,6 @@ public static class RegisterUserController
             request.Body.Password
         ));
 
-        return TypedResults.Ok(new RegisterUserResponse(output.UserId));
+        return TypedResults.Ok(new RegisterUserResponse(output.UserId, output.Token));
     }
 }

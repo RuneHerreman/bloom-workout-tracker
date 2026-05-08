@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Bloom.Infrastructure.Auth;
 using Bloom.Infrastructure.Persistence;
 using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 using Bloom.Infrastructure.WebApi;
@@ -26,6 +27,10 @@ public static class Module
         
         // Controllers and OpenAPI
         services.AddControllers();
+
+        var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
+            ?? throw new InvalidOperationException($"Missing '{JwtOptions.SectionName}' configuration section.");
+
         services.AddAuthentication("Bearer")
             .AddJwtBearer("Bearer", options =>
             {
@@ -35,10 +40,10 @@ public static class Module
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = configuration["Jwt:Issuer"],
-                    ValidAudience = configuration["Jwt:Audience"],
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!))
+                        Encoding.UTF8.GetBytes(jwtOptions.Key))
                 };
             });
         
