@@ -47,6 +47,11 @@ public static class Routes
             .WithDescription("Update the authenticated user's profile info by id (full overwrite).")
             .RequireAuthorization();
 
+        userGroup.MapDelete("/{UserId:guid}", DeleteUserController.Invoke)
+            .WithName(nameof(DeleteUserController))
+            .WithDescription("Delete the authenticated user by id. Cascades to their templates and logs.")
+            .RequireAuthorization();
+
         return userGroup;
     }
 
