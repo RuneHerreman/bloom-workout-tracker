@@ -11,6 +11,9 @@ public class User: AggregateRoot<UserId>
     public Email Email { get; private set; }
     public Username Username { get; private set; }
     public HashedPassword HashedPassword { get; private set; }
+    public decimal Weight { get; private set; }
+    public int Height { get; private set; }
+    public int ActiveDays { get; private set; }
 
     private User() { }
 
@@ -18,17 +21,26 @@ public class User: AggregateRoot<UserId>
         UserId id,
         Email email,
         Username username,
-        HashedPassword hashedPassword) : base(id)
+        HashedPassword hashedPassword,
+        decimal weight,
+        int height,
+        int activeDays) : base(id)
     {
         Email = email;
         Username = username;
         HashedPassword = hashedPassword;
+        Weight = weight;
+        Height = height;
+        ActiveDays = activeDays;
     }
 
     public static User Create(
         string email,
         string username,
         string hashedPassword,
+        decimal weight,
+        int height,
+        int activeDays,
         UserId? id = null
     )
     {
@@ -36,7 +48,10 @@ public class User: AggregateRoot<UserId>
             id ?? EntityId.New<UserId>(),
             Email.Create(email),
             Username.Create(username),
-            HashedPassword.Create(hashedPassword));
+            HashedPassword.Create(hashedPassword),
+            weight,
+            height,
+            activeDays);
 
         user.ValidateState();
         user.RaiseDomainEvent(new UserRegistered(user.Id));
@@ -54,5 +69,9 @@ public class User: AggregateRoot<UserId>
         Asserts.EnsureNotEmpty(Email);
         Asserts.EnsureNotEmpty(Username);
         Asserts.EnsureNotEmpty(HashedPassword);
+        Asserts.EnsureGreaterThan(Weight, 0m);
+        Asserts.EnsureGreaterThan(Height, 0);
+        Asserts.EnsureNotNegative(ActiveDays);
+        Asserts.EnsureLessThan(ActiveDays, 8);
     }
 }

@@ -24,7 +24,7 @@ public sealed class CreateWorkoutTemplateTests : ApplicationTestBase
     [Fact]
     public async Task Execute_WithExistingUser_ShouldCreateTemplate()
     {
-        User user = User.Create("user@example.com", "alice", "hash");
+        User user = User.Create("user@example.com", "alice", "hash", 72.5m, 180, 4);
         await UserRepository.Save(user);
         var useCase = new CreateWorkoutTemplate(UnitOfWork, StubCurrentUser.With(user.Id), CreateLogger<CreateWorkoutTemplate>());
 

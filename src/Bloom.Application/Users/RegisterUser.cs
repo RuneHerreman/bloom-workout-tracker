@@ -9,7 +9,10 @@ namespace Bloom.Application.Users;
 public sealed record RegisterUserInput(
     string Email,
     string Username,
-    string Password
+    string Password,
+    decimal Weight,
+    int Height,
+    int ActiveDays
 );
 
 public sealed record RegisterUserOutput(Guid UserId, string Token);
@@ -36,7 +39,10 @@ public class RegisterUser(
         var user = User.Create(
             email.Value,
             input.Username,
-            hashedPassword
+            hashedPassword,
+            input.Weight,
+            input.Height,
+            input.ActiveDays
         );
 
         await userRepo.Save(user);

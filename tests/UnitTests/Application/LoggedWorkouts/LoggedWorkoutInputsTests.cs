@@ -11,7 +11,7 @@ public sealed class LoggedWorkoutInputsTests : ApplicationTestBase
 
     public LoggedWorkoutInputsTests()
     {
-        User user = User.Create("user@example.com", "alice", "hash");
+        User user = User.Create("user@example.com", "alice", "hash", 72.5m, 180, 4);
         UserRepository.Save(user).GetAwaiter().GetResult();
 
         _useCase = new CreateLoggedWorkout(UnitOfWork, StubCurrentUser.With(user.Id), CreateLogger<CreateLoggedWorkout>());

@@ -15,7 +15,10 @@ public sealed record RegisterUserRequest(
 public sealed record RegisterUserBody(
     [Required, EmailAddress] string Email,
     [Required, MinLength(3), MaxLength(128)] string Username,
-    [Required, MinLength(8)] string Password
+    [Required, MinLength(8)] string Password,
+    [Range(typeof(decimal), "0.1", "500")] decimal Weight,
+    [Range(1, 300)] int Height,
+    [Range(0, 7)] int ActiveDays
 );
 
 public sealed record RegisterUserResponse(Guid UserId, string Token);
@@ -29,7 +32,10 @@ public static class RegisterUserController
         var output = await request.UseCase.Execute(new RegisterUserInput(
             request.Body.Email,
             request.Body.Username,
-            request.Body.Password
+            request.Body.Password,
+            request.Body.Weight,
+            request.Body.Height,
+            request.Body.ActiveDays
         ));
 
         return TypedResults.Ok(new RegisterUserResponse(output.UserId, output.Token));
