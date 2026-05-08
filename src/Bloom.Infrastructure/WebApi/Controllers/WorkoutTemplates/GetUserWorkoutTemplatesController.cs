@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bloom.Infrastructure.WebApi.Controllers.WorkoutTemplates;
 
 public sealed record GetUserWorkoutTemplatesRequest(
-    [FromQuery] Guid UserId,
     [FromQuery] string? Name,
     [FromServices] IUseCase<FindUserWorkoutTemplatesInput, FindUserWorkoutTemplatesOutput> UseCase
 );
@@ -20,7 +19,6 @@ public static class GetUserWorkoutTemplatesController
     )
     {
         var output = await request.UseCase.Execute(new FindUserWorkoutTemplatesInput(
-            request.UserId,
             request.Name
         ));
 

@@ -8,7 +8,6 @@ namespace Bloom.Infrastructure.WebApi.Controllers.LoggedWorkouts;
 
 public sealed record DeleteLoggedWorkoutRequest(
     [FromRoute] Guid LoggedWorkoutId,
-    [FromQuery] Guid UserId,
     [FromServices] IUseCase<DeleteLoggedWorkoutInput> UseCase
 );
 
@@ -19,8 +18,7 @@ public static class DeleteLoggedWorkoutController
     )
     {
         await request.UseCase.Execute(new DeleteLoggedWorkoutInput(
-            request.LoggedWorkoutId,
-            request.UserId
+            request.LoggedWorkoutId
         ));
 
         return TypedResults.NoContent();

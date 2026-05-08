@@ -6,16 +6,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Bloom.Application.WorkoutTemplates;
 
-public sealed record DeleteWorkoutTemplateInput(Guid TemplateId, Guid UserId);
+public sealed record DeleteWorkoutTemplateInput(Guid TemplateId);
 
 public class DeleteWorkoutTemplate(
     IUnitOfWork uow,
+    ICurrentUser currentUser,
     ILogger<DeleteWorkoutTemplate> logger
 ) : IUseCase<DeleteWorkoutTemplateInput>
 {
     public async Task Execute(DeleteWorkoutTemplateInput input)
     {
-        logger.LogInformation($"Deleting WorkoutTemplate | Id: {input.TemplateId} - User: {input.UserId}");
+        var userId = currentUser.UserId;
+        logger.LogInformation("Deleting WorkoutTemplate | Id: {Id} - User: {UserId}", input.TemplateId, userId);
 
         var templateRepo = uow.Repo<IWorkoutTemplateRepository>();
         var template = await templateRepo.ById(EntityId.New<WorkoutTemplateId>(input.TemplateId));
@@ -23,12 +25,12 @@ public class DeleteWorkoutTemplate(
         if (!template.HasValue)
             throw new WorkoutTemplateNotFoundException($"Template not found | Id: {input.TemplateId}");
 
-        if (template.Value.UserId.Value != input.UserId)
-            throw new WorkoutTemplateAccessDeniedException($"User {input.UserId} does not own template {input.TemplateId}");
+        if (template.Value.UserId != userId)
+            throw new WorkoutTemplateAccessDeniedException($"User {userId} does not own template {input.TemplateId}");
 
         await templateRepo.Remove(template.Value);
         await uow.Do();
 
-        logger.LogInformation($"WorkoutTemplate deleted | Id: {input.TemplateId} - User: {input.UserId}");
+        logger.LogInformation("WorkoutTemplate deleted | Id: {Id} - User: {UserId}", input.TemplateId, userId);
     }
 }

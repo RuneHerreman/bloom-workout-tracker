@@ -2,23 +2,16 @@ using Bloom.Application.WorkoutTemplates;
 using Bloom.Domain.Shared;
 using Bloom.Domain.Users;
 using Bloom.Shared.Exceptions;
+using UnitTests.Application.Mocks;
 using UnitTests.Application.Shared;
 
 namespace UnitTests.Application.WorkoutTemplates;
 
 public sealed class CreateWorkoutTemplateTests : ApplicationTestBase
 {
-    private readonly CreateWorkoutTemplate _useCase;
-
-    public CreateWorkoutTemplateTests()
-    {
-        _useCase = new CreateWorkoutTemplate(UnitOfWork, CreateLogger<CreateWorkoutTemplate>());
-    }
-
-    private static CreateWorkoutTemplateInput BuildInput(Guid userId)
+    private static CreateWorkoutTemplateInput BuildInput()
     {
         return new CreateWorkoutTemplateInput(
-            userId,
             "Push Day",
             [
                 new TemplateExerciseInput(
@@ -33,8 +26,9 @@ public sealed class CreateWorkoutTemplateTests : ApplicationTestBase
     {
         User user = User.Create("user@example.com", "alice", "hash");
         await UserRepository.Save(user);
+        var useCase = new CreateWorkoutTemplate(UnitOfWork, StubCurrentUser.With(user.Id), CreateLogger<CreateWorkoutTemplate>());
 
-        var output = await _useCase.Execute(BuildInput(user.Id.Value));
+        var output = await useCase.Execute(BuildInput());
 
         Assert.NotEqual(Guid.Empty, output.WorkoutTemplateId);
         var saved = await WorkoutTemplateRepository.ById(EntityId.New<Bloom.Domain.WorkoutTemplates.WorkoutTemplateId>(output.WorkoutTemplateId));
@@ -44,7 +38,9 @@ public sealed class CreateWorkoutTemplateTests : ApplicationTestBase
     [Fact]
     public async Task Execute_WithMissingUser_ShouldThrow()
     {
+        var useCase = new CreateWorkoutTemplate(UnitOfWork, StubCurrentUser.Random(), CreateLogger<CreateWorkoutTemplate>());
+
         await Assert.ThrowsAsync<UserNotFoundException>(
-            () => _useCase.Execute(BuildInput(Guid.NewGuid())));
+            () => useCase.Execute(BuildInput()));
     }
 }

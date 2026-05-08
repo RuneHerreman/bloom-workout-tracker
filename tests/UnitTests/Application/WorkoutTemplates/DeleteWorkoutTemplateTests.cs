@@ -5,19 +5,13 @@ using Bloom.Domain.Shared;
 using Bloom.Domain.Users;
 using Bloom.Domain.WorkoutTemplates;
 using Bloom.Shared.Exceptions;
+using UnitTests.Application.Mocks;
 using UnitTests.Application.Shared;
 
 namespace UnitTests.Application.WorkoutTemplates;
 
 public sealed class DeleteWorkoutTemplateTests : ApplicationTestBase
 {
-    private readonly DeleteWorkoutTemplate _useCase;
-
-    public DeleteWorkoutTemplateTests()
-    {
-        _useCase = new DeleteWorkoutTemplate(UnitOfWork, CreateLogger<DeleteWorkoutTemplate>());
-    }
-
     private async Task<WorkoutTemplate> SeedTemplate(UserId userId)
     {
         var template = WorkoutTemplate.Create(userId, "Push Day",
@@ -37,8 +31,9 @@ public sealed class DeleteWorkoutTemplateTests : ApplicationTestBase
     {
         UserId userId = EntityId.New<UserId>();
         var template = await SeedTemplate(userId);
+        var useCase = new DeleteWorkoutTemplate(UnitOfWork, StubCurrentUser.With(userId), CreateLogger<DeleteWorkoutTemplate>());
 
-        await _useCase.Execute(new DeleteWorkoutTemplateInput(template.Id.Value, userId.Value));
+        await useCase.Execute(new DeleteWorkoutTemplateInput(template.Id.Value));
 
         Assert.False(await WorkoutTemplateRepository.Exists(template.Id));
     }
@@ -46,8 +41,10 @@ public sealed class DeleteWorkoutTemplateTests : ApplicationTestBase
     [Fact]
     public async Task Execute_WithMissingTemplate_ShouldThrow()
     {
+        var useCase = new DeleteWorkoutTemplate(UnitOfWork, StubCurrentUser.Random(), CreateLogger<DeleteWorkoutTemplate>());
+
         await Assert.ThrowsAsync<WorkoutTemplateNotFoundException>(
-            () => _useCase.Execute(new DeleteWorkoutTemplateInput(Guid.NewGuid(), Guid.NewGuid())));
+            () => useCase.Execute(new DeleteWorkoutTemplateInput(Guid.NewGuid())));
     }
 
     [Fact]
@@ -55,8 +52,9 @@ public sealed class DeleteWorkoutTemplateTests : ApplicationTestBase
     {
         UserId ownerId = EntityId.New<UserId>();
         var template = await SeedTemplate(ownerId);
+        var useCase = new DeleteWorkoutTemplate(UnitOfWork, StubCurrentUser.Random(), CreateLogger<DeleteWorkoutTemplate>());
 
         await Assert.ThrowsAsync<WorkoutTemplateAccessDeniedException>(
-            () => _useCase.Execute(new DeleteWorkoutTemplateInput(template.Id.Value, Guid.NewGuid())));
+            () => useCase.Execute(new DeleteWorkoutTemplateInput(template.Id.Value)));
     }
 }

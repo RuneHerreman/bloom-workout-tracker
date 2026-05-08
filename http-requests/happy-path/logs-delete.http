@@ -1,6 +1,7 @@
 @baseUrl = http://localhost:8080/api/logs
 @logId = REPLACE_AFTER_CREATE
-@userId = 019d059e-d220-71db-8a1a-ec7569490000
+@token = REPLACE_AFTER_LOGIN
 
 ### Delete workout log
-DELETE {{baseUrl}}/{{logId}}?userId={{userId}}
+DELETE {{baseUrl}}/{{logId}}
+Authorization: Bearer {{token}}

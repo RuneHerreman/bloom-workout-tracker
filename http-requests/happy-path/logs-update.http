@@ -1,12 +1,13 @@
 @baseUrl = http://localhost:8080/api/logs
 @logId = REPLACE_AFTER_CREATE
+@token = REPLACE_AFTER_LOGIN
 
 ### Update workout log (full overwrite)
 PUT {{baseUrl}}/{{logId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "userId": "019d059e-d220-71db-8a1a-ec7569490000",
   "loggedAt": "2026-05-07T18:30:00Z",
   "exercises": [
     {

@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bloom.Infrastructure.WebApi.Controllers.LoggedWorkouts;
 
 public sealed record GetUserLoggedWorkoutsRequest(
-    [FromQuery] Guid UserId,
     [FromServices] IUseCase<FindUserLoggedWorkoutsInput, FindUserLoggedWorkoutsOutput> UseCase
 );
 
@@ -18,7 +17,7 @@ public static class GetUserLoggedWorkoutsController
         [AsParameters] GetUserLoggedWorkoutsRequest request
     )
     {
-        var output = await request.UseCase.Execute(new FindUserLoggedWorkoutsInput(request.UserId));
+        var output = await request.UseCase.Execute(new FindUserLoggedWorkoutsInput());
 
         return TypedResults.Ok(
             output.Logs

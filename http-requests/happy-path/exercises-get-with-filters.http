@@ -1,8 +1,10 @@
 @baseUrl = http://localhost:8080/api/exercises
+@token = REPLACE_AFTER_LOGIN
 @Name = Press
 @MuscleGroup = Chest
 @ExerciseType = Strength
 
 ### Get exercises with filters
 GET {{baseUrl}}?Name={{Name}}&TargetMuscleGroups={{MuscleGroup}}&ExerciseTypes={{ExerciseType}}
+Authorization: Bearer {{token}}
 Accept: application/json

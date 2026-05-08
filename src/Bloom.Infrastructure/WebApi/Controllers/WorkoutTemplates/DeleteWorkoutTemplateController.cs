@@ -8,7 +8,6 @@ namespace Bloom.Infrastructure.WebApi.Controllers.WorkoutTemplates;
 
 public sealed record DeleteWorkoutTemplateRequest(
     [FromRoute] Guid TemplateId,
-    [FromQuery] Guid UserId,
     [FromServices] IUseCase<DeleteWorkoutTemplateInput> UseCase
 );
 
@@ -19,8 +18,7 @@ public static class DeleteWorkoutTemplateController
     )
     {
         await request.UseCase.Execute(new DeleteWorkoutTemplateInput(
-            request.TemplateId,
-            request.UserId
+            request.TemplateId
         ));
 
         return TypedResults.NoContent();

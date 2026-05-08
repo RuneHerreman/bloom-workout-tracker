@@ -2,23 +2,16 @@ using Bloom.Application.LoggedWorkouts;
 using Bloom.Domain.Shared;
 using Bloom.Domain.Users;
 using Bloom.Shared.Exceptions;
+using UnitTests.Application.Mocks;
 using UnitTests.Application.Shared;
 
 namespace UnitTests.Application.LoggedWorkouts;
 
 public sealed class CreateLoggedWorkoutTests : ApplicationTestBase
 {
-    private readonly CreateLoggedWorkout _useCase;
-
-    public CreateLoggedWorkoutTests()
-    {
-        _useCase = new CreateLoggedWorkout(UnitOfWork, CreateLogger<CreateLoggedWorkout>());
-    }
-
-    private static CreateLoggedWorkoutInput BuildInput(Guid userId)
+    private static CreateLoggedWorkoutInput BuildInput()
     {
         return new CreateLoggedWorkoutInput(
-            userId,
             [
                 new LoggedExerciseInput(
                     Guid.NewGuid(),
@@ -34,8 +27,9 @@ public sealed class CreateLoggedWorkoutTests : ApplicationTestBase
     {
         User user = User.Create("user@example.com", "alice", "hash");
         await UserRepository.Save(user);
+        var useCase = new CreateLoggedWorkout(UnitOfWork, StubCurrentUser.With(user.Id), CreateLogger<CreateLoggedWorkout>());
 
-        var output = await _useCase.Execute(BuildInput(user.Id.Value));
+        var output = await useCase.Execute(BuildInput());
 
         Assert.NotEqual(Guid.Empty, output.LoggedWorkoutId);
         var saved = await LoggedWorkoutRepository.ById(EntityId.New<Bloom.Domain.LoggedWorkouts.LoggedWorkoutId>(output.LoggedWorkoutId));
@@ -45,7 +39,9 @@ public sealed class CreateLoggedWorkoutTests : ApplicationTestBase
     [Fact]
     public async Task Execute_WithMissingUser_ShouldThrow()
     {
+        var useCase = new CreateLoggedWorkout(UnitOfWork, StubCurrentUser.Random(), CreateLogger<CreateLoggedWorkout>());
+
         await Assert.ThrowsAsync<UserNotFoundException>(
-            () => _useCase.Execute(BuildInput(Guid.NewGuid())));
+            () => useCase.Execute(BuildInput()));
     }
 }

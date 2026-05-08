@@ -1,4 +1,4 @@
-﻿using Bloom.Infrastructure.WebApi.Controllers.Exercises;
+using Bloom.Infrastructure.WebApi.Controllers.Exercises;
 using Bloom.Infrastructure.WebApi.Controllers.LoggedWorkouts;
 using Bloom.Infrastructure.WebApi.Controllers.Users;
 using Bloom.Infrastructure.WebApi.Controllers.WorkoutTemplates;
@@ -43,16 +43,17 @@ public static class Routes
     private static RouteGroupBuilder MapExerciseRoutes(this IEndpointRouteBuilder app)
     {
         RouteGroupBuilder exerciseGroup = app.MapGroup("/exercises")
-            .WithTags("Exercises");
+            .WithTags("Exercises")
+            .RequireAuthorization();
 
         exerciseGroup.MapGet("/{ExerciseId:guid}", FindExerciseByIdController.Invoke)
             .WithName(nameof(FindExerciseByIdController))
             .WithDescription("Find an exercise by its unique identifier.");
-        
+
         exerciseGroup.MapGet("", SearchExerciseCatalogController.Invoke)
             .WithName(nameof(SearchExerciseCatalogController))
             .WithDescription("Search for exercises based on specified criteria.");
-        
+
         return exerciseGroup;
     }
 
@@ -60,11 +61,12 @@ public static class Routes
     private static RouteGroupBuilder MapTemplateRoutes(this IEndpointRouteBuilder app)
     {
         RouteGroupBuilder templateGroup = app.MapGroup("/templates")
-            .WithTags("Templates");
+            .WithTags("Templates")
+            .RequireAuthorization();
 
         templateGroup.MapGet("", GetUserWorkoutTemplatesController.Invoke)
             .WithName(nameof(GetUserWorkoutTemplatesController))
-            .WithDescription("Get workout templates for a user with optional name search.");
+            .WithDescription("Get workout templates for the authenticated user with optional name search.");
 
         templateGroup.MapGet("/{TemplateId:guid}", FindWorkoutTemplateByIdController.Invoke)
             .WithName(nameof(FindWorkoutTemplateByIdController))
@@ -88,11 +90,12 @@ public static class Routes
     private static RouteGroupBuilder MapLogRoutes(this IEndpointRouteBuilder app)
     {
         RouteGroupBuilder logGroup = app.MapGroup("/logs")
-            .WithTags("Logs");
+            .WithTags("Logs")
+            .RequireAuthorization();
 
         logGroup.MapGet("", GetUserLoggedWorkoutsController.Invoke)
             .WithName(nameof(GetUserLoggedWorkoutsController))
-            .WithDescription("Get workout logs for a user.");
+            .WithDescription("Get workout logs for the authenticated user.");
 
         logGroup.MapGet("/{LoggedWorkoutId:guid}", FindLoggedWorkoutByIdController.Invoke)
             .WithName(nameof(FindLoggedWorkoutByIdController))

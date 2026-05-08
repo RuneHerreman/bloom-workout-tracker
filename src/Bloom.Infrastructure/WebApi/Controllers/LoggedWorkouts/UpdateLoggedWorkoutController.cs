@@ -15,9 +15,6 @@ public sealed record UpdateLoggedWorkoutRequest(
 
 public sealed record UpdateLoggedWorkoutBody(
     [Required]
-    Guid UserId,
-
-    [Required]
     DateTime LoggedAt,
 
     [Required]
@@ -35,7 +32,6 @@ public static class UpdateLoggedWorkoutController
     {
         var output = await request.UseCase.Execute(new UpdateLoggedWorkoutInput(
             request.LoggedWorkoutId,
-            request.Body.UserId,
             request.Body.LoggedAt,
             request.Body.Exercises.Select(e => e.ToInput()).ToList()
         ));

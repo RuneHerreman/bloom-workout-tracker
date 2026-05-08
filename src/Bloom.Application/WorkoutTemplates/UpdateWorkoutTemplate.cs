@@ -8,7 +8,6 @@ namespace Bloom.Application.WorkoutTemplates;
 
 public sealed record UpdateWorkoutTemplateInput(
     Guid TemplateId,
-    Guid UserId,
     string Name,
     List<TemplateExerciseInput> Exercises
 );
@@ -17,12 +16,14 @@ public sealed record UpdateWorkoutTemplateOutput(Guid WorkoutTemplateId);
 
 public class UpdateWorkoutTemplate(
     IUnitOfWork uow,
+    ICurrentUser currentUser,
     ILogger<UpdateWorkoutTemplate> logger
 ) : IUseCase<UpdateWorkoutTemplateInput, UpdateWorkoutTemplateOutput>
 {
     public async Task<UpdateWorkoutTemplateOutput> Execute(UpdateWorkoutTemplateInput input)
     {
-        logger.LogInformation($"Updating WorkoutTemplate | Id: {input.TemplateId} - User: {input.UserId}");
+        var userId = currentUser.UserId;
+        logger.LogInformation("Updating WorkoutTemplate | Id: {Id} - User: {UserId}", input.TemplateId, userId);
 
         var templateRepo = uow.Repo<IWorkoutTemplateRepository>();
         var template = await templateRepo.ById(EntityId.New<WorkoutTemplateId>(input.TemplateId));
@@ -30,8 +31,8 @@ public class UpdateWorkoutTemplate(
         if (!template.HasValue)
             throw new WorkoutTemplateNotFoundException($"Template not found | Id: {input.TemplateId}");
 
-        if (template.Value.UserId.Value != input.UserId)
-            throw new WorkoutTemplateAccessDeniedException($"User {input.UserId} does not own template {input.TemplateId}");
+        if (template.Value.UserId != userId)
+            throw new WorkoutTemplateAccessDeniedException($"User {userId} does not own template {input.TemplateId}");
 
         var exercises = input.Exercises.Select(e => e.ToTemplateExercise()).ToList();
         template.Value.Update(input.Name, exercises);
@@ -39,7 +40,7 @@ public class UpdateWorkoutTemplate(
         await templateRepo.Save(template.Value);
         await uow.Do();
 
-        logger.LogInformation($"WorkoutTemplate updated | Id: {template.Value.Id} - User: {input.UserId}");
+        logger.LogInformation("WorkoutTemplate updated | Id: {Id} - User: {UserId}", template.Value.Id, userId);
 
         return new UpdateWorkoutTemplateOutput(template.Value.Id.Value);
     }

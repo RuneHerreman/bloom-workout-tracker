@@ -1,12 +1,13 @@
 @baseUrl = http://localhost:8080/api/templates
 @templateId = REPLACE_AFTER_CREATE
+@token = REPLACE_AFTER_LOGIN
 
 ### Update workout template (full overwrite)
 PUT {{baseUrl}}/{{templateId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "userId": "019d059e-d220-71db-8a1a-ec7569490000",
   "name": "Push + Cardio (revised)",
   "exercises": [
     {

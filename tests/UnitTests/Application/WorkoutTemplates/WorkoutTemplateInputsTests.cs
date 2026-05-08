@@ -1,5 +1,6 @@
 using Bloom.Application.WorkoutTemplates;
 using Bloom.Domain.Users;
+using UnitTests.Application.Mocks;
 using UnitTests.Application.Shared;
 
 namespace UnitTests.Application.WorkoutTemplates;
@@ -7,19 +8,17 @@ namespace UnitTests.Application.WorkoutTemplates;
 public sealed class WorkoutTemplateInputsTests : ApplicationTestBase
 {
     private readonly CreateWorkoutTemplate _useCase;
-    private readonly Guid _userId;
 
     public WorkoutTemplateInputsTests()
     {
-        _useCase = new CreateWorkoutTemplate(UnitOfWork, CreateLogger<CreateWorkoutTemplate>());
-
         User user = User.Create("user@example.com", "alice", "hash");
         UserRepository.Save(user).GetAwaiter().GetResult();
-        _userId = user.Id.Value;
+
+        _useCase = new CreateWorkoutTemplate(UnitOfWork, StubCurrentUser.With(user.Id), CreateLogger<CreateWorkoutTemplate>());
     }
 
-    private CreateWorkoutTemplateInput WithSet(PlannedSetInput set) =>
-        new(_userId, "Day", [new TemplateExerciseInput(Guid.NewGuid(), 0, [set])]);
+    private static CreateWorkoutTemplateInput WithSet(PlannedSetInput set) =>
+        new("Day", [new TemplateExerciseInput(Guid.NewGuid(), 0, [set])]);
 
     [Fact]
     public async Task ToPlannedSet_Cardio_ShouldMap()

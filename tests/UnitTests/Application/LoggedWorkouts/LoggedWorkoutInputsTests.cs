@@ -1,5 +1,6 @@
 using Bloom.Application.LoggedWorkouts;
 using Bloom.Domain.Users;
+using UnitTests.Application.Mocks;
 using UnitTests.Application.Shared;
 
 namespace UnitTests.Application.LoggedWorkouts;
@@ -7,19 +8,17 @@ namespace UnitTests.Application.LoggedWorkouts;
 public sealed class LoggedWorkoutInputsTests : ApplicationTestBase
 {
     private readonly CreateLoggedWorkout _useCase;
-    private readonly Guid _userId;
 
     public LoggedWorkoutInputsTests()
     {
-        _useCase = new CreateLoggedWorkout(UnitOfWork, CreateLogger<CreateLoggedWorkout>());
-
         User user = User.Create("user@example.com", "alice", "hash");
         UserRepository.Save(user).GetAwaiter().GetResult();
-        _userId = user.Id.Value;
+
+        _useCase = new CreateLoggedWorkout(UnitOfWork, StubCurrentUser.With(user.Id), CreateLogger<CreateLoggedWorkout>());
     }
 
-    private CreateLoggedWorkoutInput WithSet(LoggedSetInput set) =>
-        new(_userId, [new LoggedExerciseInput(Guid.NewGuid(), 0, [set])]);
+    private static CreateLoggedWorkoutInput WithSet(LoggedSetInput set) =>
+        new([new LoggedExerciseInput(Guid.NewGuid(), 0, [set])]);
 
     [Fact]
     public async Task ToLoggedSet_Plyometric_ShouldMap()

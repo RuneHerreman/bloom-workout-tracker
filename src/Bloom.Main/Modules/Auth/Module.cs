@@ -14,6 +14,7 @@ public static class AuthModule
 
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddSingleton<ITokenIssuer, JwtTokenIssuer>();
+        services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
 
         return services;
     }

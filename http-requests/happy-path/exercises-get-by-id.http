@@ -1,4 +1,6 @@
 @baseUrl = http://localhost:8080/api/exercises
+@token = REPLACE_AFTER_LOGIN
 
 ### Get exercise by id
 GET {{baseUrl}}/019d059e-d220-71db-8a1a-ec7569490038
+Authorization: Bearer {{token}}

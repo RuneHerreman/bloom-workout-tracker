@@ -5,19 +5,13 @@ using Bloom.Domain.LoggedWorkouts.ValueObjects;
 using Bloom.Domain.Shared;
 using Bloom.Domain.Users;
 using Bloom.Shared.Exceptions;
+using UnitTests.Application.Mocks;
 using UnitTests.Application.Shared;
 
 namespace UnitTests.Application.LoggedWorkouts;
 
 public sealed class DeleteLoggedWorkoutTests : ApplicationTestBase
 {
-    private readonly DeleteLoggedWorkout _useCase;
-
-    public DeleteLoggedWorkoutTests()
-    {
-        _useCase = new DeleteLoggedWorkout(UnitOfWork, CreateLogger<DeleteLoggedWorkout>());
-    }
-
     private async Task<LoggedWorkout> SeedLoggedWorkout(UserId userId)
     {
         var workout = LoggedWorkout.Create(userId,
@@ -37,8 +31,9 @@ public sealed class DeleteLoggedWorkoutTests : ApplicationTestBase
     {
         UserId userId = EntityId.New<UserId>();
         var workout = await SeedLoggedWorkout(userId);
+        var useCase = new DeleteLoggedWorkout(UnitOfWork, StubCurrentUser.With(userId), CreateLogger<DeleteLoggedWorkout>());
 
-        await _useCase.Execute(new DeleteLoggedWorkoutInput(workout.Id.Value, userId.Value));
+        await useCase.Execute(new DeleteLoggedWorkoutInput(workout.Id.Value));
 
         Assert.False(await LoggedWorkoutRepository.Exists(workout.Id));
     }
@@ -46,8 +41,10 @@ public sealed class DeleteLoggedWorkoutTests : ApplicationTestBase
     [Fact]
     public async Task Execute_WithMissingWorkout_ShouldThrow()
     {
+        var useCase = new DeleteLoggedWorkout(UnitOfWork, StubCurrentUser.Random(), CreateLogger<DeleteLoggedWorkout>());
+
         await Assert.ThrowsAsync<LoggedWorkoutNotFoundException>(
-            () => _useCase.Execute(new DeleteLoggedWorkoutInput(Guid.NewGuid(), Guid.NewGuid())));
+            () => useCase.Execute(new DeleteLoggedWorkoutInput(Guid.NewGuid())));
     }
 
     [Fact]
@@ -55,8 +52,9 @@ public sealed class DeleteLoggedWorkoutTests : ApplicationTestBase
     {
         UserId ownerId = EntityId.New<UserId>();
         var workout = await SeedLoggedWorkout(ownerId);
+        var useCase = new DeleteLoggedWorkout(UnitOfWork, StubCurrentUser.Random(), CreateLogger<DeleteLoggedWorkout>());
 
         await Assert.ThrowsAsync<LoggedWorkoutAccessDeniedException>(
-            () => _useCase.Execute(new DeleteLoggedWorkoutInput(workout.Id.Value, Guid.NewGuid())));
+            () => useCase.Execute(new DeleteLoggedWorkoutInput(workout.Id.Value)));
     }
 }

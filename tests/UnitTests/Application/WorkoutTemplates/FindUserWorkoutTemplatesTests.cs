@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Bloom.Application.Contracts;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Application.WorkoutTemplates;
+using UnitTests.Application.Mocks;
 
 namespace UnitTests.Application.WorkoutTemplates;
 
@@ -19,9 +20,12 @@ public sealed class FindUserWorkoutTemplatesTests
     {
         Guid userA = Guid.NewGuid();
         Guid userB = Guid.NewGuid();
-        var useCase = new FindUserWorkoutTemplates(new MockFindWorkoutTemplatesQuery(Sample(userA, userB)));
+        var useCase = new FindUserWorkoutTemplates(
+            StubCurrentUser.With(userA),
+            new MockFindWorkoutTemplatesQuery(Sample(userA, userB))
+        );
 
-        var output = await useCase.Execute(new FindUserWorkoutTemplatesInput(userA, null));
+        var output = await useCase.Execute(new FindUserWorkoutTemplatesInput(null));
 
         Assert.Equal(2, output.Templates.Count);
     }
@@ -31,9 +35,12 @@ public sealed class FindUserWorkoutTemplatesTests
     {
         Guid userA = Guid.NewGuid();
         Guid userB = Guid.NewGuid();
-        var useCase = new FindUserWorkoutTemplates(new MockFindWorkoutTemplatesQuery(Sample(userA, userB)));
+        var useCase = new FindUserWorkoutTemplates(
+            StubCurrentUser.With(userA),
+            new MockFindWorkoutTemplatesQuery(Sample(userA, userB))
+        );
 
-        var output = await useCase.Execute(new FindUserWorkoutTemplatesInput(userA, "push"));
+        var output = await useCase.Execute(new FindUserWorkoutTemplatesInput("push"));
 
         Assert.Single(output.Templates);
         Assert.Equal("Push Day", output.Templates[0].Name);

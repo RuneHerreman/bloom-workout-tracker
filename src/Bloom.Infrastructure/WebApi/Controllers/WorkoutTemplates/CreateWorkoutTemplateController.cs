@@ -14,9 +14,6 @@ public sealed record CreateWorkoutTemplateRequest(
 
 public sealed record CreateWorkoutTemplateBody(
     [Required]
-    Guid UserId,
-
-    [Required]
     [MaxLength(100)]
     string Name,
 
@@ -34,7 +31,6 @@ public static class CreateWorkoutTemplateController
     )
     {
         var output = await request.UseCase.Execute(new CreateWorkoutTemplateInput(
-            request.Body.UserId,
             request.Body.Name,
             request.Body.Exercises.Select(e => e.ToInput()).ToList()
         ));

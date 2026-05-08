@@ -5,19 +5,13 @@ using Bloom.Domain.LoggedWorkouts.ValueObjects;
 using Bloom.Domain.Shared;
 using Bloom.Domain.Users;
 using Bloom.Shared.Exceptions;
+using UnitTests.Application.Mocks;
 using UnitTests.Application.Shared;
 
 namespace UnitTests.Application.LoggedWorkouts;
 
 public sealed class UpdateLoggedWorkoutTests : ApplicationTestBase
 {
-    private readonly UpdateLoggedWorkout _useCase;
-
-    public UpdateLoggedWorkoutTests()
-    {
-        _useCase = new UpdateLoggedWorkout(UnitOfWork, CreateLogger<UpdateLoggedWorkout>());
-    }
-
     private async Task<LoggedWorkout> SeedLoggedWorkout(UserId userId)
     {
         var workout = LoggedWorkout.Create(userId,
@@ -37,11 +31,11 @@ public sealed class UpdateLoggedWorkoutTests : ApplicationTestBase
     {
         UserId userId = EntityId.New<UserId>();
         var workout = await SeedLoggedWorkout(userId);
+        var useCase = new UpdateLoggedWorkout(UnitOfWork, StubCurrentUser.With(userId), CreateLogger<UpdateLoggedWorkout>());
 
         DateTime newDate = DateTime.UtcNow.AddDays(-1);
         var input = new UpdateLoggedWorkoutInput(
             workout.Id.Value,
-            userId.Value,
             newDate,
             [
                 new LoggedExerciseInput(
@@ -50,7 +44,7 @@ public sealed class UpdateLoggedWorkoutTests : ApplicationTestBase
                     [new LoggedSetInput("Cardio", 0, TimeSpan.FromMinutes(20), 5m, "Km", null, null, null, null)])
             ]);
 
-        var output = await _useCase.Execute(input);
+        var output = await useCase.Execute(input);
 
         Assert.Equal(workout.Id.Value, output.LoggedWorkoutId);
         var saved = await LoggedWorkoutRepository.ById(workout.Id);
@@ -61,8 +55,8 @@ public sealed class UpdateLoggedWorkoutTests : ApplicationTestBase
     [Fact]
     public async Task Execute_WithMissingWorkout_ShouldThrow()
     {
+        var useCase = new UpdateLoggedWorkout(UnitOfWork, StubCurrentUser.Random(), CreateLogger<UpdateLoggedWorkout>());
         var input = new UpdateLoggedWorkoutInput(
-            Guid.NewGuid(),
             Guid.NewGuid(),
             DateTime.UtcNow,
             [
@@ -71,7 +65,7 @@ public sealed class UpdateLoggedWorkoutTests : ApplicationTestBase
                     [new LoggedSetInput("Strength", 0, null, null, null, 5, 50m, "Kg", 1)])
             ]);
 
-        await Assert.ThrowsAsync<LoggedWorkoutNotFoundException>(() => _useCase.Execute(input));
+        await Assert.ThrowsAsync<LoggedWorkoutNotFoundException>(() => useCase.Execute(input));
     }
 
     [Fact]
@@ -79,10 +73,10 @@ public sealed class UpdateLoggedWorkoutTests : ApplicationTestBase
     {
         UserId ownerId = EntityId.New<UserId>();
         var workout = await SeedLoggedWorkout(ownerId);
+        var useCase = new UpdateLoggedWorkout(UnitOfWork, StubCurrentUser.Random(), CreateLogger<UpdateLoggedWorkout>());
 
         var input = new UpdateLoggedWorkoutInput(
             workout.Id.Value,
-            Guid.NewGuid(),
             DateTime.UtcNow,
             [
                 new LoggedExerciseInput(
@@ -90,6 +84,6 @@ public sealed class UpdateLoggedWorkoutTests : ApplicationTestBase
                     [new LoggedSetInput("Strength", 0, null, null, null, 5, 50m, "Kg", 1)])
             ]);
 
-        await Assert.ThrowsAsync<LoggedWorkoutAccessDeniedException>(() => _useCase.Execute(input));
+        await Assert.ThrowsAsync<LoggedWorkoutAccessDeniedException>(() => useCase.Execute(input));
     }
 }

@@ -14,9 +14,6 @@ public sealed record CreateLoggedWorkoutRequest(
 
 public sealed record CreateLoggedWorkoutBody(
     [Required]
-    Guid UserId,
-
-    [Required]
     [MinLength(1, ErrorMessage = "At least one exercise is required")]
     List<LoggedExerciseBody> Exercises
 );
@@ -30,7 +27,6 @@ public static class CreateLoggedWorkoutController
     )
     {
         var output = await request.UseCase.Execute(new CreateLoggedWorkoutInput(
-            request.Body.UserId,
             request.Body.Exercises.Select(e => e.ToInput()).ToList()
         ));
 

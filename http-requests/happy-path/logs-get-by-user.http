@@ -1,6 +1,7 @@
 @baseUrl = http://localhost:8080/api/logs
-@userId = 019d059e-d220-71db-8a1a-ec7569490000
+@token = REPLACE_AFTER_LOGIN
 
-### Get all logs for a user
-GET {{baseUrl}}?userId={{userId}}
+### Get all logs for the authenticated user
+GET {{baseUrl}}
+Authorization: Bearer {{token}}
 Accept: application/json

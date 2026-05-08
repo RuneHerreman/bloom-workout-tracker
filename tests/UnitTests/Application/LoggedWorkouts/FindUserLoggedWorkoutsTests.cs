@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Bloom.Application.Contracts;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Application.LoggedWorkouts;
+using UnitTests.Application.Mocks;
 
 namespace UnitTests.Application.LoggedWorkouts;
 
@@ -18,9 +19,12 @@ public sealed class FindUserLoggedWorkoutsTests
             new() { Id = Guid.NewGuid(), UserId = userA },
             new() { Id = Guid.NewGuid(), UserId = userB }
         };
-        var useCase = new FindUserLoggedWorkouts(new MockFindLoggedWorkoutsQuery(data));
+        var useCase = new FindUserLoggedWorkouts(
+            StubCurrentUser.With(userA),
+            new MockFindLoggedWorkoutsQuery(data)
+        );
 
-        var output = await useCase.Execute(new FindUserLoggedWorkoutsInput(userA));
+        var output = await useCase.Execute(new FindUserLoggedWorkoutsInput());
 
         Assert.Equal(2, output.Logs.Count);
         Assert.All(output.Logs, l => Assert.Equal(userA, l.UserId));

@@ -15,9 +15,6 @@ public sealed record UpdateWorkoutTemplateRequest(
 
 public sealed record UpdateWorkoutTemplateBody(
     [Required]
-    Guid UserId,
-
-    [Required]
     [MaxLength(100)]
     string Name,
 
@@ -36,7 +33,6 @@ public static class UpdateWorkoutTemplateController
     {
         var output = await request.UseCase.Execute(new UpdateWorkoutTemplateInput(
             request.TemplateId,
-            request.Body.UserId,
             request.Body.Name,
             request.Body.Exercises.Select(e => e.ToInput()).ToList()
         ));

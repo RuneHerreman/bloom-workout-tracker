@@ -1,6 +1,8 @@
 @baseUrl = http://localhost:8080/api/templates
 @templateId = REPLACE_AFTER_CREATE
+@token = REPLACE_AFTER_LOGIN
 
 ### Get template by id
 GET {{baseUrl}}/{{templateId}}
+Authorization: Bearer {{token}}
 Accept: application/json
