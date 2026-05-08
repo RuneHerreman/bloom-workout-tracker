@@ -1,7 +1,6 @@
 using Bloom.Application.Contracts;
 using Bloom.Application.Exercises;
 using Bloom.Shared.Exceptions;
-using UnitTests.Application.Mocks;
 
 namespace UnitTests.Application.Exercises;
 

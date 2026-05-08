@@ -1,6 +1,7 @@
+using System.Linq.Expressions;
 using Bloom.Application.Contracts;
+using Bloom.Application.Contracts.Ports;
 using Bloom.Application.WorkoutTemplates;
-using UnitTests.Application.Mocks;
 
 namespace UnitTests.Application.WorkoutTemplates;
 
@@ -36,5 +37,16 @@ public sealed class FindUserWorkoutTemplatesTests
 
         Assert.Single(output.Templates);
         Assert.Equal("Push Day", output.Templates[0].Name);
+    }
+}
+
+public sealed class MockFindWorkoutTemplatesQuery(IEnumerable<WorkoutTemplateData> data) : IFindWorkoutTemplatesQuery
+{
+    private readonly List<WorkoutTemplateData> _data = data.ToList();
+
+    public Task<IReadOnlyList<WorkoutTemplateData>> Fetch(Expression<Func<WorkoutTemplateData, bool>> filter)
+    {
+        IReadOnlyList<WorkoutTemplateData> filtered = _data.AsQueryable().Where(filter).ToList();
+        return Task.FromResult(filtered);
     }
 }

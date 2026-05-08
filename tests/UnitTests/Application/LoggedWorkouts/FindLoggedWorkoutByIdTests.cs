@@ -1,7 +1,6 @@
 using Bloom.Application.Contracts;
 using Bloom.Application.LoggedWorkouts;
 using Bloom.Shared.Exceptions;
-using UnitTests.Application.Mocks;
 
 namespace UnitTests.Application.LoggedWorkouts;
 

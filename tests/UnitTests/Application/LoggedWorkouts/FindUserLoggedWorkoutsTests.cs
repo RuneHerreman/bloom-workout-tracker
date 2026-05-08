@@ -1,6 +1,7 @@
+using System.Linq.Expressions;
 using Bloom.Application.Contracts;
+using Bloom.Application.Contracts.Ports;
 using Bloom.Application.LoggedWorkouts;
-using UnitTests.Application.Mocks;
 
 namespace UnitTests.Application.LoggedWorkouts;
 
@@ -23,5 +24,16 @@ public sealed class FindUserLoggedWorkoutsTests
 
         Assert.Equal(2, output.Logs.Count);
         Assert.All(output.Logs, l => Assert.Equal(userA, l.UserId));
+    }
+}
+
+public sealed class MockFindLoggedWorkoutsQuery(IEnumerable<LoggedWorkoutData> data) : IFindLoggedWorkoutsQuery
+{
+    private readonly List<LoggedWorkoutData> _data = data.ToList();
+
+    public Task<IReadOnlyList<LoggedWorkoutData>> Fetch(Expression<Func<LoggedWorkoutData, bool>> filter)
+    {
+        IReadOnlyList<LoggedWorkoutData> filtered = _data.AsQueryable().Where(filter).ToList();
+        return Task.FromResult(filtered);
     }
 }
