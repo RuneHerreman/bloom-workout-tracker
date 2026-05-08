@@ -19,6 +19,7 @@ public static class ApplicationModule
         //      USERS
         services.AddScoped<IUseCase<RegisterUserInput, RegisterUserOutput>, RegisterUser>();
         services.AddScoped<IUseCase<LoginUserInput, LoginUserOutput>, LoginUser>();
+        services.AddScoped<IUseCase<UpdateUserInfoInput, UpdateUserInfoOutput>, UpdateUserInfo>();
         //      TEMPLATES
         services.AddScoped<IUseCase<CreateWorkoutTemplateInput, CreateWorkoutTemplateOutput>, CreateWorkoutTemplate>();
         services.AddScoped<IUseCase<UpdateWorkoutTemplateInput, UpdateWorkoutTemplateOutput>, UpdateWorkoutTemplate>();
@@ -33,6 +34,8 @@ public static class ApplicationModule
         // ------------------------------------------------------------------
         // -------------------- Register query use cases --------------------
         // ------------------------------------------------------------------
+        //      USERS
+        services.AddScoped<IUseCase<FindUserInfoInput, FindUserInfoOutput>, FindUserInfo>();
         //      EXERCISES
         services.AddScoped<IUseCase<FindExerciseByIdInput, FindExerciseByIdOutput>, FindExerciseById>();
         services.AddScoped<IUseCase<SearchExerciseCatalogInput, SearchExerciseCatalogOutput>, SearchExerciseCatalog>();

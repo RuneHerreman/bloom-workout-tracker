@@ -1,0 +1,16 @@
+@baseUrl = http://localhost:8080/api/users
+@token = REPLACE_WITH_JWT
+@userId = REPLACE_WITH_USER_GUID
+
+### Update user info
+PUT {{baseUrl}}/{{userId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "email": "rune@example.com",
+  "username": "rune",
+  "weight": 73.0,
+  "height": 180,
+  "activeDays": 5
+}

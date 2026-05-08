@@ -64,6 +64,23 @@ public class User: AggregateRoot<UserId>
         HashedPassword = HashedPassword.Create(newHashedPassword);
     }
 
+    public void UpdateInfo(
+        string email,
+        string username,
+        decimal weight,
+        int height,
+        int activeDays)
+    {
+        Email = Email.Create(email);
+        Username = Username.Create(username);
+        Weight = weight;
+        Height = height;
+        ActiveDays = activeDays;
+
+        ValidateState();
+        RaiseDomainEvent(new UserUpdated(Id));
+    }
+
     public override void ValidateState()
     {
         Asserts.EnsureNotEmpty(Email);

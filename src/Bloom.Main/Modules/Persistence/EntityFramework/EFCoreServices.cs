@@ -70,7 +70,8 @@ public static class EFCoreServices
         return services
             .AddScoped<ISearchExerciseCatalogQuery, SearchExerciseCatalogQuery>()
             .AddScoped<IFindWorkoutTemplatesQuery, FindWorkoutTemplatesQuery>()
-            .AddScoped<IFindLoggedWorkoutsQuery, FindLoggedWorkoutsQuery>();
+            .AddScoped<IFindLoggedWorkoutsQuery, FindLoggedWorkoutsQuery>()
+            .AddScoped<IFindUsersQuery, FindUsersQuery>();
     }
     
     public static async Task<WebApplication> SeedData(this WebApplication app)

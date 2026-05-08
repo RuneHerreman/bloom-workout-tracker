@@ -67,4 +67,30 @@ public sealed class UserTests
         Assert.Throws<ArgumentException>(
             () => User.Create("user@example.com", "alice", "hashed-password", 72.5m, 180, activeDays));
     }
+
+    [Fact]
+    public void UpdateInfo_WithValidInput_ShouldReplaceFieldsAndRaiseEvent()
+    {
+        User user = User.Create("user@example.com", "alice", "hashed-password", 72.5m, 180, 4);
+        user.ClearDomainEvents();
+
+        user.UpdateInfo("new@example.com", "alice2", 75m, 181, 5);
+
+        Assert.Equal("new@example.com", user.Email.Value);
+        Assert.Equal("alice2", user.Username.Value);
+        Assert.Equal(75m, user.Weight);
+        Assert.Equal(181, user.Height);
+        Assert.Equal(5, user.ActiveDays);
+        Assert.Single(user.DomainEvents);
+        Assert.IsType<UserUpdated>(user.DomainEvents.First());
+    }
+
+    [Fact]
+    public void UpdateInfo_WithInvalidEmail_ShouldThrow()
+    {
+        User user = User.Create("user@example.com", "alice", "hashed-password", 72.5m, 180, 4);
+
+        Assert.Throws<ArgumentException>(
+            () => user.UpdateInfo("not-an-email", "alice", 72.5m, 180, 4));
+    }
 }

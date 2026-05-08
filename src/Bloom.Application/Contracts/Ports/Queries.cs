@@ -22,3 +22,10 @@ public interface IFindLoggedWorkoutsQuery
         Expression<Func<LoggedWorkoutData, bool>> filter
     );
 }
+
+public interface IFindUsersQuery
+{
+    Task<IReadOnlyList<UserData>> Fetch(
+        Expression<Func<UserData, bool>> filter
+    );
+}

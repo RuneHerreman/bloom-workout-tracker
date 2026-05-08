@@ -1,0 +1,7 @@
+@baseUrl = http://localhost:8080/api/users
+@token = REPLACE_WITH_JWT
+@userId = REPLACE_WITH_USER_GUID
+
+### Find user info
+GET {{baseUrl}}/{{userId}}
+Authorization: Bearer {{token}}

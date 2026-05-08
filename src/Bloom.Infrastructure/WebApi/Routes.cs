@@ -37,6 +37,16 @@ public static class Routes
             .WithDescription("Authenticate a user with email and password.")
             .AllowAnonymous();
 
+        userGroup.MapGet("/{UserId:guid}", FindUserInfoController.Invoke)
+            .WithName(nameof(FindUserInfoController))
+            .WithDescription("Get the authenticated user's profile info by id.")
+            .RequireAuthorization();
+
+        userGroup.MapPut("/{UserId:guid}", UpdateUserInfoController.Invoke)
+            .WithName(nameof(UpdateUserInfoController))
+            .WithDescription("Update the authenticated user's profile info by id (full overwrite).")
+            .RequireAuthorization();
+
         return userGroup;
     }
 

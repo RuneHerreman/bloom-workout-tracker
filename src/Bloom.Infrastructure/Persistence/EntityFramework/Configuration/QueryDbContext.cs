@@ -10,6 +10,7 @@ public class QueryDbContext: DbContext
     public DbSet<ExerciseData> Exercises { get; set; }
     public DbSet<WorkoutTemplateData> WorkoutTemplates { get; set; }
     public DbSet<LoggedWorkoutData> LoggedWorkouts { get; set; }
+    public DbSet<UserData> Users { get; set; }
 
 
     protected QueryDbContext()
@@ -22,7 +23,8 @@ public class QueryDbContext: DbContext
         modelBuilder
             .ApplyConfiguration(new ExerciseDataConfiguration())
             .ApplyConfiguration(new WorkoutTemplateDataConfiguration())
-            .ApplyConfiguration(new LoggedWorkoutDataConfiguration());
+            .ApplyConfiguration(new LoggedWorkoutDataConfiguration())
+            .ApplyConfiguration(new UserDataConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }
