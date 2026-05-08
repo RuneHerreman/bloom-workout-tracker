@@ -1,4 +1,5 @@
-﻿using Bloom.Domain.WorkoutTemplates;
+﻿using Bloom.Domain.Users;
+using Bloom.Domain.WorkoutTemplates;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,6 +15,11 @@ public class WorkoutTemplateConfiguration: IEntityTypeConfiguration<WorkoutTempl
 
         builder.Property(x => x.UserId).IsRequired();
         builder.Property(x => x.Name).IsRequired();
+
+        builder.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.OwnsMany(x => x.TemplateExercises, exercises =>
         {

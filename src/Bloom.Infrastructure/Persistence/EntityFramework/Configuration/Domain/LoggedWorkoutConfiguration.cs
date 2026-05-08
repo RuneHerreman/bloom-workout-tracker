@@ -1,4 +1,5 @@
 using Bloom.Domain.LoggedWorkouts;
+using Bloom.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,6 +16,11 @@ public class LoggedWorkoutConfiguration : IEntityTypeConfiguration<LoggedWorkout
 
         builder.Property(lw => lw.UserId).IsRequired();
         builder.Property(lw => lw.LoggedAt).IsRequired();
+
+        builder.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(lw => lw.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.OwnsMany(lw => lw.LoggedExercises, leBuilder =>
         {
