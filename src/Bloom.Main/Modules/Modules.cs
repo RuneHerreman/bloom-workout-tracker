@@ -1,4 +1,5 @@
 ﻿using Bloom.Main.Modules.Application;
+using Bloom.Main.Modules.Auth;
 using Bloom.Main.Modules.Persistence.EntityFramework;
 using Bloom.Main.Modules.WebApi;
 
@@ -7,12 +8,13 @@ namespace Bloom.Main.Modules;
 public static class Modules
 {
     public static IServiceCollection AddModules(
-        this IServiceCollection services, 
+        this IServiceCollection services,
         IConfiguration configuration
     )
     {
         return services
             .AddApplicationModule(configuration)
+            .AddAuthModule(configuration)
             .AddEFCoreModule(configuration)
             .AddWebApiModule(configuration);
     }

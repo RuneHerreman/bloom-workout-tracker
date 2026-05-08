@@ -8,11 +8,9 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.5" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0" />
         <ProjectReference Include="..\Bloom.Application\Bloom.Application.csproj" />
         <ProjectReference Include="..\Bloom.Domain\Bloom.Domain.csproj" />
         <ProjectReference Include="..\Bloom.Infrastructure\Bloom.Infrastructure.csproj" />
-        <PackageReference Include="MediatR" Version="14.1.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
@@ -22,6 +20,5 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
         <PackageReference Include="Scalar.AspNetCore" Version="2.8.11" />
-        <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     </ItemGroup>
 </Project>

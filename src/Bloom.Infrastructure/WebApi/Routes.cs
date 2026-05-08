@@ -1,5 +1,6 @@
 ﻿using Bloom.Infrastructure.WebApi.Controllers.Exercises;
 using Bloom.Infrastructure.WebApi.Controllers.LoggedWorkouts;
+using Bloom.Infrastructure.WebApi.Controllers.Users;
 using Bloom.Infrastructure.WebApi.Controllers.WorkoutTemplates;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -23,9 +24,19 @@ public static class Routes
 
     private static RouteGroupBuilder MapUserRoutes(this IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder userGroup = app.MapGroup("/users");
-        
-        
+        RouteGroupBuilder userGroup = app.MapGroup("/users")
+            .WithTags("Users");
+
+        userGroup.MapPost("/register", RegisterUserController.Invoke)
+            .WithName(nameof(RegisterUserController))
+            .WithDescription("Register a new user.")
+            .AllowAnonymous();
+
+        userGroup.MapPost("/login", LoginUserController.Invoke)
+            .WithName(nameof(LoginUserController))
+            .WithDescription("Authenticate a user with email and password.")
+            .AllowAnonymous();
+
         return userGroup;
     }
 

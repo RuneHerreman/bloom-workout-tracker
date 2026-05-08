@@ -1,5 +1,6 @@
 using Aornis;
 using Bloom.Domain.Users;
+using Bloom.Domain.Users.ValueObjects;
 
 namespace UnitTests.Application.Mocks;
 
@@ -14,6 +15,15 @@ public sealed class InMemoryUserRepository : IUserRepository
     {
         _store.TryGetValue(id, out User? entity);
         return Task.FromResult(Optional.Of(entity));
+    }
+
+    public Task<bool> ExistsByEmail(Email email)
+        => Task.FromResult(_store.Values.Any(u => u.Email == email));
+
+    public Task<Optional<User>> ByEmail(Email email)
+    {
+        var user = _store.Values.FirstOrDefault(u => u.Email == email);
+        return Task.FromResult(Optional.Of(user));
     }
 
     public Task Save(User aggregateRoot)

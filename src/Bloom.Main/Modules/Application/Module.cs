@@ -1,6 +1,7 @@
 ﻿using Bloom.Application.Contracts.Ports;
 using Bloom.Application.Exercises;
 using Bloom.Application.LoggedWorkouts;
+using Bloom.Application.Users;
 using Bloom.Application.WorkoutTemplates;
 
 namespace Bloom.Main.Modules.Application;
@@ -15,6 +16,9 @@ public static class ApplicationModule
         // --------------------------------------------------------------------
         // -------------------- Register command use cases --------------------
         // --------------------------------------------------------------------
+        //      USERS
+        services.AddScoped<IUseCase<RegisterUserInput, RegisterUserOutput>, RegisterUser>();
+        services.AddScoped<IUseCase<LoginUserInput, LoginUserOutput>, LoginUser>();
         //      TEMPLATES
         services.AddScoped<IUseCase<CreateWorkoutTemplateInput, CreateWorkoutTemplateOutput>, CreateWorkoutTemplate>();
         services.AddScoped<IUseCase<UpdateWorkoutTemplateInput, UpdateWorkoutTemplateOutput>, UpdateWorkoutTemplate>();
