@@ -52,6 +52,11 @@ public static class Routes
             .WithDescription("Delete the authenticated user by id. Cascades to their templates and logs.")
             .RequireAuthorization();
 
+        userGroup.MapPost("/{UserId:guid}/change-password", ChangeUserPasswordController.Invoke)
+            .WithName(nameof(ChangeUserPasswordController))
+            .WithDescription("Change the authenticated user's password. Requires the current password.")
+            .RequireAuthorization();
+
         return userGroup;
     }
 

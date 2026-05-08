@@ -21,6 +21,7 @@ public static class ApplicationModule
         services.AddScoped<IUseCase<LoginUserInput, LoginUserOutput>, LoginUser>();
         services.AddScoped<IUseCase<UpdateUserInfoInput, UpdateUserInfoOutput>, UpdateUserInfo>();
         services.AddScoped<IUseCase<DeleteUserInput>, DeleteUser>();
+        services.AddScoped<IUseCase<ChangeUserPasswordInput>, ChangeUserPassword>();
         //      TEMPLATES
         services.AddScoped<IUseCase<CreateWorkoutTemplateInput, CreateWorkoutTemplateOutput>, CreateWorkoutTemplate>();
         services.AddScoped<IUseCase<UpdateWorkoutTemplateInput, UpdateWorkoutTemplateOutput>, UpdateWorkoutTemplate>();

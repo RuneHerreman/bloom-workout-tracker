@@ -1,0 +1,48 @@
+using Bloom.Application.Contracts.Ports;
+using Bloom.Domain.Shared;
+using Bloom.Domain.Users;
+using Bloom.Shared.Exceptions;
+using Microsoft.Extensions.Logging;
+
+namespace Bloom.Application.Users;
+
+public sealed record ChangeUserPasswordInput(
+    Guid UserId,
+    string OldPassword,
+    string NewPassword
+);
+
+public class ChangeUserPassword(
+    IUnitOfWork uow,
+    ICurrentUser currentUser,
+    IPasswordHasher passwordHasher,
+    ILogger<ChangeUserPassword> logger
+) : IUseCase<ChangeUserPasswordInput>
+{
+    public async Task Execute(ChangeUserPasswordInput input)
+    {
+        var requestedUserId = EntityId.New<UserId>(input.UserId);
+        logger.LogInformation("Changing password | UserId: {UserId}", input.UserId);
+
+        if (currentUser.UserId != requestedUserId)
+            throw new UserAccessDeniedException(
+                $"User {currentUser.UserId.Value} cannot change password for user {input.UserId}");
+
+        var userRepo = uow.Repo<IUserRepository>();
+        var user = await userRepo.ById(requestedUserId);
+
+        if (!user.HasValue)
+            throw new UserNotFoundException($"User not found | Id: {input.UserId}");
+
+        if (!passwordHasher.VerifyHashedPassword(user.Value.HashedPassword.Value, input.OldPassword))
+            throw new InvalidCredentialsException("Current password is incorrect.");
+
+        var newHashedPassword = passwordHasher.HashPassword(input.NewPassword);
+        user.Value.ChangePassword(newHashedPassword);
+
+        await userRepo.Save(user.Value);
+        await uow.Do();
+
+        logger.LogInformation("Password changed | UserId: {UserId}", input.UserId);
+    }
+}
