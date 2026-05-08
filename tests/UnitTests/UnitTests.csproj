@@ -27,7 +27,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Application\Mocks\" />
-      <Folder Include="Domain\" />
+        <Using Include="Xunit" />
     </ItemGroup>
 </Project>
