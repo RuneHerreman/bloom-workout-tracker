@@ -27,6 +27,11 @@ public static class Routes
         RouteGroupBuilder userGroup = app.MapGroup("/users")
             .WithTags("Users");
 
+        userGroup.MapGet("/me", GetCurrentUserController.Invoke)
+            .WithName(nameof(GetCurrentUserController))
+            .WithDescription("Get the currently authenticated user's profile info.")
+            .RequireAuthorization();
+
         userGroup.MapPost("/register", RegisterUserController.Invoke)
             .WithName(nameof(RegisterUserController))
             .WithDescription("Register a new user.")
@@ -73,6 +78,14 @@ public static class Routes
         exerciseGroup.MapGet("", SearchExerciseCatalogController.Invoke)
             .WithName(nameof(SearchExerciseCatalogController))
             .WithDescription("Search for exercises based on specified criteria.");
+
+        exerciseGroup.MapGet("/{ExerciseId:guid}/pr", GetExercisePrController.Invoke)
+            .WithName(nameof(GetExercisePrController))
+            .WithDescription("Get the current user's personal record (max weight) for a specific exercise.");
+
+        exerciseGroup.MapGet("/{ExerciseId:guid}/volume", GetExerciseVolumeController.Invoke)
+            .WithName(nameof(GetExerciseVolumeController))
+            .WithDescription("Get the current user's max weight per month for a specific exercise, from first recorded session.");
 
         return exerciseGroup;
     }

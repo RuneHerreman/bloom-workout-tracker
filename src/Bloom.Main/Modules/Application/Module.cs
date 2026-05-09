@@ -37,6 +37,7 @@ public static class ApplicationModule
         // -------------------- Register query use cases --------------------
         // ------------------------------------------------------------------
         //      USERS
+        services.AddScoped<IUseCase<GetCurrentUserInput, GetCurrentUserOutput>, GetCurrentUser>();
         services.AddScoped<IUseCase<FindUserInfoInput, FindUserInfoOutput>, FindUserInfo>();
         //      EXERCISES
         services.AddScoped<IUseCase<FindExerciseByIdInput, FindExerciseByIdOutput>, FindExerciseById>();
@@ -47,6 +48,8 @@ public static class ApplicationModule
         //      LOGS
         services.AddScoped<IUseCase<FindUserLoggedWorkoutsInput, FindUserLoggedWorkoutsOutput>, FindUserLoggedWorkouts>();
         services.AddScoped<IUseCase<FindLoggedWorkoutByIdInput, FindLoggedWorkoutByIdOutput>, FindLoggedWorkoutById>();
+        services.AddScoped<IUseCase<GetExercisePrInput, GetExercisePrOutput>, GetExercisePr>();
+        services.AddScoped<IUseCase<GetExerciseVolumeOverTimeInput, GetExerciseVolumeOverTimeOutput>, GetExerciseVolumeOverTime>();
 
         return services;
     }
