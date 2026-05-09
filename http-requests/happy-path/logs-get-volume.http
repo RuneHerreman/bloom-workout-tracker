@@ -1,0 +1,29 @@
+@baseUrl = http://localhost:8080/api/logs
+@token = REPLACE_AFTER_LOGIN
+@Name = Squat
+@MuscleGroup = Quadriceps
+@ExerciseType = Strength
+@FromYear = 2025
+@FromMonth = 1
+@ToYear = 2025
+@ToMonth = 12
+
+### Get volume for all logged exercises
+GET {{baseUrl}}/volume
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get volume filtered by exercise name
+GET {{baseUrl}}/volume?Name={{Name}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get volume filtered by date range
+GET {{baseUrl}}/volume?FromYear={{FromYear}}&FromMonth={{FromMonth}}&ToYear={{ToYear}}&ToMonth={{ToMonth}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get volume filtered by muscle group, type, and date range
+GET {{baseUrl}}/volume?TargetMuscleGroups={{MuscleGroup}}&ExerciseTypes={{ExerciseType}}&FromYear={{FromYear}}&FromMonth={{FromMonth}}&ToYear={{ToYear}}&ToMonth={{ToMonth}}
+Authorization: Bearer {{token}}
+Accept: application/json

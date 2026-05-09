@@ -1,0 +1,20 @@
+@baseUrl = http://localhost:8080/api/logs
+@token = REPLACE_AFTER_LOGIN
+@Name = Bench
+@MuscleGroup = Chest
+@ExerciseType = Strength
+
+### Get PRs for all logged exercises
+GET {{baseUrl}}/pr
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get PRs filtered by exercise name
+GET {{baseUrl}}/pr?Name={{Name}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get PRs filtered by muscle group and type
+GET {{baseUrl}}/pr?TargetMuscleGroups={{MuscleGroup}}&ExerciseTypes={{ExerciseType}}
+Authorization: Bearer {{token}}
+Accept: application/json
