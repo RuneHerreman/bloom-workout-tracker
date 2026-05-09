@@ -1,24 +1,26 @@
 import { Routes, Route } from "react-router-dom";
-import LogInPage from "./pages/LogInPage.tsx";
-import HomePage from "./pages/HomePage.tsx";
-import DashboardPage from "./pages/DashboardPage.tsx";
-import TemplatePage from "./pages/TemplatePage.tsx";
-import LogbookPage from "./pages/LogbookPage.tsx";
-import SignUpPage from "./pages/SignUpPage.tsx";
+import { AuthProvider } from "./context/AuthContext.tsx";
+import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import HomePage from "./features/home/HomePage.tsx";
+import LoginPage from "./features/auth/LoginPage.tsx";
+import SignUpPage from "./features/auth/SignUpPage.tsx";
+import DashboardPage from "./features/dashboard/DashboardPage.tsx";
+import TemplatePage from "./features/templates/TemplatePage.tsx";
+import LogbookPage from "./features/logbook/LogbookPage.tsx";
 
 function App() {
-  return (
-    <>
-        <Routes>
-            <Route path="/" element={<HomePage/>} />
-            <Route path="/login" element={<LogInPage/>} />
-            <Route path="/signup" element={<SignUpPage/>} />
-            <Route path="/dashboard" element={<DashboardPage/>} />
-            <Route path="/templates" element={<TemplatePage/>} />
-            <Route path="/logbook" element={<LogbookPage/>} />
-        </Routes>
-    </>
-  )
+    return (
+        <AuthProvider>
+            <Routes>
+                <Route path="/" element={<HomePage/>} />
+                <Route path="/login" element={<LoginPage/>} />
+                <Route path="/signup" element={<SignUpPage/>} />
+                <Route path="/dashboard" element={<ProtectedRoute><DashboardPage/></ProtectedRoute>} />
+                <Route path="/templates" element={<ProtectedRoute><TemplatePage/></ProtectedRoute>} />
+                <Route path="/logbook" element={<ProtectedRoute><LogbookPage/></ProtectedRoute>} />
+            </Routes>
+        </AuthProvider>
+    );
 }
 
-export default App
+export default App;

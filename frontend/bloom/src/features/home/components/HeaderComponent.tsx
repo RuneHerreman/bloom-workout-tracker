@@ -1,5 +1,3 @@
-﻿
-
 function HeaderComponent() {
     return (
         <header id="home-header">

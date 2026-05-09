@@ -1,4 +1,3 @@
-﻿
 function ExerciseTypeImageComponent() {
     return (
         <section id="exercise-type-image-section">

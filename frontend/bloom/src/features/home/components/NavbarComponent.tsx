@@ -1,6 +1,6 @@
-﻿import ButtonComponent from "../general/ButtonComponent.tsx";
+import ButtonComponent from "../../../components/general/ButtonComponent.tsx";
 
-function DashboardPage() {
+function NavbarComponent() {
     return(
         <>
             <nav id="home-navbar">
@@ -18,4 +18,4 @@ function DashboardPage() {
     )
 }
 
-export default DashboardPage;
+export default NavbarComponent;

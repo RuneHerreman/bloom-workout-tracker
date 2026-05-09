@@ -1,18 +1,18 @@
-import "../assets/css/loginSignup.css";
-import SignupCredentials from "../components/login-signup-components/SignupCredentials.tsx";
-import {useNavigate} from "react-router-dom";
+import "../../assets/css/loginSignup.css";
+import { useNavigate } from "react-router-dom";
+import LoginCredentials from "./components/LoginCredentials.tsx";
 
-const SignUpPage = () => {
+const LoginPage = () => {
     const navigate = useNavigate();
     return(
         <main>
             <section>
                 <img onClick={() => navigate("/")} className="logo" src="/media/bloom_logo.png" alt="logo"/>
-                <SignupCredentials/>
+                <LoginCredentials/>
             </section>
             <div className="showcase-image"/>
         </main>
     );
 }
 
-export default SignUpPage;
+export default LoginPage;

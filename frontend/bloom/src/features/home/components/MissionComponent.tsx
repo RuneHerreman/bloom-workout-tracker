@@ -1,4 +1,3 @@
-﻿
 function MissionComponent() {
     return (
         <section className="general-main-section" id="our-mission">

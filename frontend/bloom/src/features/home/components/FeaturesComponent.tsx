@@ -1,7 +1,5 @@
-﻿
 function FeaturesComponent() {
     return (
-
         <section id="features" className="general-main-section">
             <h2>Features</h2>
             <ul>
@@ -23,7 +21,6 @@ function FeaturesComponent() {
                     <p>Zero cost</p>
                     <p>Completely free. No subscriptions. No ads.</p>
                 </li>
-
             </ul>
         </section>
     );

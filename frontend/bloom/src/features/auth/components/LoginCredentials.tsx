@@ -1,18 +1,22 @@
-import {NavLink} from "react-router-dom";
-import {useState} from "react";
-import {login} from "../../assets/js/data/api.ts";
-import type {ApiError} from "../../assets/js/data/api-communication-abstractor.ts";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { login } from "../api.ts";
+import { useAuth } from "../../../context/AuthContext.tsx";
+import type { ApiError } from "../../../lib/apiClient.ts";
 
 function LoginCredentials() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    const { setToken } = useAuth();
+    const navigate = useNavigate();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await login(email, password);
-            window.location.href = "/dashboard";
+            const token = await login(email, password);
+            setToken(token);
+            navigate("/dashboard");
         } catch (err) {
             const apiError = err as ApiError;
             setErrorMessage(apiError.error || "Login failed");
