@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { login } from "../api.ts";
 import { useAuth } from "../../../context/AuthContext.tsx";
-import type { ApiError } from "../../../lib/apiClient.ts";
+import type { ApiError } from "../../../assets/js/data/apiClient.ts";
 
 function LoginCredentials() {
     const [email, setEmail] = useState("");

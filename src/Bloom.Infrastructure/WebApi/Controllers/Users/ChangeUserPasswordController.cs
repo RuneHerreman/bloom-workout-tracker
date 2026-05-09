@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bloom.Infrastructure.WebApi.Controllers.Users;
 
 public sealed record ChangeUserPasswordRequest(
-    [FromRoute] Guid UserId,
     [FromBody] ChangeUserPasswordBody Body,
     [FromServices] IUseCase<ChangeUserPasswordInput> UseCase
 );
@@ -25,7 +24,6 @@ public static class ChangeUserPasswordController
     )
     {
         await request.UseCase.Execute(new ChangeUserPasswordInput(
-            request.UserId,
             request.Body.OldPassword,
             request.Body.NewPassword
         ));

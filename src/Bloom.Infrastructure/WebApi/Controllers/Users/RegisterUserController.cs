@@ -21,7 +21,7 @@ public sealed record RegisterUserBody(
     [Range(0, 7)] int ActiveDays
 );
 
-public sealed record RegisterUserResponse(Guid UserId, string Token);
+public sealed record RegisterUserResponse(string Token);
 
 public static class RegisterUserController
 {
@@ -38,6 +38,6 @@ public static class RegisterUserController
             request.Body.ActiveDays
         ));
 
-        return TypedResults.Ok(new RegisterUserResponse(output.UserId, output.Token));
+        return TypedResults.Ok(new RegisterUserResponse(output.Token));
     }
 }

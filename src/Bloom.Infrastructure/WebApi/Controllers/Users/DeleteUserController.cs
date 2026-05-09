@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bloom.Infrastructure.WebApi.Controllers.Users;
 
 public sealed record DeleteUserRequest(
-    [FromRoute] Guid UserId,
     [FromServices] IUseCase<DeleteUserInput> UseCase
 );
 
@@ -17,7 +16,7 @@ public static class DeleteUserController
         [AsParameters] DeleteUserRequest request
     )
     {
-        await request.UseCase.Execute(new DeleteUserInput(request.UserId));
+        await request.UseCase.Execute(new DeleteUserInput());
 
         return TypedResults.NoContent();
     }

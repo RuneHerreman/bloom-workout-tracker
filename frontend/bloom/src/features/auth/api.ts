@@ -1,19 +1,24 @@
-import { type ApiError, fetchFromServer } from "../../lib/apiClient.ts";
+import { fetchFromServer } from "../../assets/js/data/apiClient.ts";
 
-interface LoginResponse {
-    token: string;
+export interface User {
+    id: string;
+    email: string;
+    username: string;
+    weight: number;
+    height: number;
+    activeDays: number;
+}
+
+export interface UpdateUserBody {
+    email: string;
+    username: string;
+    weight: number;
+    height: number;
+    activeDays: number;
 }
 
 export async function login(email: string, password: string): Promise<string> {
-    const response = await fetchFromServer<LoginResponse>("auth/login", "POST", {
-        email,
-        password,
-    });
-
-    if (!("token" in response)) {
-        throw response as ApiError;
-    }
-
+    const response = await fetchFromServer<{ token: string }>("users/login", "POST", { email, password });
     return response.token;
 }
 
@@ -22,21 +27,32 @@ export async function register(
     password: string,
     height: number,
     weight: number,
-    name: string,
+    username: string,
     activeDays: number
 ): Promise<string> {
-    const response = await fetchFromServer<LoginResponse>("auth/register", "POST", {
+    const response = await fetchFromServer<{ token: string }>("users/register", "POST", {
         email,
         password,
         height,
         weight,
-        name,
+        username,
         activeDays,
     });
-
-    if (!("token" in response)) {
-        throw response as ApiError;
-    }
-
     return response.token;
+}
+
+export async function getMe(): Promise<User> {
+    return fetchFromServer<User>("users/me", "GET");
+}
+
+export async function updateMe(body: UpdateUserBody): Promise<void> {
+    await fetchFromServer<unknown>("users/me", "PUT", body);
+}
+
+export async function deleteMe(): Promise<void> {
+    await fetchFromServer<unknown>("users/me", "DELETE");
+}
+
+export async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+    await fetchFromServer<unknown>("users/me/change-password", "POST", { oldPassword, newPassword });
 }

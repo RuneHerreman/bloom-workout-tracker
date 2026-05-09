@@ -27,11 +27,6 @@ public static class Routes
         RouteGroupBuilder userGroup = app.MapGroup("/users")
             .WithTags("Users");
 
-        userGroup.MapGet("/me", GetCurrentUserController.Invoke)
-            .WithName(nameof(GetCurrentUserController))
-            .WithDescription("Get the currently authenticated user's profile info.")
-            .RequireAuthorization();
-
         userGroup.MapPost("/register", RegisterUserController.Invoke)
             .WithName(nameof(RegisterUserController))
             .WithDescription("Register a new user.")
@@ -42,22 +37,22 @@ public static class Routes
             .WithDescription("Authenticate a user with email and password.")
             .AllowAnonymous();
 
-        userGroup.MapGet("/{UserId:guid}", FindUserInfoController.Invoke)
-            .WithName(nameof(FindUserInfoController))
-            .WithDescription("Get the authenticated user's profile info by id.")
+        userGroup.MapGet("/me", GetCurrentUserController.Invoke)
+            .WithName(nameof(GetCurrentUserController))
+            .WithDescription("Get the currently authenticated user's profile.")
             .RequireAuthorization();
 
-        userGroup.MapPut("/{UserId:guid}", UpdateUserInfoController.Invoke)
+        userGroup.MapPut("/me", UpdateUserInfoController.Invoke)
             .WithName(nameof(UpdateUserInfoController))
-            .WithDescription("Update the authenticated user's profile info by id (full overwrite).")
+            .WithDescription("Update the authenticated user's profile (full overwrite).")
             .RequireAuthorization();
 
-        userGroup.MapDelete("/{UserId:guid}", DeleteUserController.Invoke)
+        userGroup.MapDelete("/me", DeleteUserController.Invoke)
             .WithName(nameof(DeleteUserController))
-            .WithDescription("Delete the authenticated user by id. Cascades to their templates and logs.")
+            .WithDescription("Delete the authenticated user. Cascades to their templates and logs.")
             .RequireAuthorization();
 
-        userGroup.MapPost("/{UserId:guid}/change-password", ChangeUserPasswordController.Invoke)
+        userGroup.MapPost("/me/change-password", ChangeUserPasswordController.Invoke)
             .WithName(nameof(ChangeUserPasswordController))
             .WithDescription("Change the authenticated user's password. Requires the current password.")
             .RequireAuthorization();

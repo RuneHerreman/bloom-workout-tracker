@@ -11,12 +11,7 @@ public sealed record LoginUserInput(
     string Password
 );
 
-public sealed record LoginUserOutput(
-    Guid UserId,
-    string Username,
-    string Email,
-    string Token
-);
+public sealed record LoginUserOutput(string Token);
 
 public class LoginUser(
     IUnitOfWork uow,
@@ -46,11 +41,6 @@ public class LoginUser(
 
         logger.LogInformation("Login successful | Id: {UserId}", user.Id);
 
-        return new LoginUserOutput(
-            user.Id.Value,
-            user.Username.Value,
-            user.Email.Value,
-            token
-        );
+        return new LoginUserOutput(token);
     }
 }

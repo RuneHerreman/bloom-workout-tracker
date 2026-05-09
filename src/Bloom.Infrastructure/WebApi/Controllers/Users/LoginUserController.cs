@@ -17,12 +17,7 @@ public sealed record LoginUserBody(
     [Required] string Password
 );
 
-public sealed record LoginUserResponse(
-    Guid UserId,
-    string Username,
-    string Email,
-    string Token
-);
+public sealed record LoginUserResponse(string Token);
 
 public static class LoginUserController
 {
@@ -35,11 +30,6 @@ public static class LoginUserController
             request.Body.Password
         ));
 
-        return TypedResults.Ok(new LoginUserResponse(
-            output.UserId,
-            output.Username,
-            output.Email,
-            output.Token
-        ));
+        return TypedResults.Ok(new LoginUserResponse(output.Token));
     }
 }

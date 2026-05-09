@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bloom.Infrastructure.WebApi.Controllers.Users;
 
 public sealed record UpdateUserInfoRequest(
-    [FromRoute] Guid UserId,
     [FromBody] UpdateUserInfoBody Body,
     [FromServices] IUseCase<UpdateUserInfoInput, UpdateUserInfoOutput> UseCase
 );
@@ -30,7 +29,6 @@ public static class UpdateUserInfoController
     )
     {
         var output = await request.UseCase.Execute(new UpdateUserInfoInput(
-            request.UserId,
             request.Body.Email,
             request.Body.Username,
             request.Body.Weight,

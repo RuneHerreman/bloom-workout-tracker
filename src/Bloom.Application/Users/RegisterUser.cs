@@ -15,7 +15,7 @@ public sealed record RegisterUserInput(
     int ActiveDays
 );
 
-public sealed record RegisterUserOutput(Guid UserId, string Token);
+public sealed record RegisterUserOutput(string Token);
 
 public class RegisterUser(
     IUnitOfWork uow,
@@ -52,6 +52,6 @@ public class RegisterUser(
 
         logger.LogInformation("User registered | Id: {UserId}", user.Id);
 
-        return new RegisterUserOutput(user.Id.Value, token);
+        return new RegisterUserOutput(token);
     }
 }

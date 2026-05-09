@@ -17,26 +17,14 @@ public sealed class DeleteUserTests : ApplicationTestBase
     }
 
     [Fact]
-    public async Task Execute_AsOwner_ShouldRemoveUser()
+    public async Task Execute_ShouldRemoveUser()
     {
         var user = await SeedUser();
         var useCase = new DeleteUser(UnitOfWork, StubCurrentUser.With(user.Id), CreateLogger<DeleteUser>());
 
-        await useCase.Execute(new DeleteUserInput(user.Id.Value));
+        await useCase.Execute(new DeleteUserInput());
 
         Assert.False(await UserRepository.Exists(user.Id));
-    }
-
-    [Fact]
-    public async Task Execute_AsDifferentUser_ShouldThrowAccessDenied()
-    {
-        var user = await SeedUser();
-        var useCase = new DeleteUser(UnitOfWork, StubCurrentUser.Random(), CreateLogger<DeleteUser>());
-
-        await Assert.ThrowsAsync<UserAccessDeniedException>(
-            () => useCase.Execute(new DeleteUserInput(user.Id.Value)));
-
-        Assert.True(await UserRepository.Exists(user.Id));
     }
 
     [Fact]
@@ -46,6 +34,6 @@ public sealed class DeleteUserTests : ApplicationTestBase
         var useCase = new DeleteUser(UnitOfWork, StubCurrentUser.With(missingId), CreateLogger<DeleteUser>());
 
         await Assert.ThrowsAsync<UserNotFoundException>(
-            () => useCase.Execute(new DeleteUserInput(missingId.Value)));
+            () => useCase.Execute(new DeleteUserInput()));
     }
 }

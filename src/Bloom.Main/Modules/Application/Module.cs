@@ -38,7 +38,6 @@ public static class ApplicationModule
         // ------------------------------------------------------------------
         //      USERS
         services.AddScoped<IUseCase<GetCurrentUserInput, GetCurrentUserOutput>, GetCurrentUser>();
-        services.AddScoped<IUseCase<FindUserInfoInput, FindUserInfoOutput>, FindUserInfo>();
         //      EXERCISES
         services.AddScoped<IUseCase<FindExerciseByIdInput, FindExerciseByIdOutput>, FindExerciseById>();
         services.AddScoped<IUseCase<SearchExerciseCatalogInput, SearchExerciseCatalogOutput>, SearchExerciseCatalog>();

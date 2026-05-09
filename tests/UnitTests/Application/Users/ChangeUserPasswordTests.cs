@@ -31,7 +31,7 @@ public sealed class ChangeUserPasswordTests : ApplicationTestBase
         var user = await SeedUser("old-secret");
         var useCase = BuildUseCase(user.Id);
 
-        await useCase.Execute(new ChangeUserPasswordInput(user.Id.Value, "old-secret", "new-secret"));
+        await useCase.Execute(new ChangeUserPasswordInput("old-secret", "new-secret"));
 
         var stored = await UserRepository.ById(user.Id);
         Assert.True(stored.HasValue);
@@ -45,20 +45,10 @@ public sealed class ChangeUserPasswordTests : ApplicationTestBase
         var useCase = BuildUseCase(user.Id);
 
         await Assert.ThrowsAsync<InvalidCredentialsException>(
-            () => useCase.Execute(new ChangeUserPasswordInput(user.Id.Value, "not-the-password", "new-secret")));
+            () => useCase.Execute(new ChangeUserPasswordInput("not-the-password", "new-secret")));
 
         var stored = await UserRepository.ById(user.Id);
         Assert.True(_passwordHasher.VerifyHashedPassword(stored.Value.HashedPassword.Value, "old-secret"));
-    }
-
-    [Fact]
-    public async Task Execute_AsDifferentUser_ShouldThrowAccessDenied()
-    {
-        var user = await SeedUser("old-secret");
-        var useCase = BuildUseCase(EntityId.New<UserId>());
-
-        await Assert.ThrowsAsync<UserAccessDeniedException>(
-            () => useCase.Execute(new ChangeUserPasswordInput(user.Id.Value, "old-secret", "new-secret")));
     }
 
     [Fact]
@@ -68,6 +58,6 @@ public sealed class ChangeUserPasswordTests : ApplicationTestBase
         var useCase = BuildUseCase(missingId);
 
         await Assert.ThrowsAsync<UserNotFoundException>(
-            () => useCase.Execute(new ChangeUserPasswordInput(missingId.Value, "old-secret", "new-secret")));
+            () => useCase.Execute(new ChangeUserPasswordInput("old-secret", "new-secret")));
     }
 }
