@@ -32,7 +32,7 @@ main > section{
 }
 
 .loginsignup-form > p {
-    color: var(--text-grey-lighter);
+    color: var(--ink-muted);
     font-size: .9rem;
     line-height: 125%;
     margin: .75rem 0 1.5rem;
@@ -52,7 +52,7 @@ main > section{
 
 form input{
     margin-top: 0.75rem;
-    border: var(--grey-light) 0.1rem solid;
+    border: var(--border) 0.1rem solid;
     border-radius: 0.5rem;
     padding: 0.75rem;
     width: 100%;
@@ -63,14 +63,14 @@ form input{
 
 form input:focus{
     transition: .1s ease-in-out;
-    border: var(--green-light) 0.1rem solid;
+    border: var(--primary-light) 0.1rem solid;
     outline: none;
 }
 
 form button{
     padding: .9rem;
     color: white;
-    background-color: var(--green);
+    background-color: var(--primary);
     border: none;
     border-radius: 0.5rem;
     font-size: .9rem;
@@ -81,7 +81,7 @@ form button{
 
 form button:hover{
     cursor: pointer;
-    background-color: var(--green-faded);
+    background-color: var(--primary-muted);
     transition: .1s ease-in-out;
 }
 
@@ -89,7 +89,7 @@ form button:hover{
     display: flex;
     justify-content: space-between;
     padding-top: 0.5rem;
-    color: var(--text-grey-lighter);
+    color: var(--ink-muted);
     font-size: 0.8rem;
 }
 
@@ -103,7 +103,7 @@ form button:hover{
 #login-checks input {
     width: fit-content;
     margin: 0.1rem;
-    accent-color: var(--green);
+    accent-color: var(--primary);
 }
 
 #login-action {
@@ -113,7 +113,7 @@ form button:hover{
     flex-direction: column;
     gap: 0.5rem;
     font-size: .8rem;
-    color: var(--text-grey);
+    color: var(--ink);
 }
 
 #login-action div {
@@ -122,12 +122,12 @@ form button:hover{
 }
 
 #login-action a {
-    color: var(--green);
+    color: var(--primary);
     font-weight: 600;
 }
 
 .error-message {
-    color: var(--red);
+    color: var(--danger);
     font-size: 0.75rem;
     margin-top: 0.5rem;
     margin-left: 0.1rem;
@@ -141,7 +141,7 @@ form button:hover{
 #onboarding form div label{
     font-size: .85rem;
     font-weight: 400;
-    color: var(--text-grey);
+    color: var(--ink);
 }
 
 #onboarding form div input{
