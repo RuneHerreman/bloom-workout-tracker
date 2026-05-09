@@ -29,12 +29,13 @@ public class LoggedWorkout: AggregateRoot<LoggedWorkoutId>
     
     public static LoggedWorkout Create(
         UserId userId,
-        List<LoggedExercise> loggedExercises)
+        List<LoggedExercise> loggedExercises,
+        DateTime? loggedAt = null)
     {
         var loggedWorkout = new LoggedWorkout(
             EntityId.New<LoggedWorkoutId>(),
             userId,
-            DateTime.UtcNow,
+            loggedAt ?? DateTime.UtcNow,
             loggedExercises
         );
 

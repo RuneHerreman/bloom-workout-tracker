@@ -12,6 +12,7 @@ public sealed record FindWorkoutTemplateByIdInput(Guid TemplateId);
 public sealed record FindWorkoutTemplateByIdOutput(WorkoutTemplateData Template);
 
 public class FindWorkoutTemplateById(
+    ICurrentUser currentUser,
     IFindWorkoutTemplatesQuery query
 ) : IUseCase<FindWorkoutTemplateByIdInput, FindWorkoutTemplateByIdOutput>
 {
@@ -23,6 +24,9 @@ public class FindWorkoutTemplateById(
 
         var result = templates.FirstOrDefault()
             ?? throw new WorkoutTemplateNotFoundException($"Template not found | Id: {input.TemplateId}");
+
+        if (result.UserId != currentUser.UserId.Value)
+            throw new WorkoutTemplateAccessDeniedException($"User {currentUser.UserId.Value} does not own template {input.TemplateId}");
 
         return new FindWorkoutTemplateByIdOutput(result);
     }

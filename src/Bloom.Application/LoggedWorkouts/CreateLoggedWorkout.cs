@@ -7,7 +7,8 @@ using Microsoft.Extensions.Logging;
 namespace Bloom.Application.LoggedWorkouts;
 
 public sealed record CreateLoggedWorkoutInput(
-    List<LoggedExerciseInput> Exercises
+    List<LoggedExerciseInput> Exercises,
+    DateTime? LoggedAt = null
 );
 
 public sealed record CreateLoggedWorkoutOutput(Guid LoggedWorkoutId);
@@ -33,7 +34,8 @@ public class CreateLoggedWorkout(
 
         var log = LoggedWorkout.Create(
             userId,
-            exercises
+            exercises,
+            input.LoggedAt
         );
 
         await logRepo.Save(log);
