@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
 {
     [DbContext(typeof(PostgresDomainDbContext))]
-    [Migration("20260508140512_AddUserBodyMetrics")]
-    partial class AddUserBodyMetrics
+    [Migration("20260509101543_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -59,6 +59,8 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("LoggedWorkouts", (string)null);
                 });
@@ -108,6 +110,8 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("WorkoutTemplates", (string)null);
                 });
 
@@ -140,6 +144,12 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
 
             modelBuilder.Entity("Bloom.Domain.LoggedWorkouts.LoggedWorkout", b =>
                 {
+                    b.HasOne("Bloom.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.OwnsMany("Bloom.Domain.LoggedWorkouts.LoggedExercise", "LoggedExercises", b1 =>
                         {
                             b1.Property<Guid>("LoggedWorkoutId");
@@ -248,6 +258,12 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
 
             modelBuilder.Entity("Bloom.Domain.WorkoutTemplates.WorkoutTemplate", b =>
                 {
+                    b.HasOne("Bloom.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.OwnsMany("Bloom.Domain.WorkoutTemplates.TemplateExercise", "TemplateExercises", b1 =>
                         {
                             b1.Property<Guid>("WorkoutTemplateId");

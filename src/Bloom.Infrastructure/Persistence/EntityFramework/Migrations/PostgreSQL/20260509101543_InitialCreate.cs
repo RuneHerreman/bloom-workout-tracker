@@ -27,6 +27,23 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                 });
 
             migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Username = table.Column<string>(type: "text", nullable: false),
+                    HashedPassword = table.Column<string>(type: "text", nullable: false),
+                    Weight = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
+                    Height = table.Column<int>(type: "integer", nullable: false),
+                    ActiveDays = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "LoggedWorkouts",
                 columns: table => new
                 {
@@ -38,20 +55,12 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_LoggedWorkouts", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
-                    Username = table.Column<string>(type: "text", nullable: false),
-                    HashedPassword = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LoggedWorkouts_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -66,7 +75,23 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WorkoutTemplates", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WorkoutTemplates_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LoggedWorkouts_UserId",
+                table: "LoggedWorkouts",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkoutTemplates_UserId",
+                table: "WorkoutTemplates",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -79,10 +104,10 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                 name: "LoggedWorkouts");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "WorkoutTemplates");
 
             migrationBuilder.DropTable(
-                name: "WorkoutTemplates");
+                name: "Users");
         }
     }
 }
