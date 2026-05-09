@@ -1,14 +1,17 @@
 import { fetchFromServer } from "../../assets/js/data/apiClient.ts";
+import type { ExerciseType, WeightUnit, DistanceUnit } from "../../types.ts";
+
+// ── Response types ────────────────────────────────────────────────────────────
 
 export interface LoggedSet {
-    type: string;
+    type: ExerciseType;
     order: number;
-    duration: string | null;
+    duration: string | null;       // TimeSpan string: "HH:mm:ss"
     distance: number | null;
-    distanceUnit: string | null;
+    distanceUnit: DistanceUnit | null;
     reps: number | null;
     weight: number | null;
-    weightUnit: string | null;
+    weightUnit: WeightUnit | null;
     rir: number | null;
 }
 
@@ -28,31 +31,94 @@ export interface LoggedWorkout {
 export interface ExercisePr {
     exerciseId: string;
     exerciseName: string;
-    exerciseType: string;
+    exerciseType: ExerciseType;
     targetMuscles: string[];
     weight: number;
-    weightUnit: string;
+    weightUnit: WeightUnit;
 }
 
 export interface MonthlyVolume {
     year: number;
     month: number;
     maxWeight: number;
-    weightUnit: string;
+    weightUnit: WeightUnit;
 }
 
 export interface ExerciseVolume {
     exerciseId: string;
     exerciseName: string;
-    exerciseType: string;
+    exerciseType: ExerciseType;
     targetMuscles: string[];
     monthlyVolume: MonthlyVolume[];
 }
 
+// ── Set factory functions ─────────────────────────────────────────────────────
+
+export function createCardioSet(
+    order: number,
+    duration: string,       // "HH:mm:ss"
+    distance: number,
+    distanceUnit: DistanceUnit
+): LoggedSet {
+    return {
+        type: "Cardio",
+        order,
+        duration,
+        distance,
+        distanceUnit,
+        reps: null,
+        weight: null,
+        weightUnit: null,
+        rir: null,
+    };
+}
+
+export function createStrengthSet(
+    order: number,
+    reps: number,
+    weight: number,
+    weightUnit: WeightUnit,
+    rir: number
+): LoggedSet {
+    return {
+        type: "Strength",
+        order,
+        reps,
+        weight,
+        weightUnit,
+        rir,
+        duration: null,
+        distance: null,
+        distanceUnit: null,
+    };
+}
+
+export function createPlyometricSet(
+    order: number,
+    reps: number,
+    weight: number,
+    weightUnit: WeightUnit,
+    rir: number
+): LoggedSet {
+    return {
+        type: "Plyometric",
+        order,
+        reps,
+        weight,
+        weightUnit,
+        rir,
+        duration: null,
+        distance: null,
+        distanceUnit: null,
+    };
+}
+
+// ── Filter types ──────────────────────────────────────────────────────────────
+
 export interface ExerciseFilters {
     name?: string;
     targetMuscleGroups?: string[];
-    exerciseTypes?: string[];
+    exerciseTypes?: ExerciseType[];
 }
 
 export interface VolumeFilters extends ExerciseFilters {
@@ -61,6 +127,8 @@ export interface VolumeFilters extends ExerciseFilters {
     toYear?: number;
     toMonth?: number;
 }
+
+// ── API functions ─────────────────────────────────────────────────────────────
 
 export async function getLogs(): Promise<LoggedWorkout[]> {
     return fetchFromServer<LoggedWorkout[]>("logs", "GET");
@@ -94,6 +162,8 @@ export async function getPRs(filters?: ExerciseFilters): Promise<ExercisePr[]> {
 export async function getVolume(filters?: VolumeFilters): Promise<ExerciseVolume[]> {
     return fetchFromServer<ExerciseVolume[]>(`logs/volume${buildVolumeParams(filters)}`, "GET");
 }
+
+// ── Query param helpers ───────────────────────────────────────────────────────
 
 function buildExerciseParams(filters?: ExerciseFilters): string {
     if (!filters) return "";

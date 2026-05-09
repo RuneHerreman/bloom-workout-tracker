@@ -1,17 +1,18 @@
 import { fetchFromServer } from "../../assets/js/data/apiClient.ts";
+import type { ExerciseType } from "../../types.ts";
 
 export interface Exercise {
     id: string;
     name: string;
     description: string;
-    type: string;
+    type: ExerciseType;
     targetMuscles: string[];
 }
 
 export interface ExerciseFilters {
     name?: string;
     targetMuscleGroups?: string[];
-    exerciseTypes?: string[];
+    exerciseTypes?: ExerciseType[];
 }
 
 export async function searchExercises(filters?: ExerciseFilters): Promise<Exercise[]> {
