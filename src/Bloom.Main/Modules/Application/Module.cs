@@ -48,8 +48,8 @@ public static class ApplicationModule
         //      LOGS
         services.AddScoped<IUseCase<FindUserLoggedWorkoutsInput, FindUserLoggedWorkoutsOutput>, FindUserLoggedWorkouts>();
         services.AddScoped<IUseCase<FindLoggedWorkoutByIdInput, FindLoggedWorkoutByIdOutput>, FindLoggedWorkoutById>();
-        services.AddScoped<IUseCase<GetExercisePrInput, GetExercisePrOutput>, GetExercisePr>();
-        services.AddScoped<IUseCase<GetExerciseVolumeOverTimeInput, GetExerciseVolumeOverTimeOutput>, GetExerciseVolumeOverTime>();
+        services.AddScoped<IUseCase<GetLoggedExercisePrsInput, GetLoggedExercisePrsOutput>, GetLoggedExercisePrs>();
+        services.AddScoped<IUseCase<GetLoggedExerciseVolumeInput, GetLoggedExerciseVolumeOutput>, GetLoggedExerciseVolume>();
 
         return services;
     }

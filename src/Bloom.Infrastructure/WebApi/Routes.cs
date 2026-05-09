@@ -79,14 +79,6 @@ public static class Routes
             .WithName(nameof(SearchExerciseCatalogController))
             .WithDescription("Search for exercises based on specified criteria.");
 
-        exerciseGroup.MapGet("/{ExerciseId:guid}/pr", GetExercisePrController.Invoke)
-            .WithName(nameof(GetExercisePrController))
-            .WithDescription("Get the current user's personal record (max weight) for a specific exercise.");
-
-        exerciseGroup.MapGet("/{ExerciseId:guid}/volume", GetExerciseVolumeController.Invoke)
-            .WithName(nameof(GetExerciseVolumeController))
-            .WithDescription("Get the current user's max weight per month for a specific exercise, from first recorded session.");
-
         return exerciseGroup;
     }
 
@@ -145,6 +137,14 @@ public static class Routes
         logGroup.MapDelete("/{LoggedWorkoutId:guid}", DeleteLoggedWorkoutController.Invoke)
             .WithName(nameof(DeleteLoggedWorkoutController))
             .WithDescription("Delete a workout log by id.");
+
+        logGroup.MapGet("/pr", GetLoggedExercisePrsController.Invoke)
+            .WithName(nameof(GetLoggedExercisePrsController))
+            .WithDescription("Get personal records (max weight per exercise) for all logged exercises. Optionally filter by name, type, or target muscle group.");
+
+        logGroup.MapGet("/volume", GetLoggedExerciseVolumeController.Invoke)
+            .WithName(nameof(GetLoggedExerciseVolumeController))
+            .WithDescription("Get monthly max weight per exercise for all logged exercises. Optionally filter by name, type, target muscle group, and date range.");
 
         return logGroup;
     }
