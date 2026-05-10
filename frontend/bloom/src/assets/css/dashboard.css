@@ -17,7 +17,7 @@
 .dashboard-title {
     font-size: 2.5rem;
     font-weight: 300;
-    margin: 0;
+    margin-bottom: 0.5rem;
 }
 
 .dashboard-body {
@@ -256,3 +256,21 @@
 
 .log-bar.cardio    { background: var(--accent); }
 .log-bar.strength  { background: var(--primary-muted); }
+
+@media(max-width: 1300px) {
+    .dashboard-body {
+        display: grid;
+        flex: 1;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: auto auto minmax(auto, 25rem) 1fr;
+        grid-template-areas:
+        "stats      stats       logs"
+        "stats      stats       logs"
+        "training   training    logs"
+        "activity   activity    logs"
+        "volume     volume      volume";
+        gap: 1.25rem;
+        width: 100%;
+        min-height: 0;
+    }
+}

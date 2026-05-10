@@ -42,10 +42,10 @@ function SidebarComponent() {
             </NavLink>
 
             <span className="sidebar-section-label">Tools</span>
-            <NavLink to="/macro-calculator" className={navClass}>
+            <NavLink to="/tools/macro-calculator" className={navClass}>
                 <GridIcon/> Macro Calculator
             </NavLink>
-            <NavLink to="/1rm-calculator" className={navClass}>
+            <NavLink to="/tools/one-rep-max" className={navClass}>
                 <GridIcon/> 1RM Calculator
             </NavLink>
 

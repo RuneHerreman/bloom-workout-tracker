@@ -29,7 +29,7 @@ function TrainingFocusWidget({ segments = [] }: TrainingFocusWidgetProps) {
                 data: segments.map(s => s.value),
                 backgroundColor: segments.map(s => s.color),
                 borderWidth: 0,
-                hoverOffset: 20
+                hoverOffset: 15
             }
         ]
     }), [segments]);
@@ -40,7 +40,7 @@ function TrainingFocusWidget({ segments = [] }: TrainingFocusWidgetProps) {
         layout: {
             padding: 15 // This creates a buffer so the segment doesn't hit the edge
         },
-        cutout: '70%',
+        cutout: '60%',
         plugins: {
             legend: {
                 display: true,
