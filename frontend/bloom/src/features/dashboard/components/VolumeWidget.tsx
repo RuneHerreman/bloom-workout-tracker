@@ -6,7 +6,7 @@ import {
     LineElement,
     Title,
     Tooltip,
-    Legend
+    Legend, type TooltipItem
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
@@ -31,11 +31,11 @@ interface VolumeWidgetProps {
 }
 
 const PALETTE = [
-    "#52C98A", // 1. Vibrant Green (Bright, energetic brand anchor)
-    "#7B5EA7", // 2. Purple Accent (Perfect complementary contrast to green)
-    "#2DA89A", // 3. Cyan Accent (Modern, fresh, and ties the cool tones together)
-    "#4A6FA5", // 4. Steel Blue Accent (Smooth, professional, and distinct)
-    "#003E1F", // 5. Brand Primary (Deep grounding color so it doesn't look like a circus)
+    "#558B6E", // 1. Vibrant Green (Muted Sage anchor)
+    "#5C7A67", // 2. Fern Accent (More green than the grey Eucalyptus)
+    "#528B8D", // 3. Cyan Accent (A dusty, saturated Teal/Cyan)
+    "#4A6E75", // 4. Steel Blue Accent (A deep Slate-Teal—no more plain grey)
+    "#3E544B", // 5. Brand Primary (Deep but soft forest)
 ];
 
 function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
@@ -43,7 +43,7 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
         labels: monthLabels,
         datasets: series.map((s, i) => {
             const color = PALETTE[i % PALETTE.length];
-            const fillColor = `${color}1A`;
+            const fillColor = `${color}33`;
 
             return {
                 label: s.name,
@@ -87,6 +87,12 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
                 padding: 12,
                 boxPadding: 6,
                 usePointStyle: true,
+                callbacks: {
+                    label: function(context: TooltipItem<'line'>) {
+                        return ` ${context.dataset.label}: ${context.raw} kg`;
+                    }
+                }
+
             }
         },
         scales: {
