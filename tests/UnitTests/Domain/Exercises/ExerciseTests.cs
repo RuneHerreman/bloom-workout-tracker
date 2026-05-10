@@ -33,7 +33,7 @@ public sealed class ExerciseTests
             "Squat",
             "Compound leg movement.",
             ExerciseType.Strength,
-            ["Quads"],
+            ["Quadriceps"],
             id
         );
 

@@ -31,18 +31,11 @@ interface VolumeWidgetProps {
 }
 
 const PALETTE = [
-    "#003E1F", // 1. Brand Primary (Deep Green)
-    "#7B5EA7", // 2. Purple Accent (High Contrast)
-    "#2D8055", // 3. Brand Mid-Green
-    "#8B5E3C", // 4. Brown/Bronze Accent
-    "#1A6640", // 5. Forest Green
-    "#4A6FA5", // 6. Steel Blue Accent
-    "#52C98A", // 7. Vibrant Green
-    "#1B6E6E", // 8. Petrol/Teal Accent
-    "#1C4B33", // 9. Muted Dark Green
-    "#8CC63F", // 10. Lime/Citrus Accent
-    "#0D5230", // 11. Deepest Green
-    "#2DA89A"  // 12. Cyan Accent
+    "#52C98A", // 1. Vibrant Green (Bright, energetic brand anchor)
+    "#7B5EA7", // 2. Purple Accent (Perfect complementary contrast to green)
+    "#2DA89A", // 3. Cyan Accent (Modern, fresh, and ties the cool tones together)
+    "#4A6FA5", // 4. Steel Blue Accent (Smooth, professional, and distinct)
+    "#003E1F", // 5. Brand Primary (Deep grounding color so it doesn't look like a circus)
 ];
 
 function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
@@ -126,7 +119,7 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
         <div className="widget volume-widget">
             <div className="volume-widget-header">
                 <p className="widget-title" style={{ fontWeight: '600', marginBottom: '1rem' }}>
-                    History of top exercises PR
+                    History of 5 most recent PRs
                 </p>
             </div>
             <div className="chart-area" style={{ height: '300px' }}>

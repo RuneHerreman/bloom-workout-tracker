@@ -167,15 +167,44 @@ function calculateWorkoutCounts(workouts: LoggedWorkout[], currentYear: number) 
  * Transform ExerciseVolumeResponse[] to ExerciseSeries[] for VolumeWidget
  */
 export function transFormVolumeDataForLineGraph(volumeData: ExerciseVolumeResponse[]): { series: ExerciseSeries[]; labels: string[] } {
-    // Find all unique year/month pairs
+    // 1. Calculate the most recent PR date for each exercise
+    const exercisesWithPrDate = volumeData.map(exercise => {
+        // Sort history chronologically to accurately track historical maximums
+        const sortedVolume = [...exercise.monthlyVolume].sort((a, b) => {
+            if (a.year !== b.year) return a.year - b.year;
+            return a.month - b.month;
+        });
+
+        let historicalMax = 0;
+        let lastPrScore = 0; // We'll use (year * 12 + month) for easy chronological sorting
+
+        sortedVolume.forEach(m => {
+            const weight = typeof m.maxWeight === "string" ? parseFloat(m.maxWeight) : m.maxWeight;
+
+            // If this month's max beats the all-time max, it's a new PR
+            if (weight > historicalMax) {
+                historicalMax = weight;
+                lastPrScore = m.year * 12 + m.month;
+            }
+        });
+
+        return { ...exercise, lastPrScore };
+    });
+
+    // 2. Sort exercises by their most recent PR date (descending) and grab the top 5
+    const top5Exercises = exercisesWithPrDate
+        .sort((a, b) => b.lastPrScore - a.lastPrScore)
+        .slice(0, 5);
+
+    // 3. Find all unique year/month pairs ONLY for the top 5 exercises
     const uniqueMonthsMap = new Map<string, { year: number; month: number }>();
-    volumeData.forEach(ex => {
+    top5Exercises.forEach(ex => {
         ex.monthlyVolume.forEach(m => {
             uniqueMonthsMap.set(`${m.year}-${m.month}`, { year: m.year, month: m.month });
         });
     });
 
-    // Sort chronologically
+    // Sort chronologically for the X-axis
     const sortedMonths = Array.from(uniqueMonthsMap.values()).sort((a, b) => {
         if (a.year !== b.year) return a.year - b.year;
         return a.month - b.month;
@@ -184,7 +213,8 @@ export function transFormVolumeDataForLineGraph(volumeData: ExerciseVolumeRespon
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const labels = sortedMonths.map(m => `${monthNames[m.month - 1]} ${m.year}`);
 
-    const series = volumeData.map((exercise) => {
+    // 4. Build the series data for the graph
+    const series = top5Exercises.map((exercise) => {
         const data = sortedMonths.map(sm => {
             const match = exercise.monthlyVolume.find(m => m.year === sm.year && m.month === sm.month);
             if (!match) return 0;
@@ -199,7 +229,6 @@ export function transFormVolumeDataForLineGraph(volumeData: ExerciseVolumeRespon
 
     return { series, labels };
 }
-
 /**
  * Transform LoggedWorkout[] to LogEntryData[] for LogWidget
  */
