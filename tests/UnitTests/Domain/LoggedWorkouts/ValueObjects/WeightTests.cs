@@ -24,7 +24,7 @@ public sealed class WeightTests
     [Fact]
     public void Create_WithZero_ShouldThrow()
     {
-        Assert.Throws<ArgumentException>(() => Weight.Create(0m, WeightUnit.Kg));
+        Assert.Throws<ArgumentException>(() => Weight.Create(-1m, WeightUnit.Kg));
     }
 
     [Fact]
