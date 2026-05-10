@@ -1,3 +1,15 @@
+import { useMemo } from 'react';
+import {
+    Chart as ChartJS,
+    ArcElement,
+    Tooltip,
+    Legend
+} from 'chart.js';
+import { Doughnut } from 'react-chartjs-2';
+import type { TooltipItem, ChartOptions, ChartData } from 'chart.js';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
 export interface FocusSegment {
     label: string;
     value: number;
@@ -14,46 +26,66 @@ const PLACEHOLDER: FocusSegment[] = [
     { label: "Cardio",      value: 20, color: "#E9762B" },
 ];
 
-function DonutChart({ segments }: { segments: FocusSegment[] }) {
-    const total = segments.reduce((acc, s) => acc + s.value, 0);
-    const r = 36;
-    const cx = 50;
-    const cy = 50;
-    const circumference = 2 * Math.PI * r;
-    const gap = 2;
-
-    let cumulative = 0;
-
-    return (
-        <svg viewBox="0 0 100 100" width="110" height="110">
-            {segments.map((seg, i) => {
-                const proportion = seg.value / total;
-                const dashLength = proportion * circumference - gap;
-                const dashOffset = (circumference / 4) - (cumulative / total) * circumference;
-                cumulative += seg.value;
-
-                return (
-                    <circle
-                        key={i}
-                        cx={cx} cy={cy} r={r}
-                        fill="none"
-                        stroke={seg.color}
-                        strokeWidth="14"
-                        strokeDasharray={`${dashLength} ${circumference - dashLength}`}
-                        strokeDashoffset={dashOffset}
-                    />
-                );
-            })}
-        </svg>
-    );
-}
-
 function TrainingFocusWidget({ segments = PLACEHOLDER }: TrainingFocusWidgetProps) {
+
+    const data: ChartData<'doughnut'> = useMemo(() => ({
+        labels: segments.map(s => s.label),
+        datasets: [
+            {
+                data: segments.map(s => s.value),
+                backgroundColor: segments.map(s => s.color),
+                borderWidth: 0,
+                hoverOffset: 4
+            }
+        ]
+    }), [segments]);
+
+    const options: ChartOptions<'doughnut'> = useMemo(() => ({
+        responsive: true,
+        maintainAspectRatio: false, // Allows the parent div to dictate height
+        cutout: '70%',
+        plugins: {
+            legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                    padding: 10
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context: TooltipItem<'doughnut'>) {
+                        // Added a unit (e.g., '%') for better UX. Adjust as needed!
+                        return ` ${context.label}: ${context.raw}%`;
+                    }
+                }
+            }
+        }
+    }), []);
+
+    if (!segments || segments.length === 0) {
+        return (
+            <div className="widget training-focus-widget">
+                <p className="widget-title">Training focus</p>
+                <div className="training-focus-content empty-state">
+                    <p>No training data available.</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="widget training-focus-widget">
             <p className="widget-title">Training focus</p>
-            <div className="training-focus-chart">
-                <DonutChart segments={segments}/>
+            <div className="training-focus-content" style={{ position: 'relative', height: '250px' }}>
+                <div className="training-focus-chart" style={{ width: '100%', height: '100%' }}>
+                    {/* 4. Added accessibility attributes */}
+                    <Doughnut
+                        data={data}
+                        options={options}
+                        aria-label="A doughnut chart showing your training focus distribution"
+                    />
+                </div>
             </div>
         </div>
     );

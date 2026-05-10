@@ -7,14 +7,41 @@ import type { LogEntryData } from "./components/LogWidget";
 /**
  * Transform ExerciseVolumeResponse[] to ExerciseSeries[] for VolumeWidget
  */
-export function transformVolumeDataToSeries(volumeData: ExerciseVolumeResponse[]): ExerciseSeries[] {
+export function transformVolumeDataToSeries(volumeData: ExerciseVolumeResponse[]): { series: ExerciseSeries[]; labels: string[] } {
     const colors = ["#003E1F", "#2D8055", "#E9762B", "#7B1616", "#595959"];
 
-    return volumeData.slice(0, 5).map((exercise, index) => ({
-        name: exercise.exerciseName,
-        data: exercise.monthlyVolume.map(m => typeof m.maxWeight === "string" ? parseFloat(m.maxWeight) : m.maxWeight),
-        color: colors[index % colors.length],
-    }));
+    // Find all unique year/month pairs
+    const uniqueMonthsMap = new Map<string, { year: number; month: number }>();
+    volumeData.forEach(ex => {
+        ex.monthlyVolume.forEach(m => {
+            uniqueMonthsMap.set(`${m.year}-${m.month}`, { year: m.year, month: m.month });
+        });
+    });
+
+    // Sort chronologically
+    const sortedMonths = Array.from(uniqueMonthsMap.values()).sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return a.month - b.month;
+    });
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const labels = sortedMonths.map(m => `${monthNames[m.month - 1]} ${m.year}`);
+
+    const series = volumeData.slice(0, 5).map((exercise, index) => {
+        const data = sortedMonths.map(sm => {
+            const match = exercise.monthlyVolume.find(m => m.year === sm.year && m.month === sm.month);
+            if (!match) return 0;
+            return typeof match.maxWeight === "string" ? parseFloat(match.maxWeight) : match.maxWeight;
+        });
+
+        return {
+            name: exercise.exerciseName,
+            data,
+            color: colors[index % colors.length],
+        };
+    });
+
+    return { series, labels };
 }
 
 /**

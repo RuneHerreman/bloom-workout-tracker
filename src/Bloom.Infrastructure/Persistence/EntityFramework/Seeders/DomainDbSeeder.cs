@@ -440,6 +440,77 @@ public class DomainDbSeeder(DomainDbContext context, ILogger<DomainDbSeeder> log
                     LoggedSet.CreateStrength(3, 8, 35m, WeightUnit.Kg, 2),
                 ]),
             ], today.AddDays(-30)),
+
+            // Historic logs for Volume Chart trends
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(benchPress, 1, [
+                    LoggedSet.CreateStrength(1, 8, 75m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 8, 77.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 6, 80m, WeightUnit.Kg, 2),
+                ]),
+                LoggedExercise.Create(overheadPress, 2, [
+                    LoggedSet.CreateStrength(1, 10, 45m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-45)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(squat, 1, [
+                    LoggedSet.CreateStrength(1, 6, 85m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 6, 90m, WeightUnit.Kg, 2),
+                ]),
+                LoggedExercise.Create(romanianDl, 2, [
+                    LoggedSet.CreateStrength(1, 10, 65m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-50)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(barbellRow, 1, [
+                    LoggedSet.CreateStrength(1, 8, 65m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 8, 67.5m, WeightUnit.Kg, 2),
+                ]),
+                LoggedExercise.Create(latPulldown, 2, [
+                    LoggedSet.CreateStrength(1, 10, 55m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-60)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(benchPress, 1, [
+                    LoggedSet.CreateStrength(1, 8, 70m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 8, 72.5m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-75)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(squat, 1, [
+                    LoggedSet.CreateStrength(1, 6, 80m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 6, 82.5m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-80)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(barbellRow, 1, [
+                    LoggedSet.CreateStrength(1, 8, 60m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 8, 62.5m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-90)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(benchPress, 1, [
+                    LoggedSet.CreateStrength(1, 8, 65m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-105)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(squat, 1, [
+                    LoggedSet.CreateStrength(1, 6, 70m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-120)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(barbellRow, 1, [
+                    LoggedSet.CreateStrength(1, 8, 55m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-135)),
         };
 
         context.LoggedWorkouts.AddRange(logs);

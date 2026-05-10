@@ -26,6 +26,7 @@ function DashboardPage() {
     const [user, setUser] = useState<User | null>(null);
     const [activityData, setActivityData] = useState<ActivityDay[]>([]);
     const [volumeSeries, setVolumeSeries] = useState<ExerciseSeries[]>([]);
+    const [volumeLabels, setVolumeLabels] = useState<string[]>(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]);
     const [focusSegments, setFocusSegments] = useState<FocusSegment[]>([]);
     const [logEntries, setLogEntries] = useState<LogEntryData[]>([]);
 
@@ -35,9 +36,11 @@ function DashboardPage() {
         Promise.all([getPRs(), getVolume(), getLogs()])
             .then(([prs, volume, workouts]) => {
                 setActivityData(transformLogsToActivityData(workouts));
-                setVolumeSeries(transformVolumeDataToSeries(volume));
+                const { series, labels } = transformVolumeDataToSeries(volume);
+                setVolumeSeries(series);
+                setVolumeLabels(labels);
                 setFocusSegments(transformPrDataToFocus(prs));
-                setLogEntries(transformWorkoutLogsToEntries(workouts).slice(0, 9));
+                setLogEntries(transformWorkoutLogsToEntries(workouts).slice(0, 10));
             })
             .catch(() => null);
     }, []);
@@ -60,7 +63,7 @@ function DashboardPage() {
                 <div className="dash-activity"><ActivityWidget data={activityData}/></div>
                 <div className="dash-training"><TrainingFocusWidget segments={focusSegments}/></div>
                 <div className="dash-logs"><LogWidget entries={logEntries}/></div>
-                <div className="dash-volume"><VolumeWidget series={volumeSeries} monthLabels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]}/></div>
+                <div className="dash-volume"><VolumeWidget series={volumeSeries} monthLabels={volumeLabels}/></div>
             </div>
         </div>
     );
