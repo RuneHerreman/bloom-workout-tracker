@@ -71,6 +71,15 @@ public static class Asserts
         if (value < 0)
             throw new ArgumentException("Value cannot be negative.", paramName);
     }
+
+    public static void EnsureNotNegative(
+        decimal value,
+        [CallerArgumentExpression(nameof(value))] string? paramName = ""
+    )
+    {
+        if (value < 0m)
+            throw new ArgumentException("Value cannot be negative.", paramName);
+    }
     
     public static void EnsureLessThan(
         int value,

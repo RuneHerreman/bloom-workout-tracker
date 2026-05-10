@@ -24,7 +24,7 @@ public record Weight: ValueObject
 
     private void Validate()
     {
-        Asserts.EnsureGreaterThan(Value, 0m);
+        Asserts.EnsureNotNegative(Value);
     }
 }
 

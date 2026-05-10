@@ -1,21 +1,30 @@
-﻿using Bloom.Domain.Exercises;
+﻿using Bloom.Application.Contracts.Ports;
+using Bloom.Domain.Exercises;
 using Bloom.Domain.Exercises.Enums;
 using Bloom.Domain.Exercises.ValueObjects;
+using Bloom.Domain.LoggedWorkouts;
+using Bloom.Domain.LoggedWorkouts.ValueObjects;
 using Bloom.Domain.Shared;
 using Bloom.Domain.Users;
 using Bloom.Domain.Users.ValueObjects;
+using Bloom.Domain.WorkoutTemplates;
+using Bloom.Infrastructure.Auth;
 using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Bloom.Infrastructure.Persistence.EntityFramework.Seeders;
 
-public class DomainDbSeeder(DomainDbContext context, ILogger<DomainDbSeeder> logger)
+public class DomainDbSeeder(DomainDbContext context, ILogger<DomainDbSeeder> logger, IPasswordHasher passwordHasher)
 {
+    private static readonly UserId SeededUserId = EntityId.New<UserId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490000"));
+
     public async Task Seed()
     {
         await SeedExercises();
         await SeedUsers();
+        await SeedTemplates();
+        await SeedLogs();
     }
 
     private async Task SeedUsers()
@@ -25,7 +34,7 @@ public class DomainDbSeeder(DomainDbContext context, ILogger<DomainDbSeeder> log
 
         var users = new List<User>
         {
-            User.Create("frans.appelmans@gmail.com", "FransAppelmans", "test", 80m, 180, 3, EntityId.New<UserId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490000"))),
+            User.Create("frans.appelmans@gmail.com", "FransAppelmans", passwordHasher.HashPassword("test"), 80m, 180, 3, EntityId.New<UserId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490000"))),
         };
         
         context.Users.AddRange(users);
@@ -118,6 +127,322 @@ public class DomainDbSeeder(DomainDbContext context, ILogger<DomainDbSeeder> log
         };
 
         context.Exercises.AddRange(exercises);
+        await context.SaveChangesAsync();
+    }
+
+    private async Task SeedTemplates()
+    {
+        if (await context.WorkoutTemplates.AnyAsync())
+            return;
+
+        // Exercise IDs from seeded exercises
+        var benchPress      = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490001"));
+        var inclineBench    = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490002"));
+        var overheadPress   = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490006"));
+        var lateralRaise    = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490007"));
+        var tricepPushdown  = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490021"));
+        var barbellRow      = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490011"));
+        var latPulldown     = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490013"));
+        var seatedCableRow  = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490014"));
+        var barbellCurl     = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490016"));
+        var hammerCurl      = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490018"));
+        var squat           = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490026"));
+        var legPress        = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490027"));
+        var romanianDl      = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490031"));
+        var legCurl         = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490032"));
+        var calfRaise       = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490037"));
+
+        var templates = new List<WorkoutTemplate>
+        {
+            WorkoutTemplate.Create(SeededUserId, "Push", [
+                TemplateExercise.Create(benchPress, 1, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 8),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 8),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 6),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 4, 6),
+                ]),
+                TemplateExercise.Create(inclineBench, 2, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 10),
+                ]),
+                TemplateExercise.Create(overheadPress, 3, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 10),
+                ]),
+                TemplateExercise.Create(lateralRaise, 4, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 15),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 15),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 15),
+                ]),
+                TemplateExercise.Create(tricepPushdown, 5, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 12),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 12),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 12),
+                ]),
+            ]),
+
+            WorkoutTemplate.Create(SeededUserId, "Pull", [
+                TemplateExercise.Create(barbellRow, 1, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 8),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 8),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 8),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 4, 8),
+                ]),
+                TemplateExercise.Create(latPulldown, 2, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 10),
+                ]),
+                TemplateExercise.Create(seatedCableRow, 3, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 12),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 12),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 12),
+                ]),
+                TemplateExercise.Create(barbellCurl, 4, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 10),
+                ]),
+                TemplateExercise.Create(hammerCurl, 5, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 12),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 12),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 12),
+                ]),
+            ]),
+
+            WorkoutTemplate.Create(SeededUserId, "Legs", [
+                TemplateExercise.Create(squat, 1, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 6),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 6),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 6),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 4, 6),
+                ]),
+                TemplateExercise.Create(legPress, 2, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 10),
+                ]),
+                TemplateExercise.Create(romanianDl, 3, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 10),
+                ]),
+                TemplateExercise.Create(legCurl, 4, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 12),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 12),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 12),
+                ]),
+                TemplateExercise.Create(calfRaise, 5, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 15),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 15),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 15),
+                ]),
+            ]),
+        };
+
+        context.WorkoutTemplates.AddRange(templates);
+        await context.SaveChangesAsync();
+    }
+
+    private async Task SeedLogs()
+    {
+        if (await context.LoggedWorkouts.AnyAsync())
+            return;
+
+        var benchPress  = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490001"));
+        var overheadPress = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490006"));
+        var tricepPushdown = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490021"));
+        var barbellRow  = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490011"));
+        var latPulldown = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490013"));
+        var barbellCurl = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490016"));
+        var squat       = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490026"));
+        var romanianDl  = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490031"));
+        var legCurl     = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490032"));
+        var treadmill   = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490051"));
+        var boxJump     = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490061"));
+
+        var today = DateTime.UtcNow.Date;
+
+        var logs = new List<LoggedWorkout>
+        {
+            // Week -1: Push / Pull / Legs
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(benchPress, 1, [
+                    LoggedSet.CreateStrength(1, 8, 90m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 8, 92.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 6, 95m, WeightUnit.Kg, 1),
+                    LoggedSet.CreateStrength(4, 6, 97.5m, WeightUnit.Kg, 2),
+                ]),
+                LoggedExercise.Create(overheadPress, 2, [
+                    LoggedSet.CreateStrength(1, 10, 55m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 10, 57.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 8, 60m, WeightUnit.Kg, 1),
+                ]),
+                LoggedExercise.Create(tricepPushdown, 3, [
+                    LoggedSet.CreateStrength(1, 12, 35m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 12, 37.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 10, 40m, WeightUnit.Kg, 1),
+                ]),
+            ], today.AddDays(-2)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(barbellRow, 1, [
+                    LoggedSet.CreateStrength(1, 8, 75m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 8, 77.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 8, 80m, WeightUnit.Kg, 1),
+                    LoggedSet.CreateStrength(4, 6, 82.5m, WeightUnit.Kg, 1),
+                ]),
+                LoggedExercise.Create(latPulldown, 2, [
+                    LoggedSet.CreateStrength(1, 10, 65m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 10, 67.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 10, 70m, WeightUnit.Kg, 1),
+                ]),
+                LoggedExercise.Create(barbellCurl, 3, [
+                    LoggedSet.CreateStrength(1, 10, 32.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 10, 35m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 8, 37.5m, WeightUnit.Kg, 1),
+                ]),
+            ], today.AddDays(-4)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(squat, 1, [
+                    LoggedSet.CreateStrength(1, 6, 105m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 6, 107.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 6, 110m, WeightUnit.Kg, 1),
+                    LoggedSet.CreateStrength(4, 5, 112.5m, WeightUnit.Kg, 2),
+                ]),
+                LoggedExercise.Create(romanianDl, 2, [
+                    LoggedSet.CreateStrength(1, 10, 80m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 10, 82.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 8, 85m, WeightUnit.Kg, 1),
+                ]),
+                LoggedExercise.Create(legCurl, 3, [
+                    LoggedSet.CreateStrength(1, 12, 45m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 12, 47.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 10, 50m, WeightUnit.Kg, 1),
+                ]),
+            ], today.AddDays(-6)),
+
+            // Week -2
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(benchPress, 1, [
+                    LoggedSet.CreateStrength(1, 8, 87.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 8, 90m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 6, 92.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(4, 6, 95m, WeightUnit.Kg, 2),
+                ]),
+                LoggedExercise.Create(overheadPress, 2, [
+                    LoggedSet.CreateStrength(1, 10, 52.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 10, 55m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 8, 57.5m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-9)),
+
+            // Cardio session
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(treadmill, 1, [
+                    LoggedSet.CreateCardio(1, TimeSpan.FromMinutes(30), 5.0m, DistanceUnit.Km),
+                ]),
+            ], today.AddDays(-11)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(squat, 1, [
+                    LoggedSet.CreateStrength(1, 6, 100m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 6, 102.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 6, 105m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(4, 5, 107.5m, WeightUnit.Kg, 2),
+                ]),
+                LoggedExercise.Create(romanianDl, 2, [
+                    LoggedSet.CreateStrength(1, 10, 77.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 10, 80m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 8, 82.5m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-13)),
+
+            // Week -3: Push with plyo finisher (mixed)
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(benchPress, 1, [
+                    LoggedSet.CreateStrength(1, 8, 85m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 8, 87.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 6, 90m, WeightUnit.Kg, 2),
+                ]),
+                LoggedExercise.Create(boxJump, 2, [
+                    LoggedSet.CreatePlyometric(1, 5, 0m, WeightUnit.Kg, 0),
+                    LoggedSet.CreatePlyometric(2, 5, 0m, WeightUnit.Kg, 0),
+                    LoggedSet.CreatePlyometric(3, 5, 0m, WeightUnit.Kg, 0),
+                ]),
+            ], today.AddDays(-16)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(barbellRow, 1, [
+                    LoggedSet.CreateStrength(1, 8, 72.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 8, 75m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 8, 77.5m, WeightUnit.Kg, 2),
+                ]),
+                LoggedExercise.Create(latPulldown, 2, [
+                    LoggedSet.CreateStrength(1, 10, 62.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 10, 65m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 10, 67.5m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-18)),
+
+            // Cardio
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(treadmill, 1, [
+                    LoggedSet.CreateCardio(1, TimeSpan.FromMinutes(25), 4.0m, DistanceUnit.Km),
+                ]),
+            ], today.AddDays(-20)),
+
+            // Week -4 and beyond
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(benchPress, 1, [
+                    LoggedSet.CreateStrength(1, 8, 82.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 8, 85m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 6, 87.5m, WeightUnit.Kg, 2),
+                ]),
+                LoggedExercise.Create(overheadPress, 2, [
+                    LoggedSet.CreateStrength(1, 10, 50m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 10, 52.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 8, 55m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-23)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(squat, 1, [
+                    LoggedSet.CreateStrength(1, 6, 97.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 6, 100m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 5, 102.5m, WeightUnit.Kg, 2),
+                ]),
+                LoggedExercise.Create(romanianDl, 2, [
+                    LoggedSet.CreateStrength(1, 10, 75m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 10, 77.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 8, 80m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-25)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(treadmill, 1, [
+                    LoggedSet.CreateCardio(1, TimeSpan.FromMinutes(35), 5.5m, DistanceUnit.Km),
+                ]),
+            ], today.AddDays(-27)),
+
+            LoggedWorkout.Create(SeededUserId, [
+                LoggedExercise.Create(barbellRow, 1, [
+                    LoggedSet.CreateStrength(1, 8, 70m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 8, 72.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 8, 75m, WeightUnit.Kg, 2),
+                ]),
+                LoggedExercise.Create(barbellCurl, 2, [
+                    LoggedSet.CreateStrength(1, 10, 30m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(2, 10, 32.5m, WeightUnit.Kg, 2),
+                    LoggedSet.CreateStrength(3, 8, 35m, WeightUnit.Kg, 2),
+                ]),
+            ], today.AddDays(-30)),
+        };
+
+        context.LoggedWorkouts.AddRange(logs);
         await context.SaveChangesAsync();
     }
 }

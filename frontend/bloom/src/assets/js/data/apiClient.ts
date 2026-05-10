@@ -32,7 +32,7 @@ export async function fetchFromServer<T>(
     const response = await fetch(`${API_BASE_URL}${path}`, options);
     const json = await response.json();
 
-    if (json.failure) {
+    if (!response.ok || json.failure) {
         throw json as ApiError;
     }
 

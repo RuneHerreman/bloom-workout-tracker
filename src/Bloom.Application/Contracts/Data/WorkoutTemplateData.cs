@@ -8,7 +8,7 @@ public sealed record WorkoutTemplateData
     public Guid Id { get; init; }
     public Guid UserId { get; init; }
     public string Name { get; init; } = string.Empty;
-    public IReadOnlyList<TemplateExerciseData> TemplateExercises { get; init; } = [];
+    public List<TemplateExerciseData> TemplateExercises { get; init; } = [];
 }
 
 public sealed record TemplateExerciseData
@@ -16,7 +16,7 @@ public sealed record TemplateExerciseData
     public Guid Id { get; init; }
     public Guid ExerciseId { get; init; }
     public int Order { get; init; }
-    public IReadOnlyList<PlannedSetData> Sets { get; init; } = [];
+    public List<PlannedSetData> Sets { get; init; } = [];
 }
 
 public sealed record PlannedSetData

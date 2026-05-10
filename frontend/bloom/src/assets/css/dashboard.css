@@ -23,6 +23,7 @@
 .dashboard-body {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto 1fr;
     grid-template-areas:
         "stats      stats       stats       stats"
         "activity   activity    training    logs"
@@ -58,7 +59,7 @@
 .widget {
     background: #fff;
     border: 0.0625rem solid var(--border);
-    border-radius: 0.75rem;
+    border-radius: 0.25rem;
     padding: 1.25rem;
 }
 
@@ -69,6 +70,12 @@
 }
 
 /* ── Stat widget ─────────────────────────────────────────────────────────────── */
+.stat-widget {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
 
 .stat-widget-header {
     display: flex;
@@ -78,10 +85,7 @@
 }
 
 .stat-label {
-    font-size: 0.63rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
+    font-size: 0.825rem;
     color: var(--ink-muted);
 }
 
@@ -126,9 +130,9 @@
     background: var(--border);
 }
 
-.activity-cell[data-level="1"] { background: rgba(233, 118, 43, 0.25); }
-.activity-cell[data-level="2"] { background: rgba(233, 118, 43, 0.60); }
-.activity-cell[data-level="3"] { background: var(--accent); }
+.activity-cell[data-level="1"] { background: #E9762B; }           /* Cardio only - orange */
+.activity-cell[data-level="2"] { background: #003E1F; }           /* Strength only - green */
+.activity-cell[data-level="3"] { background: #5A752D; }           /* Mix - blend of green and orange */
 
 /* ── Training focus widget ───────────────────────────────────────────────────── */
 
