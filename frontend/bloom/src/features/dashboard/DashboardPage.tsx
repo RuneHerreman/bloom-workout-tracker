@@ -48,7 +48,7 @@ function DashboardPage() {
                 setVolumeLabels(labels);
                 setFocusSegments(transformPrDataForDonutChart(prs));
                 setLogEntries(transformWorkoutLogsForLogPanel(workouts).slice(0, 10));
-                setStats(calculateDashboardStats(workouts, prs));
+                setStats(calculateDashboardStats(workouts));
             })
             .catch(() => null);
     }, []);
@@ -78,7 +78,7 @@ function DashboardPage() {
                         subtext={`best = ${stats?.bestStreak ?? 0} days`}
                     />
                     <StatWidget
-                        label="Total PRs"
+                        label="Total PRs (this month)"
                         value={stats?.totalPRs ?? 0}
                     />
                 </div>

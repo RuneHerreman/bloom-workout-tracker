@@ -13,22 +13,29 @@ export interface DashboardStats {
     totalPRs: number;
 }
 
-export function calculateDashboardStats(workouts: LoggedWorkout[], prs: ExercisePrResponse[]): DashboardStats {
+export function calculateDashboardStats(workouts: LoggedWorkout[]): DashboardStats {
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
 
-    // 1. Workouts this year & % change from last year
-    const thisYearCount = workouts.filter(w => new Date(w.loggedAt).getFullYear() === currentYear).length;
-    const lastYearCount = workouts.filter(w => new Date(w.loggedAt).getFullYear() === currentYear - 1).length;
+    const { workoutsThisYear, workoutChange } = calculateWorkoutCounts(workouts, currentYear);
+    const { volumeThisMonth, volumeChange } = calculateVolume(workouts, currentYear, currentMonth);
+    const { currentStreak, bestStreak } = calculateStreaks(workouts, now);
+    const totalPRs = calculateMonthlyPRs(workouts, currentYear, currentMonth);
 
-    // Require a minimum baseline of 5 workouts last year to show a percentage
-    const workoutChange = lastYearCount >= 5
-        ? Math.round(((thisYearCount - lastYearCount) / lastYearCount) * 100)
-        : undefined;
+    return {
+        workoutsThisYear,
+        workoutChange,
+        volumeThisMonth,
+        volumeChange,
+        currentStreak,
+        bestStreak,
+        totalPRs
+    };
+}
 
-    // 2. Volume this month (Sum of weight * reps) & % change
-    const calcVolume = (year: number, month: number) => {
+function calculateVolume(workouts: LoggedWorkout[], currentYear: number, currentMonth: number) {
+    const calcVolForMonth = (year: number, month: number) => {
         return workouts.reduce((total, w) => {
             const d = new Date(w.loggedAt);
             if (d.getFullYear() === year && d.getMonth() === month) {
@@ -43,17 +50,21 @@ export function calculateDashboardStats(workouts: LoggedWorkout[], prs: Exercise
         }, 0);
     };
 
-    const volThisMonth = calcVolume(currentYear, currentMonth);
+    const volThisMonth = calcVolForMonth(currentYear, currentMonth);
+
     const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const volLastMonth = calcVolume(prevMonthYear, prevMonth);
+    const volLastMonth = calcVolForMonth(prevMonthYear, prevMonth);
 
     const volumeThisMonthStr = volThisMonth >= 1000 ? (volThisMonth / 1000).toFixed(1) + 'k' : volThisMonth.toString();
     const volumeChange = volLastMonth > 0
         ? Math.round(((volThisMonth - volLastMonth) / volLastMonth) * 100)
         : undefined;
 
-    // 3. Active & Best Streak (Consecutive days)
+    return { volumeThisMonth: volumeThisMonthStr, volumeChange };
+}
+
+function calculateStreaks(workouts: LoggedWorkout[], now: Date) {
     const dates = [...new Set(workouts.map(w => w.loggedAt.slice(0, 10)))].sort((a, b) => b.localeCompare(a));
 
     let currentStreak = 0;
@@ -78,7 +89,7 @@ export function calculateDashboardStats(workouts: LoggedWorkout[], prs: Exercise
         }
         bestStreak = Math.max(maxStreak, tempStreak);
 
-        // Calculate current streak (checks if the latest workout was today or yesterday)
+        // Calculate current streak
         const getLocalDateStr = (d: Date) => {
             const pad = (n: number) => String(n).padStart(2, '0');
             return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -105,19 +116,52 @@ export function calculateDashboardStats(workouts: LoggedWorkout[], prs: Exercise
         }
     }
 
-    // 4. PRs
-    const totalPRs = prs.length;
-
-    return {
-        workoutsThisYear: thisYearCount,
-        workoutChange,
-        volumeThisMonth: volumeThisMonthStr,
-        volumeChange,
-        currentStreak,
-        bestStreak,
-        totalPRs
-    };
+    return { currentStreak, bestStreak };
 }
+
+function calculateMonthlyPRs(workouts: LoggedWorkout[], currentYear: number, currentMonth: number) {
+    const historicalMaxes: Record<string, number> = {};
+    const thisMonthMaxes: Record<string, number> = {};
+    const startOfThisMonth = new Date(currentYear, currentMonth, 1);
+
+    workouts.forEach(workout => {
+        const workoutDate = new Date(workout.loggedAt);
+        const isThisMonth = workoutDate >= startOfThisMonth;
+
+        workout.exercises.forEach(ex => {
+            const exerciseId = ex.exerciseId;
+            const maxWeightInWorkout = Math.max(...ex.sets.map(s => s.weight || 0), 0);
+
+            if (isThisMonth) {
+                thisMonthMaxes[exerciseId] = Math.max(thisMonthMaxes[exerciseId] || 0, maxWeightInWorkout);
+            } else {
+                historicalMaxes[exerciseId] = Math.max(historicalMaxes[exerciseId] || 0, maxWeightInWorkout);
+            }
+        });
+    });
+
+    let prsThisMonthCount = 0;
+    for (const [exerciseId, thisMonthMax] of Object.entries(thisMonthMaxes)) {
+        const historicalMax = historicalMaxes[exerciseId] || 0;
+        if (thisMonthMax > 0 && thisMonthMax > historicalMax) {
+            prsThisMonthCount++;
+        }
+    }
+
+    return prsThisMonthCount;
+}
+
+function calculateWorkoutCounts(workouts: LoggedWorkout[], currentYear: number) {
+    const thisYearCount = workouts.filter(w => new Date(w.loggedAt).getFullYear() === currentYear).length;
+    const lastYearCount = workouts.filter(w => new Date(w.loggedAt).getFullYear() === currentYear - 1).length;
+
+    const workoutChange = lastYearCount >= 5
+        ? Math.round(((thisYearCount - lastYearCount) / lastYearCount) * 100)
+        : undefined;
+
+    return { workoutsThisYear: thisYearCount, workoutChange };
+}
+
 
 /**
  * Transform ExerciseVolumeResponse[] to ExerciseSeries[] for VolumeWidget
@@ -168,9 +212,28 @@ export function transformWorkoutLogsForLogPanel(workouts: LoggedWorkout[]): LogE
             return firstSetType;
         });
 
+        const typeCounts: Record<string, number> = {};
+
+        workout.exercises.forEach(ex => {
+            ex.sets.forEach(set => {
+                const type = set.type?.toLowerCase() || "strength";
+                typeCounts[type] = (typeCounts[type] || 0) + 1;
+            });
+        });
+
+        // 2. Find the type with the highest count
+        let majorityType = "strength"; // Default fallback
+        let maxCount = 0;
+
+        for (const [type, count] of Object.entries(typeCounts)) {
+            if (count > maxCount) {
+                maxCount = count;
+                majorityType = type;
+            }
+        }
         return {
             id: workout.id,
-            name: "",
+            name: majorityType,
             date: formatWorkoutDate(new Date(workout.loggedAt)),
             exerciseCount: workout.exercises.length,
             exerciseTypes: exerciseTypes,

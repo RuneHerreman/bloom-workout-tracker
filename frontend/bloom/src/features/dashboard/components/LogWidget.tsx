@@ -9,14 +9,14 @@ export interface LogEntryData {
     exerciseTypes: string[];
 }
 
-function LogEntry({ date, exerciseCount, exerciseTypes }: LogEntryData) {
+function LogEntry({ name, date, exerciseCount, exerciseTypes }: LogEntryData) {
     return (
         <div className="log-entry">
             <div className="log-entry-header">
-                <span className="log-entry-name">{exerciseTypes}</span>
+                <span className="log-entry-name">{name}</span>
                 <span className="log-entry-date">{date}</span>
             </div>
-            <span className="log-entry-count">{exerciseCount} Exercises</span>
+            <span className="log-entry-count">{exerciseCount} Exercise{exerciseCount === 1 ? "" : "s"}</span>
 
             <div className="log-bars" style={{
                 display: 'flex',

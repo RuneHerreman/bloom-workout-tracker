@@ -50,11 +50,20 @@ function TrainingFocusWidget({ segments = [] }: TrainingFocusWidgetProps) {
                 }
             },
             tooltip: {
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                titleColor: '#333',
+                bodyColor: '#666',
+                borderColor: '#e3e3e3',
+                borderWidth: 1,
+                padding: 12,
+                boxPadding: 6,
+                usePointStyle: true,
                 callbacks: {
                     label: function(context: TooltipItem<'doughnut'>) {
                         return ` ${context.label}: ${context.raw}`;
                     }
                 }
+
             },
             hoverOffset: 20,
         }
