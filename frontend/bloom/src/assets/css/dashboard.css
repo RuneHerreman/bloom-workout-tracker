@@ -22,14 +22,12 @@
 
 .dashboard-body {
     display: grid;
-    grid-template-columns: 2fr 1fr 18rem;
-    grid-template-rows: auto 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     grid-template-areas:
-        "stats    stats    stats"
-        "activity training logs"
-        "volume   volume   logs";
+        "stats      stats       stats       stats"
+        "activity   activity    training    logs"
+        "volume     volume      volume      logs";
     gap: 1.25rem;
-    flex: 1;
     width: 100%;
     min-height: 0;
 }

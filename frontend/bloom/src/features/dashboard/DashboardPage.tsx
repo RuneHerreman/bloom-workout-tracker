@@ -33,7 +33,7 @@ function DashboardPage() {
             <div className="dashboard-body">
                 <div className="dashboard-stats">
                     <StatWidget label="Workouts (this year)" value="38" changePercent={20}/>
-                    <StatWidget label="Volume" value="12.5k" changePercent={5}/>
+                    <StatWidget label="Volume (this month)" value="12.5k" changePercent={5}/>
                     <StatWidget label="Active streak" value="3 days" subtext="best = 5 days"/>
                     <StatWidget label="PRs this month" value="0" changePercent={-60}/>
                 </div>
