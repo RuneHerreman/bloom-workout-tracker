@@ -13,10 +13,10 @@ import LogWidget from "./components/LogWidget.tsx";
 import type { LogEntryData } from "./components/LogWidget";
 import { getLogs, getPRs, getVolume } from "./api.ts";
 import {
-    transformVolumeDataToSeries,
-    transformWorkoutLogsToEntries,
-    transformPrDataToFocus,
-    transformLogsToActivityData,
+    transFormVolumeDataForLineGraph,
+    transformWorkoutLogsForLogPanel,
+    transformPrDataForDonutChart,
+    transformLogsForActivityCalendar,
     calculateDashboardStats,
     type DashboardStats
 } from "./transforms.ts";
@@ -42,12 +42,12 @@ function DashboardPage() {
 
         Promise.all([getPRs(), getVolume(), getLogs()])
             .then(([prs, volume, workouts]) => {
-                setActivityData(transformLogsToActivityData(workouts));
-                const { series, labels } = transformVolumeDataToSeries(volume);
+                setActivityData(transformLogsForActivityCalendar(workouts));
+                const { series, labels } = transFormVolumeDataForLineGraph(volume);
                 setVolumeSeries(series);
                 setVolumeLabels(labels);
-                setFocusSegments(transformPrDataToFocus(prs));
-                setLogEntries(transformWorkoutLogsToEntries(workouts).slice(0, 10));
+                setFocusSegments(transformPrDataForDonutChart(prs));
+                setLogEntries(transformWorkoutLogsForLogPanel(workouts).slice(0, 10));
                 setStats(calculateDashboardStats(workouts, prs));
             })
             .catch(() => null);

@@ -122,7 +122,7 @@ export function calculateDashboardStats(workouts: LoggedWorkout[], prs: Exercise
 /**
  * Transform ExerciseVolumeResponse[] to ExerciseSeries[] for VolumeWidget
  */
-export function transformVolumeDataToSeries(volumeData: ExerciseVolumeResponse[]): { series: ExerciseSeries[]; labels: string[] } {
+export function transFormVolumeDataForLineGraph(volumeData: ExerciseVolumeResponse[]): { series: ExerciseSeries[]; labels: string[] } {
     // Find all unique year/month pairs
     const uniqueMonthsMap = new Map<string, { year: number; month: number }>();
     volumeData.forEach(ex => {
@@ -159,7 +159,7 @@ export function transformVolumeDataToSeries(volumeData: ExerciseVolumeResponse[]
 /**
  * Transform LoggedWorkout[] to LogEntryData[] for LogWidget
  */
-export function transformWorkoutLogsToEntries(workouts: LoggedWorkout[]): LogEntryData[] {
+export function transformWorkoutLogsForLogPanel(workouts: LoggedWorkout[]): LogEntryData[] {
     return workouts.map((workout) => {
         // Map each exercise to its type
         const exerciseTypes = workout.exercises.map(ex => {
@@ -170,7 +170,7 @@ export function transformWorkoutLogsToEntries(workouts: LoggedWorkout[]): LogEnt
 
         return {
             id: workout.id,
-            name: inferWorkoutName(workout),
+            name: "",
             date: formatWorkoutDate(new Date(workout.loggedAt)),
             exerciseCount: workout.exercises.length,
             exerciseTypes: exerciseTypes,
@@ -181,7 +181,7 @@ export function transformWorkoutLogsToEntries(workouts: LoggedWorkout[]): LogEnt
 /**
  * Transform ExercisePrResponse[] to FocusSegment[] for TrainingFocusWidget
  */
-export function transformPrDataToFocus(prData: ExercisePrResponse[]): FocusSegment[] {
+export function transformPrDataForDonutChart(prData: ExercisePrResponse[]): FocusSegment[] {
     const typeMap = new Map<string, { count: number; color: string }>();
     const colors: { [key: string]: string } = {
         "strength": "#003E1F",
@@ -208,7 +208,7 @@ export function transformPrDataToFocus(prData: ExercisePrResponse[]): FocusSegme
  * Transform LoggedWorkout[] to ActivityDay[] for ActivityWidget
  * Colors by workout type: Level 1 = cardio, Level 2 = strength, Level 3 = mix
  */
-export function transformLogsToActivityData(workouts: LoggedWorkout[]): ActivityDay[] {
+export function transformLogsForActivityCalendar(workouts: LoggedWorkout[]): ActivityDay[] {
     const today = new Date();
     const days: ActivityDay[] = [];
 
@@ -244,28 +244,6 @@ export function transformLogsToActivityData(workouts: LoggedWorkout[]): Activity
     }
 
     return days;
-}
-
-function inferWorkoutName(workout: LoggedWorkout): string {
-    const exerciseIdMap: { [key: string]: string } = {
-        "550e8400-e29b-41d4-a716-446655440001": "Bench Press",
-        "550e8400-e29b-41d4-a716-446655440002": "Squat",
-        "550e8400-e29b-41d4-a716-446655440003": "Deadlift",
-        "550e8400-e29b-41d4-a716-446655440004": "Overhead Press",
-        "550e8400-e29b-41d4-a716-446655440005": "Barbell Row",
-    };
-
-    const exerciseNames = workout.exercises
-        .map(ex => exerciseIdMap[ex.exerciseId] || "")
-        .join(" ")
-        .toLowerCase();
-
-    if (exerciseNames.includes("bench") || exerciseNames.includes("press")) return "Push";
-    if (exerciseNames.includes("row") || exerciseNames.includes("pull")) return "Pull";
-    if (exerciseNames.includes("squat") || exerciseNames.includes("deadlift")) return "Legs";
-    if (exerciseNames.includes("cardio") || exerciseNames.includes("run")) return "Cardio";
-
-    return "Workout";
 }
 
 function formatWorkoutDate(date: Date): string {
