@@ -8,8 +8,6 @@ import type { LogEntryData } from "./components/LogWidget";
  * Transform ExerciseVolumeResponse[] to ExerciseSeries[] for VolumeWidget
  */
 export function transformVolumeDataToSeries(volumeData: ExerciseVolumeResponse[]): { series: ExerciseSeries[]; labels: string[] } {
-    const colors = ["#003E1F", "#2D8055", "#E9762B", "#7B1616", "#595959"];
-
     // Find all unique year/month pairs
     const uniqueMonthsMap = new Map<string, { year: number; month: number }>();
     volumeData.forEach(ex => {
@@ -27,7 +25,7 @@ export function transformVolumeDataToSeries(volumeData: ExerciseVolumeResponse[]
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const labels = sortedMonths.map(m => `${monthNames[m.month - 1]} ${m.year}`);
 
-    const series = volumeData.slice(0, 5).map((exercise, index) => {
+    const series = volumeData.map((exercise) => {
         const data = sortedMonths.map(sm => {
             const match = exercise.monthlyVolume.find(m => m.year === sm.year && m.month === sm.month);
             if (!match) return 0;
@@ -37,7 +35,6 @@ export function transformVolumeDataToSeries(volumeData: ExerciseVolumeResponse[]
         return {
             name: exercise.exerciseName,
             data,
-            color: colors[index % colors.length],
         };
     });
 
@@ -49,16 +46,19 @@ export function transformVolumeDataToSeries(volumeData: ExerciseVolumeResponse[]
  */
 export function transformWorkoutLogsToEntries(workouts: LoggedWorkout[]): LogEntryData[] {
     return workouts.map((workout) => {
-        const allSets = workout.exercises.flatMap(ex => ex.sets);
-        const cardioSetCount = allSets.filter(s => s.type?.toLowerCase() === "cardio").length;
-        const totalSets = allSets.length;
+        // Map each exercise to its type
+        const exerciseTypes = workout.exercises.map(ex => {
+            // Check the first set to determine if the exercise is cardio or strength
+            const firstSetType = ex.sets[0]?.type?.toLowerCase() || "strength";
+            return firstSetType;
+        });
 
         return {
             id: workout.id,
             name: inferWorkoutName(workout),
             date: formatWorkoutDate(new Date(workout.loggedAt)),
             exerciseCount: workout.exercises.length,
-            cardioRatio: totalSets > 0 ? cardioSetCount / totalSets : 0,
+            exerciseTypes: exerciseTypes,
         };
     });
 }

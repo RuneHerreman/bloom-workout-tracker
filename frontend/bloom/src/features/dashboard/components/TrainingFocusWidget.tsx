@@ -20,13 +20,7 @@ interface TrainingFocusWidgetProps {
     segments?: FocusSegment[];
 }
 
-const PLACEHOLDER: FocusSegment[] = [
-    { label: "Strength",    value: 55, color: "#003E1F" },
-    { label: "Plyometric",  value: 25, color: "#2D8055" },
-    { label: "Cardio",      value: 20, color: "#E9762B" },
-];
-
-function TrainingFocusWidget({ segments = PLACEHOLDER }: TrainingFocusWidgetProps) {
+function TrainingFocusWidget({ segments = [] }: TrainingFocusWidgetProps) {
 
     const data: ChartData<'doughnut'> = useMemo(() => ({
         labels: segments.map(s => s.label),
@@ -35,14 +29,17 @@ function TrainingFocusWidget({ segments = PLACEHOLDER }: TrainingFocusWidgetProp
                 data: segments.map(s => s.value),
                 backgroundColor: segments.map(s => s.color),
                 borderWidth: 0,
-                hoverOffset: 4
+                hoverOffset: 20
             }
         ]
     }), [segments]);
 
     const options: ChartOptions<'doughnut'> = useMemo(() => ({
         responsive: true,
-        maintainAspectRatio: false, // Allows the parent div to dictate height
+        maintainAspectRatio: false,
+        layout: {
+            padding: 15 // This creates a buffer so the segment doesn't hit the edge
+        },
         cutout: '70%',
         plugins: {
             legend: {
@@ -55,11 +52,11 @@ function TrainingFocusWidget({ segments = PLACEHOLDER }: TrainingFocusWidgetProp
             tooltip: {
                 callbacks: {
                     label: function(context: TooltipItem<'doughnut'>) {
-                        // Added a unit (e.g., '%') for better UX. Adjust as needed!
-                        return ` ${context.label}: ${context.raw}%`;
+                        return ` ${context.label}: ${context.raw}`;
                     }
                 }
-            }
+            },
+            hoverOffset: 20,
         }
     }), []);
 
@@ -77,9 +74,8 @@ function TrainingFocusWidget({ segments = PLACEHOLDER }: TrainingFocusWidgetProp
     return (
         <div className="widget training-focus-widget">
             <p className="widget-title">Training focus</p>
-            <div className="training-focus-content" style={{ position: 'relative', height: '250px' }}>
-                <div className="training-focus-chart" style={{ width: '100%', height: '100%' }}>
-                    {/* 4. Added accessibility attributes */}
+            <div className="training-focus-content" >
+                <div className="training-focus-chart">
                     <Doughnut
                         data={data}
                         options={options}

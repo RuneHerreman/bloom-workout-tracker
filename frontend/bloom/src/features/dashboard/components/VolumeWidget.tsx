@@ -23,7 +23,6 @@ ChartJS.register(
 export interface ExerciseSeries {
     name: string;
     data: number[];     // monthly PR values
-    color: string;
 }
 
 interface VolumeWidgetProps {
@@ -31,28 +30,45 @@ interface VolumeWidgetProps {
     monthLabels?: string[];
 }
 
-const PLACEHOLDER: ExerciseSeries[] = [
-    { name: "Bench Press",   color: "#003E1F", data: [70, 72, 75, 70, 80, 75, 78, 105, 85, 100, 90, 110] },
-    { name: "Squat",         color: "#2D8055", data: [80, 85, 75, 90, 85, 95, 80, 90, 100, 85, 105, 115] },
-    { name: "Deadlift",      color: "#E9762B", data: [100, 95, 110, 100, 105, 115, 100, 120, 110, 125, 115, 130] },
-    { name: "Overhead Press",color: "#7B1616", data: [45, 47, 50, 48, 52, 50, 55, 52, 58, 55, 60, 62] },
-    { name: "Row",           color: "#595959", data: [60, 65, 62, 68, 65, 70, 68, 72, 70, 75, 73, 78] },
+const PALETTE = [
+    "#003E1F", // 1. Brand Primary (Deep Green)
+    "#7B5EA7", // 2. Purple Accent (High Contrast)
+    "#2D8055", // 3. Brand Mid-Green
+    "#8B5E3C", // 4. Brown/Bronze Accent
+    "#1A6640", // 5. Forest Green
+    "#4A6FA5", // 6. Steel Blue Accent
+    "#52C98A", // 7. Vibrant Green
+    "#1B6E6E", // 8. Petrol/Teal Accent
+    "#1C4B33", // 9. Muted Dark Green
+    "#8CC63F", // 10. Lime/Citrus Accent
+    "#0D5230", // 11. Deepest Green
+    "#2DA89A"  // 12. Cyan Accent
 ];
 
-const MONTHS = ["1","2","3","4","5","6","7","8","9","10","11","12"];
-
-function VolumeWidget({ series = PLACEHOLDER, monthLabels = MONTHS }: VolumeWidgetProps) {
+function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
     const chartData = {
         labels: monthLabels,
-        datasets: series.map(s => ({
-            label: s.name,
-            data: s.data,
-            borderColor: s.color,
-            backgroundColor: s.color,
-            tension: 0.4,
-            fill: true,
-            pointRadius: 3,
-        }))
+        datasets: series.map((s, i) => {
+            const color = PALETTE[i % PALETTE.length];
+            const fillColor = `${color}1A`;
+
+            return {
+                label: s.name,
+                data: s.data,
+                borderColor: color,
+                backgroundColor: fillColor,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 6,
+                pointBackgroundColor: color,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                hitRadius: 30,
+                hoverBorderWidth: 4
+            };
+        })
     };
 
     const options = {
@@ -65,21 +81,42 @@ function VolumeWidget({ series = PLACEHOLDER, monthLabels = MONTHS }: VolumeWidg
                 labels: {
                     usePointStyle: true,
                     pointStyle: 'rectRounded',
-                    padding: 20
+                    padding: 20,
+                    font: { size: 12, family: 'sans-serif' }
                 }
             },
+            tooltip: {
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                titleColor: '#333',
+                bodyColor: '#666',
+                borderColor: '#e3e3e3',
+                borderWidth: 1,
+                padding: 12,
+                boxPadding: 6,
+                usePointStyle: true,
+            }
         },
-        tension: 0.1,
         scales: {
             y: {
                 beginAtZero: true,
+                border: { display: false },
                 grid: {
-                    color: '#E3E3E3',
+                    color: '#F0F0F0',
+                },
+                ticks: {
+                    color: '#999',
+                    padding: 10
                 }
             },
             x: {
+                border: { display: false },
                 grid: {
-                    display: false,
+                    display: true,
+                },
+                stacked: false,
+                ticks: {
+                    color: '#999',
+                    padding: 10
                 }
             }
         }
@@ -88,9 +125,11 @@ function VolumeWidget({ series = PLACEHOLDER, monthLabels = MONTHS }: VolumeWidg
     return (
         <div className="widget volume-widget">
             <div className="volume-widget-header">
-                <p className="widget-title">History of top exercises PR</p>
+                <p className="widget-title" style={{ fontWeight: '600', marginBottom: '1rem' }}>
+                    History of top exercises PR
+                </p>
             </div>
-            <div className="chart-area">
+            <div className="chart-area" style={{ height: '300px' }}>
                 <Line data={chartData} options={options} />
             </div>
         </div>

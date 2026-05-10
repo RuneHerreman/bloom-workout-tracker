@@ -131,16 +131,24 @@
     background: var(--border);
 }
 
-.activity-cell[data-level="1"] { background: #E9762B; }           /* Cardio only - orange */
-.activity-cell[data-level="2"] { background: #003E1F; }           /* Strength only - green */
-.activity-cell[data-level="3"] { background: #5A752D; }           /* Mix - blend of green and orange */
+.activity-cell[data-level="1"] { background: var(--accent); }           /* Cardio only - orange */
+.activity-cell[data-level="2"] { background: var(--primary); }           /* Strength only - green */
+.activity-cell[data-level="3"] { background: var(--primary-faded); }           /* Mix - blend of green and orange */
 
 /* ── Training focus widget ───────────────────────────────────────────────────── */
+
+.training-focus-content {
+    position: relative;
+    height: 20rem; /* Define an explicit height here (adjust as needed for your UI) */
+    width: 100%;
+}
 
 .training-focus-chart {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+
     width: 75%;
     height: 100%;
     margin: 0 auto;
@@ -203,7 +211,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
-    padding: 0.7rem 0;
+    padding: 0.75rem 0;
     border-bottom: 0.0625rem solid var(--border);
 }
 
@@ -223,7 +231,7 @@
 }
 
 .log-entry-date {
-    font-size: 0.62rem;
+    font-size: 0.65rem;
     color: var(--ink-muted);
     text-align: right;
 }
@@ -241,9 +249,9 @@
 }
 
 .log-bar {
-    height: 0.2rem;
-    border-radius: 1rem;
+    height: 0.35rem;
+    border-radius: 0.2rem;
 }
 
 .log-bar.cardio    { background: var(--accent); }
-.log-bar.strength  { background: var(--primary); }
+.log-bar.strength  { background: var(--primary-muted); }
