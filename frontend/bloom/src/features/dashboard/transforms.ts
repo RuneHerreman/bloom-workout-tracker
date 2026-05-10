@@ -3,6 +3,121 @@ import type { ActivityDay } from "./components/ActivityWidget";
 import type { ExerciseSeries } from "./components/VolumeWidget";
 import type { FocusSegment } from "./components/TrainingFocusWidget";
 import type { LogEntryData } from "./components/LogWidget";
+export interface DashboardStats {
+    workoutsThisYear: number;
+    workoutChange?: number;
+    volumeThisMonth: string;
+    volumeChange?: number;
+    currentStreak: number;
+    bestStreak: number;
+    totalPRs: number;
+}
+
+export function calculateDashboardStats(workouts: LoggedWorkout[], prs: ExercisePrResponse[]): DashboardStats {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    // 1. Workouts this year & % change from last year
+    const thisYearCount = workouts.filter(w => new Date(w.loggedAt).getFullYear() === currentYear).length;
+    const lastYearCount = workouts.filter(w => new Date(w.loggedAt).getFullYear() === currentYear - 1).length;
+
+    // Require a minimum baseline of 5 workouts last year to show a percentage
+    const workoutChange = lastYearCount >= 5
+        ? Math.round(((thisYearCount - lastYearCount) / lastYearCount) * 100)
+        : undefined;
+
+    // 2. Volume this month (Sum of weight * reps) & % change
+    const calcVolume = (year: number, month: number) => {
+        return workouts.reduce((total, w) => {
+            const d = new Date(w.loggedAt);
+            if (d.getFullYear() === year && d.getMonth() === month) {
+                const workoutVol = w.exercises.reduce((exTotal, ex) => {
+                    return exTotal + ex.sets.reduce((setTotal, set) => {
+                        return setTotal + ((set.weight || 0) * (set.reps || 0));
+                    }, 0);
+                }, 0);
+                return total + workoutVol;
+            }
+            return total;
+        }, 0);
+    };
+
+    const volThisMonth = calcVolume(currentYear, currentMonth);
+    const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const volLastMonth = calcVolume(prevMonthYear, prevMonth);
+
+    const volumeThisMonthStr = volThisMonth >= 1000 ? (volThisMonth / 1000).toFixed(1) + 'k' : volThisMonth.toString();
+    const volumeChange = volLastMonth > 0
+        ? Math.round(((volThisMonth - volLastMonth) / volLastMonth) * 100)
+        : undefined;
+
+    // 3. Active & Best Streak (Consecutive days)
+    const dates = [...new Set(workouts.map(w => w.loggedAt.slice(0, 10)))].sort((a, b) => b.localeCompare(a));
+
+    let currentStreak = 0;
+    let bestStreak = 0;
+
+    if (dates.length > 0) {
+        let tempStreak = 1;
+        let maxStreak = 1;
+
+        // Calculate best streak overall
+        for (let i = 0; i < dates.length - 1; i++) {
+            const d1 = new Date(dates[i]);
+            const d2 = new Date(dates[i + 1]);
+            const diffDays = Math.round(Math.abs(d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1) {
+                tempStreak++;
+                maxStreak = Math.max(maxStreak, tempStreak);
+            } else {
+                tempStreak = 1;
+            }
+        }
+        bestStreak = Math.max(maxStreak, tempStreak);
+
+        // Calculate current streak (checks if the latest workout was today or yesterday)
+        const getLocalDateStr = (d: Date) => {
+            const pad = (n: number) => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        };
+
+        const todayStr = getLocalDateStr(now);
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        const yesterdayStr = getLocalDateStr(yesterday);
+
+        if (dates[0] === todayStr || dates[0] === yesterdayStr) {
+            currentStreak = 1;
+            for (let i = 0; i < dates.length - 1; i++) {
+                const d1 = new Date(dates[i]);
+                const d2 = new Date(dates[i + 1]);
+                const diffDays = Math.round(Math.abs(d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    currentStreak++;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    // 4. PRs
+    const totalPRs = prs.length;
+
+    return {
+        workoutsThisYear: thisYearCount,
+        workoutChange,
+        volumeThisMonth: volumeThisMonthStr,
+        volumeChange,
+        currentStreak,
+        bestStreak,
+        totalPRs
+    };
+}
 
 /**
  * Transform ExerciseVolumeResponse[] to ExerciseSeries[] for VolumeWidget

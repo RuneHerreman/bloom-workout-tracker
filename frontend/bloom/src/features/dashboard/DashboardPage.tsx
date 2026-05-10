@@ -12,8 +12,14 @@ import type { ExerciseSeries } from "./components/VolumeWidget";
 import LogWidget from "./components/LogWidget.tsx";
 import type { LogEntryData } from "./components/LogWidget";
 import { getLogs, getPRs, getVolume } from "./api.ts";
-import { transformVolumeDataToSeries, transformWorkoutLogsToEntries, transformPrDataToFocus, transformLogsToActivityData } from "./transforms.ts";
-
+import {
+    transformVolumeDataToSeries,
+    transformWorkoutLogsToEntries,
+    transformPrDataToFocus,
+    transformLogsToActivityData,
+    calculateDashboardStats,
+    type DashboardStats
+} from "./transforms.ts";
 function formatDate(date: Date): string {
     return date.toLocaleDateString("en-GB", {
         day: "numeric",
@@ -29,6 +35,7 @@ function DashboardPage() {
     const [volumeLabels, setVolumeLabels] = useState<string[]>(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]);
     const [focusSegments, setFocusSegments] = useState<FocusSegment[]>([]);
     const [logEntries, setLogEntries] = useState<LogEntryData[]>([]);
+    const [stats, setStats] = useState<DashboardStats | null>(null);
 
     useEffect(() => {
         getMe().then(setUser).catch(() => null);
@@ -41,6 +48,7 @@ function DashboardPage() {
                 setVolumeLabels(labels);
                 setFocusSegments(transformPrDataToFocus(prs));
                 setLogEntries(transformWorkoutLogsToEntries(workouts).slice(0, 10));
+                setStats(calculateDashboardStats(workouts, prs));
             })
             .catch(() => null);
     }, []);
@@ -54,10 +62,25 @@ function DashboardPage() {
 
             <div className="dashboard-body">
                 <div className="dashboard-stats">
-                    <StatWidget label="Workouts (this year)" value="38" changePercent={20}/>
-                    <StatWidget label="Volume (this month)" value="12.5k" changePercent={5}/>
-                    <StatWidget label="Active streak" value="3 days" subtext="best = 5 days"/>
-                    <StatWidget label="PRs this month" value="0" changePercent={-60}/>
+                    <StatWidget
+                        label="Workouts (this year)"
+                        value={stats?.workoutsThisYear ?? 0}
+                        changePercent={stats?.workoutChange}
+                    />
+                    <StatWidget
+                        label="Volume (this month)"
+                        value={stats?.volumeThisMonth ?? "0"}
+                        changePercent={stats?.volumeChange}
+                    />
+                    <StatWidget
+                        label="Active streak"
+                        value={`${stats?.currentStreak ?? 0} days`}
+                        subtext={`best = ${stats?.bestStreak ?? 0} days`}
+                    />
+                    <StatWidget
+                        label="Total PRs"
+                        value={stats?.totalPRs ?? 0}
+                    />
                 </div>
 
                 <div className="dash-activity"><ActivityWidget data={activityData}/></div>
