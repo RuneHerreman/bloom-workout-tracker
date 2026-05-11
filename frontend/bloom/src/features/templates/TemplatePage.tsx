@@ -30,7 +30,7 @@ const TemplatePage = () => {
 
     return (
         <div className="templates-page">
-            <HeaderComponent title="Templates" subtitle="Workout planning" />
+            <HeaderComponent title="Templates" subtitle="Library" />
             <div className="templates-body">
                 <TemplateSideBar
                     templates={templates}
