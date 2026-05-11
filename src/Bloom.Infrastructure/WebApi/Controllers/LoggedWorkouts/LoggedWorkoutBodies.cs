@@ -12,7 +12,9 @@ public sealed record LoggedExerciseBody(
 
     [Required]
     [MinLength(1, ErrorMessage = "At least one set is required")]
-    List<LoggedSetBody> Sets
+    List<LoggedSetBody> Sets,
+
+    string? GpxData = null
 );
 
 public sealed record LoggedSetBody(
@@ -50,7 +52,8 @@ internal static class LoggedWorkoutBodyExtensions
         new(
             body.ExerciseId,
             body.Order,
-            body.Sets.Select(s => s.ToInput()).ToList()
+            body.Sets.Select(s => s.ToInput()).ToList(),
+            body.GpxData
         );
 
     internal static LoggedSetInput ToInput(this LoggedSetBody body) =>

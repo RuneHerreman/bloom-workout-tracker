@@ -60,4 +60,27 @@ public sealed class LoggedExerciseTests
         Assert.Throws<ArgumentException>(
             () => LoggedExercise.Create(exerciseId, -1, sets));
     }
+
+    [Fact]
+    public void Create_WithGpxData_ShouldStoreIt()
+    {
+        ExerciseId exerciseId = EntityId.New<ExerciseId>();
+        List<LoggedSet> sets = [LoggedSet.CreateCardio(0, TimeSpan.FromMinutes(30), 5m, DistanceUnit.Km)];
+        const string gpx = "<gpx version=\"1.1\"><trk><name>Run</name></trk></gpx>";
+
+        LoggedExercise loggedExercise = LoggedExercise.Create(exerciseId, 0, sets, gpxData: gpx);
+
+        Assert.Equal(gpx, loggedExercise.GpxData);
+    }
+
+    [Fact]
+    public void Create_WithoutGpxData_ShouldBeNull()
+    {
+        ExerciseId exerciseId = EntityId.New<ExerciseId>();
+        List<LoggedSet> sets = [LoggedSet.CreateStrength(0, 5, 100m, WeightUnit.Kg, 1)];
+
+        LoggedExercise loggedExercise = LoggedExercise.Create(exerciseId, 0, sets);
+
+        Assert.Null(loggedExercise.GpxData);
+    }
 }

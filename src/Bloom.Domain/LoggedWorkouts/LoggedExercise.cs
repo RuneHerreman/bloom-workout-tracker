@@ -13,11 +13,10 @@ public class LoggedExercise : Entity<LoggedExerciseId>
 
     public ExerciseId ExerciseId { get; private set; }
     public int Order { get; private set; }
+    public string? GpxData { get; private set; }
 
-    // The only persisted collection
     public IReadOnlyList<LoggedSet> Sets => _sets.AsReadOnly();
 
-    // Convenience (computed) views - do NOT map these in EF
     [NotMapped]
     public IEnumerable<LoggedSet> CardioSets => _sets.Where(s => s.Type == ExerciseType.Cardio);
     [NotMapped]
@@ -31,19 +30,22 @@ public class LoggedExercise : Entity<LoggedExerciseId>
         LoggedExerciseId id,
         ExerciseId exerciseId,
         int order,
+        string? gpxData,
         List<LoggedSet> sets) : base(id)
     {
         ExerciseId = exerciseId;
         Order = order;
+        GpxData = gpxData;
         _sets = sets;
     }
 
-    public static LoggedExercise Create(ExerciseId exerciseId, int order, List<LoggedSet> sets)
+    public static LoggedExercise Create(ExerciseId exerciseId, int order, List<LoggedSet> sets, string? gpxData = null)
     {
         var loggedExercise = new LoggedExercise(
             EntityId.New<LoggedExerciseId>(),
             exerciseId,
             order,
+            gpxData,
             sets);
 
         loggedExercise.ValidateState();

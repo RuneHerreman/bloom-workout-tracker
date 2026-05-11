@@ -9,7 +9,8 @@ namespace Bloom.Application.LoggedWorkouts;
 public sealed record LoggedExerciseInput(
     Guid ExerciseId,
     int Order,
-    List<LoggedSetInput> Sets
+    List<LoggedSetInput> Sets,
+    string? GpxData = null
 );
 
 public sealed record LoggedSetInput(
@@ -29,7 +30,7 @@ internal static class LoggedExerciseInputExtensions
     internal static LoggedExercise ToLoggedExercise(this LoggedExerciseInput input)
     {
         var sets = input.Sets.Select(s => s.ToLoggedSet()).ToList();
-        return LoggedExercise.Create(EntityId.New<ExerciseId>(input.ExerciseId), input.Order, sets);
+        return LoggedExercise.Create(EntityId.New<ExerciseId>(input.ExerciseId), input.Order, sets, input.GpxData);
     }
 
     internal static LoggedSet ToLoggedSet(this LoggedSetInput input)
