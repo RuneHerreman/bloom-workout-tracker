@@ -9,11 +9,13 @@ public sealed class UserTests
     [Fact]
     public void Create_WithValidInput_ShouldInitializeAndRaiseEvent()
     {
-        User user = User.Create("user@example.com", "alice", "hashed-password", 72.5m, 180, 4);
+        User user = User.Create("user@example.com", "alice", "hashed-password", "Alice", "Smith", 72.5m, 180, 4);
 
         Assert.Equal("user@example.com", user.Email.Value);
         Assert.Equal("alice", user.Username.Value);
         Assert.Equal("hashed-password", user.HashedPassword.Value);
+        Assert.Equal("Alice", user.FirstName);
+        Assert.Equal("Smith", user.LastName);
         Assert.Equal(72.5m, user.Weight);
         Assert.Equal(180, user.Height);
         Assert.Equal(4, user.ActiveDays);
@@ -26,7 +28,7 @@ public sealed class UserTests
     {
         UserId id = EntityId.New<UserId>();
 
-        User user = User.Create("user@example.com", "alice", "hashed-password", 72.5m, 180, 4, id);
+        User user = User.Create("user@example.com", "alice", "hashed-password", "Alice", "Smith", 72.5m, 180, 4, id);
 
         Assert.Equal(id, user.Id);
     }
@@ -34,11 +36,29 @@ public sealed class UserTests
     [Fact]
     public void ChangePassword_ShouldReplaceHashedPassword()
     {
-        User user = User.Create("user@example.com", "alice", "old-hash", 72.5m, 180, 4);
+        User user = User.Create("user@example.com", "alice", "old-hash", "Alice", "Smith", 72.5m, 180, 4);
 
         user.ChangePassword("new-hash");
 
         Assert.Equal("new-hash", user.HashedPassword.Value);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Create_WithEmptyFirstName_ShouldThrow(string firstName)
+    {
+        Assert.Throws<ArgumentException>(
+            () => User.Create("user@example.com", "alice", "hashed-password", firstName, "Smith", 72.5m, 180, 4));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Create_WithEmptyLastName_ShouldThrow(string lastName)
+    {
+        Assert.Throws<ArgumentException>(
+            () => User.Create("user@example.com", "alice", "hashed-password", "Alice", lastName, 72.5m, 180, 4));
     }
 
     [Theory]
@@ -47,7 +67,7 @@ public sealed class UserTests
     public void Create_WithNonPositiveWeight_ShouldThrow(double weight)
     {
         Assert.Throws<ArgumentException>(
-            () => User.Create("user@example.com", "alice", "hashed-password", (decimal)weight, 180, 4));
+            () => User.Create("user@example.com", "alice", "hashed-password", "Alice", "Smith", (decimal)weight, 180, 4));
     }
 
     [Theory]
@@ -56,7 +76,7 @@ public sealed class UserTests
     public void Create_WithNonPositiveHeight_ShouldThrow(int height)
     {
         Assert.Throws<ArgumentException>(
-            () => User.Create("user@example.com", "alice", "hashed-password", 72.5m, height, 4));
+            () => User.Create("user@example.com", "alice", "hashed-password", "Alice", "Smith", 72.5m, height, 4));
     }
 
     [Theory]
@@ -65,19 +85,21 @@ public sealed class UserTests
     public void Create_WithActiveDaysOutOfRange_ShouldThrow(int activeDays)
     {
         Assert.Throws<ArgumentException>(
-            () => User.Create("user@example.com", "alice", "hashed-password", 72.5m, 180, activeDays));
+            () => User.Create("user@example.com", "alice", "hashed-password", "Alice", "Smith", 72.5m, 180, activeDays));
     }
 
     [Fact]
     public void UpdateInfo_WithValidInput_ShouldReplaceFieldsAndRaiseEvent()
     {
-        User user = User.Create("user@example.com", "alice", "hashed-password", 72.5m, 180, 4);
+        User user = User.Create("user@example.com", "alice", "hashed-password", "Alice", "Smith", 72.5m, 180, 4);
         user.ClearDomainEvents();
 
-        user.UpdateInfo("new@example.com", "alice2", 75m, 181, 5);
+        user.UpdateInfo("new@example.com", "alice2", "Alicia", "Jones", 75m, 181, 5);
 
         Assert.Equal("new@example.com", user.Email.Value);
         Assert.Equal("alice2", user.Username.Value);
+        Assert.Equal("Alicia", user.FirstName);
+        Assert.Equal("Jones", user.LastName);
         Assert.Equal(75m, user.Weight);
         Assert.Equal(181, user.Height);
         Assert.Equal(5, user.ActiveDays);
@@ -88,9 +110,9 @@ public sealed class UserTests
     [Fact]
     public void UpdateInfo_WithInvalidEmail_ShouldThrow()
     {
-        User user = User.Create("user@example.com", "alice", "hashed-password", 72.5m, 180, 4);
+        User user = User.Create("user@example.com", "alice", "hashed-password", "Alice", "Smith", 72.5m, 180, 4);
 
         Assert.Throws<ArgumentException>(
-            () => user.UpdateInfo("not-an-email", "alice", 72.5m, 180, 4));
+            () => user.UpdateInfo("not-an-email", "alice", "Alice", "Smith", 72.5m, 180, 4));
     }
 }

@@ -6,11 +6,13 @@ namespace Bloom.Domain.Users;
 
 public readonly record struct UserId(Guid Value) : IEntityId;
 
-public class User: AggregateRoot<UserId>
+public class User : AggregateRoot<UserId>
 {
     public Email Email { get; private set; }
     public Username Username { get; private set; }
     public HashedPassword HashedPassword { get; private set; }
+    public string FirstName { get; private set; } = string.Empty;
+    public string LastName { get; private set; } = string.Empty;
     public decimal Weight { get; private set; }
     public int Height { get; private set; }
     public int ActiveDays { get; private set; }
@@ -22,6 +24,8 @@ public class User: AggregateRoot<UserId>
         Email email,
         Username username,
         HashedPassword hashedPassword,
+        string firstName,
+        string lastName,
         decimal weight,
         int height,
         int activeDays) : base(id)
@@ -29,6 +33,8 @@ public class User: AggregateRoot<UserId>
         Email = email;
         Username = username;
         HashedPassword = hashedPassword;
+        FirstName = firstName;
+        LastName = lastName;
         Weight = weight;
         Height = height;
         ActiveDays = activeDays;
@@ -38,17 +44,20 @@ public class User: AggregateRoot<UserId>
         string email,
         string username,
         string hashedPassword,
+        string firstName,
+        string lastName,
         decimal weight,
         int height,
         int activeDays,
-        UserId? id = null
-    )
+        UserId? id = null)
     {
         var user = new User(
             id ?? EntityId.New<UserId>(),
             Email.Create(email),
             Username.Create(username),
             HashedPassword.Create(hashedPassword),
+            firstName,
+            lastName,
             weight,
             height,
             activeDays);
@@ -67,12 +76,16 @@ public class User: AggregateRoot<UserId>
     public void UpdateInfo(
         string email,
         string username,
+        string firstName,
+        string lastName,
         decimal weight,
         int height,
         int activeDays)
     {
         Email = Email.Create(email);
         Username = Username.Create(username);
+        FirstName = firstName;
+        LastName = lastName;
         Weight = weight;
         Height = height;
         ActiveDays = activeDays;
@@ -86,6 +99,8 @@ public class User: AggregateRoot<UserId>
         Asserts.EnsureNotEmpty(Email);
         Asserts.EnsureNotEmpty(Username);
         Asserts.EnsureNotEmpty(HashedPassword);
+        Asserts.EnsureNotEmpty(FirstName);
+        Asserts.EnsureNotEmpty(LastName);
         Asserts.EnsureGreaterThan(Weight, 0m);
         Asserts.EnsureGreaterThan(Height, 0);
         Asserts.EnsureNotNegative(ActiveDays);
