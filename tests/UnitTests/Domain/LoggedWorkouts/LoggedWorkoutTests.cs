@@ -21,19 +21,56 @@ public sealed class LoggedWorkoutTests
                 [LoggedSet.CreateStrength(0, 8, 60m, WeightUnit.Kg, 2)])
         ];
 
-        LoggedWorkout workout = LoggedWorkout.Create(userId, exercises);
+        LoggedWorkout workout = LoggedWorkout.Create(userId, "Leg Day", exercises);
 
         Assert.Equal(userId, workout.UserId);
+        Assert.Equal("Leg Day", workout.Name);
+        Assert.Null(workout.Note);
         Assert.Single(workout.LoggedExercises);
         Assert.Single(workout.DomainEvents);
         Assert.IsType<WorkoutLogged>(workout.DomainEvents.First());
     }
 
     [Fact]
+    public void Create_WithNote_ShouldStoreNote()
+    {
+        UserId userId = EntityId.New<UserId>();
+        List<LoggedExercise> exercises =
+        [
+            LoggedExercise.Create(
+                EntityId.New<ExerciseId>(),
+                0,
+                [LoggedSet.CreateStrength(0, 8, 60m, WeightUnit.Kg, 2)])
+        ];
+
+        LoggedWorkout workout = LoggedWorkout.Create(userId, "Push Day", exercises, note: "Increase chest weight next time");
+
+        Assert.Equal("Increase chest weight next time", workout.Note);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Create_WithEmptyName_ShouldThrow(string name)
+    {
+        UserId userId = EntityId.New<UserId>();
+        List<LoggedExercise> exercises =
+        [
+            LoggedExercise.Create(
+                EntityId.New<ExerciseId>(),
+                0,
+                [LoggedSet.CreateStrength(0, 8, 60m, WeightUnit.Kg, 2)])
+        ];
+
+        Assert.Throws<ArgumentException>(
+            () => LoggedWorkout.Create(userId, name, exercises));
+    }
+
+    [Fact]
     public void Update_WithValidInput_ShouldReplaceStateAndRaiseEvent()
     {
         UserId userId = EntityId.New<UserId>();
-        LoggedWorkout workout = LoggedWorkout.Create(userId,
+        LoggedWorkout workout = LoggedWorkout.Create(userId, "Leg Day",
         [
             LoggedExercise.Create(
                 EntityId.New<ExerciseId>(),
@@ -50,9 +87,11 @@ public sealed class LoggedWorkoutTests
                 [LoggedSet.CreateCardio(0, TimeSpan.FromMinutes(15), 3m, DistanceUnit.Km)])
         ];
 
-        workout.Update(newLoggedAt, updatedExercises);
+        workout.Update("Cardio Session", "Felt great", newLoggedAt, updatedExercises);
 
         Assert.Equal(newLoggedAt, workout.LoggedAt);
+        Assert.Equal("Cardio Session", workout.Name);
+        Assert.Equal("Felt great", workout.Note);
         Assert.Single(workout.LoggedExercises);
         Assert.Equal(2, workout.DomainEvents.Count);
         Assert.IsType<LoggedWorkoutUpdated>(workout.DomainEvents.Last());
@@ -64,6 +103,6 @@ public sealed class LoggedWorkoutTests
         UserId userId = EntityId.New<UserId>();
 
         Assert.Throws<ArgumentException>(
-            () => LoggedWorkout.Create(userId, []));
+            () => LoggedWorkout.Create(userId, "Leg Day", []));
     }
 }
