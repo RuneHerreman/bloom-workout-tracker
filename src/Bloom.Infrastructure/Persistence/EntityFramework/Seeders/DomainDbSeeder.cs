@@ -34,7 +34,7 @@ public class DomainDbSeeder(DomainDbContext context, ILogger<DomainDbSeeder> log
 
         var users = new List<User>
         {
-            User.Create("frans.appelmans@gmail.com", "FransAppelmans", passwordHasher.HashPassword("test"), 80m, 180, 3, EntityId.New<UserId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490000"))),
+            User.Create("frans.appelmans@gmail.com", "FransAppelmans", passwordHasher.HashPassword("test"), "Frans", "Appelmans", 80m, 180, 3, EntityId.New<UserId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490000"))),
         };
         
         context.Users.AddRange(users);

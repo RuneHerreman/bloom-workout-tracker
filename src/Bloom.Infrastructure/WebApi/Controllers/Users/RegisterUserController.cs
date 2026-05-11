@@ -16,6 +16,8 @@ public sealed record RegisterUserBody(
     [Required, EmailAddress] string Email,
     [Required, MinLength(3), MaxLength(128)] string Username,
     [Required, MinLength(8)] string Password,
+    [Required, MinLength(1), MaxLength(100)] string FirstName,
+    [Required, MinLength(1), MaxLength(100)] string LastName,
     [Range(typeof(decimal), "0.1", "500")] decimal Weight,
     [Range(1, 300)] int Height,
     [Range(0, 7)] int ActiveDays
@@ -33,6 +35,8 @@ public static class RegisterUserController
             request.Body.Email,
             request.Body.Username,
             request.Body.Password,
+            request.Body.FirstName,
+            request.Body.LastName,
             request.Body.Weight,
             request.Body.Height,
             request.Body.ActiveDays

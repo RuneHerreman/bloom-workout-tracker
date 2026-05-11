@@ -10,6 +10,8 @@ public sealed record RegisterUserInput(
     string Email,
     string Username,
     string Password,
+    string FirstName,
+    string LastName,
     decimal Weight,
     int Height,
     int ActiveDays
@@ -40,6 +42,8 @@ public class RegisterUser(
             email.Value,
             input.Username,
             hashedPassword,
+            input.FirstName,
+            input.LastName,
             input.Weight,
             input.Height,
             input.ActiveDays

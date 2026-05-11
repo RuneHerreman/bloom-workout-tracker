@@ -9,6 +9,8 @@ namespace Bloom.Application.Users;
 public sealed record UpdateUserInfoInput(
     string Email,
     string Username,
+    string FirstName,
+    string LastName,
     decimal Weight,
     int Height,
     int ActiveDays
@@ -40,6 +42,8 @@ public class UpdateUserInfo(
         user.Value.UpdateInfo(
             input.Email,
             input.Username,
+            input.FirstName,
+            input.LastName,
             input.Weight,
             input.Height,
             input.ActiveDays

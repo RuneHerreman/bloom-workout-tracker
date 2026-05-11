@@ -11,7 +11,7 @@ public sealed class DeleteUserTests : ApplicationTestBase
 {
     private async Task<User> SeedUser()
     {
-        var user = User.Create("user@example.com", "alice", "hashed:secret", 72.5m, 180, 4);
+        var user = User.Create("user@example.com", "alice", "hashed:secret", "Alice", "Smith", 72.5m, 180, 4);
         await UserRepository.Save(user);
         return user;
     }

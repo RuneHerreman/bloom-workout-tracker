@@ -15,6 +15,8 @@ public sealed record UpdateUserInfoRequest(
 public sealed record UpdateUserInfoBody(
     [Required, EmailAddress] string Email,
     [Required, MinLength(3), MaxLength(128)] string Username,
+    [Required, MinLength(1), MaxLength(100)] string FirstName,
+    [Required, MinLength(1), MaxLength(100)] string LastName,
     [Range(typeof(decimal), "0.1", "500")] decimal Weight,
     [Range(1, 300)] int Height,
     [Range(0, 7)] int ActiveDays
@@ -31,6 +33,8 @@ public static class UpdateUserInfoController
         var output = await request.UseCase.Execute(new UpdateUserInfoInput(
             request.Body.Email,
             request.Body.Username,
+            request.Body.FirstName,
+            request.Body.LastName,
             request.Body.Weight,
             request.Body.Height,
             request.Body.ActiveDays

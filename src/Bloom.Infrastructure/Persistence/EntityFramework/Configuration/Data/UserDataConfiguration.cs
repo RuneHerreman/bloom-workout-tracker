@@ -15,6 +15,8 @@ public class UserDataConfiguration: IEntityTypeConfiguration<UserData>
 
         builder.Property(u => u.Email).IsRequired();
         builder.Property(u => u.Username).IsRequired();
+        builder.Property(u => u.FirstName).IsRequired();
+        builder.Property(u => u.LastName).IsRequired();
         builder.Property(u => u.Weight).HasColumnType("numeric(5,2)").IsRequired();
         builder.Property(u => u.Height).IsRequired();
         builder.Property(u => u.ActiveDays).IsRequired();

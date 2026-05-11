@@ -6,6 +6,8 @@ public record User(
     Guid Id,
     string Email,
     string Username,
+    string FirstName,
+    string LastName,
     decimal Weight,
     int Height,
     int ActiveDays
@@ -19,6 +21,8 @@ public static class UserExtensions
             data.Id,
             data.Email,
             data.Username,
+            data.FirstName,
+            data.LastName,
             data.Weight,
             data.Height,
             data.ActiveDays

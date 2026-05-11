@@ -11,7 +11,7 @@ public sealed class WorkoutTemplateInputsTests : ApplicationTestBase
 
     public WorkoutTemplateInputsTests()
     {
-        User user = User.Create("user@example.com", "alice", "hash", 72.5m, 180, 4);
+        User user = User.Create("user@example.com", "alice", "hash", "Alice", "Smith", 72.5m, 180, 4);
         UserRepository.Save(user).GetAwaiter().GetResult();
 
         _useCase = new CreateWorkoutTemplate(UnitOfWork, StubCurrentUser.With(user.Id), CreateLogger<CreateWorkoutTemplate>());

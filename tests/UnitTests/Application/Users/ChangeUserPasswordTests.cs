@@ -17,6 +17,8 @@ public sealed class ChangeUserPasswordTests : ApplicationTestBase
             "user@example.com",
             "alice",
             _passwordHasher.HashPassword(password),
+            "Alice",
+            "Smith",
             72.5m, 180, 4);
         await UserRepository.Save(user);
         return user;
