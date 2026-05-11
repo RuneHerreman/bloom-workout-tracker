@@ -258,14 +258,11 @@
 }
 
 .focus-chip:hover {
-    border-color: var(--primary-transparent);
-    color: var(--primary-transparent);
+    background: var(--background);
 }
 
 .focus-chip.active {
-    background: var(--primary-transparent);
-    color: white;
-    border-color: transparent;
+    background: rgba(45, 128, 85, 0.08);  border-color: var(--primary-light); color: var(--primary-light);
 }
 
 .focus-empty {
