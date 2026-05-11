@@ -18,7 +18,7 @@ public sealed class LoggedWorkoutInputsTests : ApplicationTestBase
     }
 
     private static CreateLoggedWorkoutInput WithSet(LoggedSetInput set) =>
-        new([new LoggedExerciseInput(Guid.NewGuid(), 0, [set])]);
+        new("Test Workout", [new LoggedExerciseInput(Guid.NewGuid(), 0, [set])]);
 
     [Fact]
     public async Task ToLoggedSet_Plyometric_ShouldMap()

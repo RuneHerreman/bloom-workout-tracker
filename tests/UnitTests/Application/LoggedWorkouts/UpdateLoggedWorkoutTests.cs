@@ -15,6 +15,7 @@ public sealed class UpdateLoggedWorkoutTests : ApplicationTestBase
     private async Task<LoggedWorkout> SeedLoggedWorkout(UserId userId)
     {
         var workout = LoggedWorkout.Create(userId,
+            "Test Workout",
         [
             LoggedExercise.Create(
                 EntityId.New<ExerciseId>(),
@@ -36,6 +37,7 @@ public sealed class UpdateLoggedWorkoutTests : ApplicationTestBase
         DateTime newDate = DateTime.UtcNow.AddDays(-1);
         var input = new UpdateLoggedWorkoutInput(
             workout.Id.Value,
+            "Updated Workout",
             newDate,
             [
                 new LoggedExerciseInput(
@@ -58,6 +60,7 @@ public sealed class UpdateLoggedWorkoutTests : ApplicationTestBase
         var useCase = new UpdateLoggedWorkout(UnitOfWork, StubCurrentUser.Random(), CreateLogger<UpdateLoggedWorkout>());
         var input = new UpdateLoggedWorkoutInput(
             Guid.NewGuid(),
+            "Updated Workout",
             DateTime.UtcNow,
             [
                 new LoggedExerciseInput(
@@ -77,6 +80,7 @@ public sealed class UpdateLoggedWorkoutTests : ApplicationTestBase
 
         var input = new UpdateLoggedWorkoutInput(
             workout.Id.Value,
+            "Updated Workout",
             DateTime.UtcNow,
             [
                 new LoggedExerciseInput(

@@ -15,6 +15,8 @@ public class LoggedWorkoutDataConfiguration : IEntityTypeConfiguration<LoggedWor
 
         builder.Property(l => l.UserId).IsRequired();
         builder.Property(l => l.LoggedAt).IsRequired();
+        builder.Property(l => l.Name).IsRequired();
+        builder.Property(l => l.Note).IsRequired(false);
 
         builder.OwnsMany(l => l.LoggedExercises, exercises =>
         {

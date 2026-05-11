@@ -16,6 +16,8 @@ public class LoggedWorkoutConfiguration : IEntityTypeConfiguration<LoggedWorkout
 
         builder.Property(lw => lw.UserId).IsRequired();
         builder.Property(lw => lw.LoggedAt).IsRequired();
+        builder.Property(lw => lw.Name).IsRequired();
+        builder.Property(lw => lw.Note).IsRequired(false);
 
         builder.HasOne<User>()
             .WithMany()

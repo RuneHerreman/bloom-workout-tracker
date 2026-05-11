@@ -8,8 +8,10 @@ namespace Bloom.Application.LoggedWorkouts;
 
 public sealed record UpdateLoggedWorkoutInput(
     Guid LoggedWorkoutId,
+    string Name,
     DateTime LoggedAt,
-    List<LoggedExerciseInput> Exercises
+    List<LoggedExerciseInput> Exercises,
+    string? Note = null
 );
 
 public sealed record UpdateLoggedWorkoutOutput(Guid LoggedWorkoutId);
@@ -35,7 +37,7 @@ public class UpdateLoggedWorkout(
             throw new LoggedWorkoutAccessDeniedException($"User {userId} does not own LoggedWorkout {input.LoggedWorkoutId}");
 
         var exercises = input.Exercises.Select(e => e.ToLoggedExercise()).ToList();
-        log.Value.Update(input.LoggedAt, exercises);
+        log.Value.Update(input.Name, input.Note, input.LoggedAt, exercises);
 
         await logRepo.Save(log.Value);
         await uow.Do();

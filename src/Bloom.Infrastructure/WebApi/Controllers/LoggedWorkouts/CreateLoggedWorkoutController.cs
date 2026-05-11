@@ -13,9 +13,13 @@ public sealed record CreateLoggedWorkoutRequest(
 );
 
 public sealed record CreateLoggedWorkoutBody(
+    [Required, MinLength(1), MaxLength(200)] string Name,
+
     [Required]
     [MinLength(1, ErrorMessage = "At least one exercise is required")]
     List<LoggedExerciseBody> Exercises,
+
+    string? Note = null,
     DateTime? LoggedAt = null
 );
 
@@ -28,7 +32,9 @@ public static class CreateLoggedWorkoutController
     )
     {
         var output = await request.UseCase.Execute(new CreateLoggedWorkoutInput(
+            request.Body.Name,
             request.Body.Exercises.Select(e => e.ToInput()).ToList(),
+            request.Body.Note,
             request.Body.LoggedAt
         ));
 

@@ -8,6 +8,8 @@ public sealed record LoggedWorkoutData
     public Guid Id { get; init; }
     public Guid UserId { get; init; }
     public DateTime LoggedAt { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string? Note { get; init; }
     public List<LoggedExerciseData> LoggedExercises { get; init; } = [];
 }
 
@@ -16,6 +18,7 @@ public sealed record LoggedExerciseData
     public Guid Id { get; init; }
     public Guid ExerciseId { get; init; }
     public int Order { get; init; }
+    public string? GpxData { get; init; }
     public List<LoggedSetData> Sets { get; init; } = [];
 }
 

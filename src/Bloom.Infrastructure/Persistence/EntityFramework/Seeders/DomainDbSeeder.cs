@@ -267,7 +267,7 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
         var logs = new List<LoggedWorkout>
         {
             // Week -1: Push / Pull / Legs
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(benchPress, 1, [
                     LoggedSet.CreateStrength(1, 8, 90m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 8, 92.5m, WeightUnit.Kg, 2),
@@ -284,9 +284,9 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                     LoggedSet.CreateStrength(2, 12, 37.5m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(3, 10, 40m, WeightUnit.Kg, 1),
                 ]),
-            ], today.AddDays(-2)),
+            ], loggedAt: today.AddDays(-2)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(barbellRow, 1, [
                     LoggedSet.CreateStrength(1, 8, 75m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 8, 77.5m, WeightUnit.Kg, 2),
@@ -303,9 +303,9 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                     LoggedSet.CreateStrength(2, 10, 35m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(3, 8, 37.5m, WeightUnit.Kg, 1),
                 ]),
-            ], today.AddDays(-4)),
+            ], loggedAt: today.AddDays(-4)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(squat, 1, [
                     LoggedSet.CreateStrength(1, 6, 105m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 6, 107.5m, WeightUnit.Kg, 2),
@@ -322,10 +322,10 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                     LoggedSet.CreateStrength(2, 12, 47.5m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(3, 10, 50m, WeightUnit.Kg, 1),
                 ]),
-            ], today.AddDays(-6)),
+            ], loggedAt: today.AddDays(-6)),
 
             // Week -2
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(benchPress, 1, [
                     LoggedSet.CreateStrength(1, 8, 87.5m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 8, 90m, WeightUnit.Kg, 2),
@@ -337,16 +337,16 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                     LoggedSet.CreateStrength(2, 10, 55m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(3, 8, 57.5m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-9)),
+            ], loggedAt: today.AddDays(-9)),
 
             // Cardio session
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(treadmill, 1, [
                     LoggedSet.CreateCardio(1, TimeSpan.FromMinutes(30), 5.0m, DistanceUnit.Km),
                 ]),
-            ], today.AddDays(-11)),
+            ], loggedAt: today.AddDays(-11)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(squat, 1, [
                     LoggedSet.CreateStrength(1, 6, 100m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 6, 102.5m, WeightUnit.Kg, 2),
@@ -358,10 +358,10 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                     LoggedSet.CreateStrength(2, 10, 80m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(3, 8, 82.5m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-13)),
+            ], loggedAt: today.AddDays(-13)),
 
             // Week -3: Push with plyo finisher (mixed)
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(benchPress, 1, [
                     LoggedSet.CreateStrength(1, 8, 85m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 8, 87.5m, WeightUnit.Kg, 2),
@@ -372,9 +372,9 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                     LoggedSet.CreatePlyometric(2, 5, 0m, WeightUnit.Kg, 0),
                     LoggedSet.CreatePlyometric(3, 5, 0m, WeightUnit.Kg, 0),
                 ]),
-            ], today.AddDays(-16)),
+            ], loggedAt: today.AddDays(-16)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(barbellRow, 1, [
                     LoggedSet.CreateStrength(1, 8, 72.5m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 8, 75m, WeightUnit.Kg, 2),
@@ -385,17 +385,17 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                     LoggedSet.CreateStrength(2, 10, 65m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(3, 10, 67.5m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-18)),
+            ], loggedAt: today.AddDays(-18)),
 
             // Cardio
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(treadmill, 1, [
                     LoggedSet.CreateCardio(1, TimeSpan.FromMinutes(25), 4.0m, DistanceUnit.Km),
                 ]),
-            ], today.AddDays(-20)),
+            ], loggedAt: today.AddDays(-20)),
 
             // Week -4 and beyond
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(benchPress, 1, [
                     LoggedSet.CreateStrength(1, 8, 82.5m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 8, 85m, WeightUnit.Kg, 2),
@@ -406,9 +406,9 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                     LoggedSet.CreateStrength(2, 10, 52.5m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(3, 8, 55m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-23)),
+            ], loggedAt: today.AddDays(-23)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(squat, 1, [
                     LoggedSet.CreateStrength(1, 6, 97.5m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 6, 100m, WeightUnit.Kg, 2),
@@ -419,15 +419,15 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                     LoggedSet.CreateStrength(2, 10, 77.5m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(3, 8, 80m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-25)),
+            ], loggedAt: today.AddDays(-25)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(treadmill, 1, [
                     LoggedSet.CreateCardio(1, TimeSpan.FromMinutes(35), 5.5m, DistanceUnit.Km),
                 ]),
-            ], today.AddDays(-27)),
+            ], loggedAt: today.AddDays(-27)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(barbellRow, 1, [
                     LoggedSet.CreateStrength(1, 8, 70m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 8, 72.5m, WeightUnit.Kg, 2),
@@ -438,10 +438,10 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                     LoggedSet.CreateStrength(2, 10, 32.5m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(3, 8, 35m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-30)),
+            ], loggedAt: today.AddDays(-30)),
 
             // Historic logs for Volume Chart trends
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(benchPress, 1, [
                     LoggedSet.CreateStrength(1, 8, 75m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 8, 77.5m, WeightUnit.Kg, 2),
@@ -450,9 +450,9 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                 LoggedExercise.Create(overheadPress, 2, [
                     LoggedSet.CreateStrength(1, 10, 45m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-45)),
+            ], loggedAt: today.AddDays(-45)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(squat, 1, [
                     LoggedSet.CreateStrength(1, 6, 85m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 6, 90m, WeightUnit.Kg, 2),
@@ -460,9 +460,9 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                 LoggedExercise.Create(romanianDl, 2, [
                     LoggedSet.CreateStrength(1, 10, 65m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-50)),
+            ], loggedAt: today.AddDays(-50)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(barbellRow, 1, [
                     LoggedSet.CreateStrength(1, 8, 65m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 8, 67.5m, WeightUnit.Kg, 2),
@@ -470,46 +470,46 @@ Exercise.Create("Sled Push", "A functional cardiovascular exercise pushing a wei
                 LoggedExercise.Create(latPulldown, 2, [
                     LoggedSet.CreateStrength(1, 10, 55m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-60)),
+            ], loggedAt: today.AddDays(-60)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(benchPress, 1, [
                     LoggedSet.CreateStrength(1, 8, 70m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 8, 72.5m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-75)),
+            ], loggedAt: today.AddDays(-75)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(squat, 1, [
                     LoggedSet.CreateStrength(1, 6, 80m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 6, 82.5m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-80)),
+            ], loggedAt: today.AddDays(-80)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(barbellRow, 1, [
                     LoggedSet.CreateStrength(1, 8, 60m, WeightUnit.Kg, 2),
                     LoggedSet.CreateStrength(2, 8, 62.5m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-90)),
+            ], loggedAt: today.AddDays(-90)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(benchPress, 1, [
                     LoggedSet.CreateStrength(1, 8, 65m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-105)),
+            ], loggedAt: today.AddDays(-105)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(squat, 1, [
                     LoggedSet.CreateStrength(1, 6, 70m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-120)),
+            ], loggedAt: today.AddDays(-120)),
 
-            LoggedWorkout.Create(SeededUserId, [
+            LoggedWorkout.Create(SeededUserId, "Workout", [
                 LoggedExercise.Create(barbellRow, 1, [
                     LoggedSet.CreateStrength(1, 8, 55m, WeightUnit.Kg, 2),
                 ]),
-            ], today.AddDays(-135)),
+            ], loggedAt: today.AddDays(-135)),
         };
 
         context.LoggedWorkouts.AddRange(logs);

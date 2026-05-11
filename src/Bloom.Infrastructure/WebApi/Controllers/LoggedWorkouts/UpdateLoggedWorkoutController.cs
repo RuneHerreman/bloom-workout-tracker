@@ -14,12 +14,16 @@ public sealed record UpdateLoggedWorkoutRequest(
 );
 
 public sealed record UpdateLoggedWorkoutBody(
+    [Required, MinLength(1), MaxLength(200)] string Name,
+
     [Required]
     DateTime LoggedAt,
 
     [Required]
     [MinLength(1, ErrorMessage = "At least one exercise is required")]
-    List<LoggedExerciseBody> Exercises
+    List<LoggedExerciseBody> Exercises,
+
+    string? Note = null
 );
 
 public sealed record UpdateLoggedWorkoutResponse(Guid LoggedWorkoutId);
@@ -32,8 +36,10 @@ public static class UpdateLoggedWorkoutController
     {
         var output = await request.UseCase.Execute(new UpdateLoggedWorkoutInput(
             request.LoggedWorkoutId,
+            request.Body.Name,
             request.Body.LoggedAt,
-            request.Body.Exercises.Select(e => e.ToInput()).ToList()
+            request.Body.Exercises.Select(e => e.ToInput()).ToList(),
+            request.Body.Note
         ));
 
         return TypedResults.Ok(new UpdateLoggedWorkoutResponse(output.LoggedWorkoutId));

@@ -12,6 +12,7 @@ public sealed class CreateLoggedWorkoutTests : ApplicationTestBase
     private static CreateLoggedWorkoutInput BuildInput()
     {
         return new CreateLoggedWorkoutInput(
+            "Test Workout",
             [
                 new LoggedExerciseInput(
                     Guid.NewGuid(),

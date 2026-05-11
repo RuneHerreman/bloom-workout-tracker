@@ -15,6 +15,7 @@ public sealed class DeleteLoggedWorkoutTests : ApplicationTestBase
     private async Task<LoggedWorkout> SeedLoggedWorkout(UserId userId)
     {
         var workout = LoggedWorkout.Create(userId,
+            "Test Workout",
         [
             LoggedExercise.Create(
                 EntityId.New<ExerciseId>(),

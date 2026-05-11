@@ -6,6 +6,8 @@ public record LoggedWorkout(
     Guid Id,
     Guid UserId,
     DateTime LoggedAt,
+    string Name,
+    string? Note,
     IReadOnlyList<LoggedExercise> Exercises
 );
 
@@ -34,6 +36,8 @@ public static class LoggedWorkoutExtensions
             data.Id,
             data.UserId,
             data.LoggedAt,
+            data.Name,
+            data.Note,
             data.LoggedExercises.Select(e => e.ToResponse()).ToList()
         );
 
