@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
 {
     [DbContext(typeof(PostgresDomainDbContext))]
-    [Migration("20260511155103_InitialCreate")]
+    [Migration("20260511200701_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -97,6 +97,9 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
 
                     b.Property<string>("LastName")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TechnicalPoints")
                         .HasColumnType("text");
 
                     b.Property<string>("Username")

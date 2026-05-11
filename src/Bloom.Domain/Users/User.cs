@@ -16,6 +16,7 @@ public class User : AggregateRoot<UserId>
     public decimal Weight { get; private set; }
     public int Height { get; private set; }
     public int ActiveDays { get; private set; }
+    public string? TechnicalPoints { get; private set; }
 
     private User() { }
 
@@ -66,6 +67,11 @@ public class User : AggregateRoot<UserId>
         user.RaiseDomainEvent(new UserRegistered(user.Id));
 
         return user;
+    }
+
+    public void UpdateTechnicalPoints(string? technicalPoints)
+    {
+        TechnicalPoints = technicalPoints;
     }
 
     public void ChangePassword(string newHashedPassword)

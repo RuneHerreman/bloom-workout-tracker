@@ -10,4 +10,5 @@ public sealed record UserData
     public decimal Weight { get; init; }
     public int Height { get; init; }
     public int ActiveDays { get; init; }
+    public string? TechnicalPoints { get; init; }
 }

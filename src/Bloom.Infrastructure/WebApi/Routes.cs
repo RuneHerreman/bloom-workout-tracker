@@ -57,6 +57,11 @@ public static class Routes
             .WithDescription("Change the authenticated user's password. Requires the current password.")
             .RequireAuthorization();
 
+        userGroup.MapPut("/me/technical-points", UpdateTechnicalPointsController.Invoke)
+            .WithName(nameof(UpdateTechnicalPointsController))
+            .WithDescription("Update the authenticated user's technical points notes.")
+            .RequireAuthorization();
+
         return userGroup;
     }
 

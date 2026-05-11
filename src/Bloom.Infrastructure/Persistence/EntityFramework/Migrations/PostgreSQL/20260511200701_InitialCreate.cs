@@ -38,7 +38,8 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                     LastName = table.Column<string>(type: "text", nullable: false),
                     Weight = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
                     Height = table.Column<int>(type: "integer", nullable: false),
-                    ActiveDays = table.Column<int>(type: "integer", nullable: false)
+                    ActiveDays = table.Column<int>(type: "integer", nullable: false),
+                    TechnicalPoints = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {

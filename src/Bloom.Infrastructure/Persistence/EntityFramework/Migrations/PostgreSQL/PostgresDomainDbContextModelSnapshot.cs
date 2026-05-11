@@ -96,6 +96,9 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("TechnicalPoints")
+                        .HasColumnType("text");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("text");
