@@ -17,7 +17,7 @@ function TechnicalPointsWidget() {
                 <WidgetHeader
                     title={"Technical Points"}
                     subtitle={"What needs work?"}
-                    action={<Button text={"Save notes"} style={"white"}/>}
+                    action={<Button text={"Save notes"} style={"modern"}/>}
                 />
             }
             content={

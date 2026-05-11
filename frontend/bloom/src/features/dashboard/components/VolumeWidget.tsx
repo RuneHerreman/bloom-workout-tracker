@@ -105,9 +105,10 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
                     color: '#F0F0F0',
                 },
                 ticks: {
-                    color: '#999',
-                    padding: 10
-                }
+                    callback: function(value) {
+                        return value + " kg";
+                    }
+                },
             },
             x: {
                 border: { display: false },
