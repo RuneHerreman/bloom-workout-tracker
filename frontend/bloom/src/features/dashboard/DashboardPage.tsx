@@ -11,11 +11,11 @@ import VolumeWidget from "./components/VolumeWidget.tsx";
 import type { ExerciseSeries } from "./components/VolumeWidget";
 import LogWidget from "./components/LogWidget.tsx";
 import type { LogEntryData } from "./components/LogWidget";
-import { getLogs, getPRs, getVolume } from "./api.ts";
+import { getLogs, getVolume } from "./api.ts";
 import {
     transFormVolumeDataForLineGraph,
     transformWorkoutLogsForLogPanel,
-    transformPrDataForDonutChart,
+    transformWorkoutsForFocusChart,
     transformLogsForActivityCalendar,
     calculateDashboardStats,
     type DashboardStats
@@ -44,13 +44,13 @@ function DashboardPage() {
     useEffect(() => {
         getMe().then(setUser).catch(() => null);
 
-        Promise.all([getPRs(), getVolume(), getLogs()])
-            .then(([prs, volume, workouts]) => {
+        Promise.all([getVolume(), getLogs()])
+            .then(([volume, workouts]) => {
                 setActivityData(transformLogsForActivityCalendar(workouts));
                 const { series, labels } = transFormVolumeDataForLineGraph(volume);
                 setVolumeSeries(series);
                 setVolumeLabels(labels);
-                setFocusSegments(transformPrDataForDonutChart(prs));
+                setFocusSegments(transformWorkoutsForFocusChart(workouts));
                 setLogEntries(transformWorkoutLogsForLogPanel(workouts).slice(0, 5));
                 setStats(calculateDashboardStats(workouts));
             })
@@ -60,7 +60,7 @@ function DashboardPage() {
     return (
         <div className="dashboard">
             <HeaderComponent
-                title={`Welcome back, ${user?.username ?? "—"}!`}
+                title={`Welcome back, ${user?.firstName ?? "—"}!`}
                 subtitle={`Today  ·  ${formatDate(new Date())}`}
                 action={<Button text={"Log Workout"} icon="+" style={"green"} target="/logbook" />}
             />

@@ -1,9 +1,6 @@
-/**
- * TypeScript type definitions derived from OpenAPI spec (bloommain--v1.yaml)
- * These ensure type safety when working with API responses
- */
+// Single source of truth for all API types — derived from OpenAPI spec bloommain--v1.yaml
 
-// ==================== SHARED TYPES ====================
+// ── Shared ────────────────────────────────────────────────────────────────────
 
 export interface MonthlyVolumeResponse {
     year: number;
@@ -12,7 +9,7 @@ export interface MonthlyVolumeResponse {
     weightUnit: string;
 }
 
-// ==================== EXERCISE TYPES ====================
+// ── Exercises ─────────────────────────────────────────────────────────────────
 
 export interface Exercise {
     id: string;
@@ -39,7 +36,7 @@ export interface ExerciseVolumeResponse {
     monthlyVolume: MonthlyVolumeResponse[];
 }
 
-// ==================== LOGGED SETS & EXERCISES ====================
+// ── Logged sets & exercises ───────────────────────────────────────────────────
 
 export interface LoggedSet {
     type: string;
@@ -53,21 +50,12 @@ export interface LoggedSet {
     rir: number | null;
 }
 
-export interface LoggedSetBody {
-    type: string;
-    order: number;
-    duration: string | null;
-    distance: number | null;
-    distanceUnit: string | null;
-    reps: number | null;
-    weight: number | null;
-    weightUnit: string | null;
-    rir: number | null;
-}
+export type LoggedSetBody = LoggedSet;
 
 export interface LoggedExercise {
     exerciseId: string;
     order: number;
+    gpxData: string | null;
     sets: LoggedSet[];
 }
 
@@ -75,19 +63,24 @@ export interface LoggedExerciseBody {
     exerciseId: string;
     order: number;
     sets: LoggedSetBody[];
+    gpxData?: string | null;
 }
 
-// ==================== WORKOUT LOG TYPES ====================
+// ── Logged workouts ───────────────────────────────────────────────────────────
 
 export interface LoggedWorkout {
     id: string;
     userId: string;
     loggedAt: string;
+    name: string;
+    note: string | null;
     exercises: LoggedExercise[];
 }
 
 export interface CreateLoggedWorkoutBody {
+    name: string;
     exercises: LoggedExerciseBody[];
+    note?: string | null;
     loggedAt?: string | null;
 }
 
@@ -96,15 +89,17 @@ export interface CreateLoggedWorkoutResponse {
 }
 
 export interface UpdateLoggedWorkoutBody {
+    name: string;
     loggedAt: string;
     exercises: LoggedExerciseBody[];
+    note?: string | null;
 }
 
 export interface UpdateLoggedWorkoutResponse {
     loggedWorkoutId: string;
 }
 
-// ==================== PLANNED SETS & EXERCISES ====================
+// ── Planned sets & exercises ──────────────────────────────────────────────────
 
 export interface PlannedSet {
     type: string;
@@ -115,14 +110,7 @@ export interface PlannedSet {
     distanceUnit: string | null;
 }
 
-export interface PlannedSetBody {
-    type: string;
-    order: number;
-    reps: number | null;
-    duration: string | null;
-    distance: number | null;
-    distanceUnit: string | null;
-}
+export type PlannedSetBody = PlannedSet;
 
 export interface TemplateExercise {
     exerciseId: string;
@@ -130,13 +118,9 @@ export interface TemplateExercise {
     sets: PlannedSet[];
 }
 
-export interface TemplateExerciseBody {
-    exerciseId: string;
-    order: number;
-    sets: PlannedSetBody[];
-}
+export type TemplateExerciseBody = TemplateExercise;
 
-// ==================== WORKOUT TEMPLATE TYPES ====================
+// ── Workout templates ─────────────────────────────────────────────────────────
 
 export interface WorkoutTemplate {
     id: string;
@@ -163,12 +147,14 @@ export interface UpdateWorkoutTemplateResponse {
     workoutTemplateId: string;
 }
 
-// ==================== USER TYPES ====================
+// ── Users ─────────────────────────────────────────────────────────────────────
 
 export interface User {
     id: string;
     email: string;
     username: string;
+    firstName: string;
+    lastName: string;
     weight: number;
     height: number;
     activeDays: number;
@@ -178,6 +164,8 @@ export interface RegisterUserBody {
     email: string;
     username: string;
     password: string;
+    firstName: string;
+    lastName: string;
     weight: number;
     height: number;
     activeDays: number;
@@ -199,6 +187,8 @@ export interface LoginUserResponse {
 export interface UpdateUserInfoBody {
     email: string;
     username: string;
+    firstName: string;
+    lastName: string;
     weight: number;
     height: number;
     activeDays: number;

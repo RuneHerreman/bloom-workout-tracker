@@ -5,18 +5,16 @@
 /* ── Layout ──────────────────────────────────────────────────────────────────── */
 
 .dashboard {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    min-height: 0;
+    padding-bottom: 3.75rem;
 }
 
 .dashboard-body {
     display: grid;
-    flex: 1;
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: auto auto auto auto;
+    grid-template-rows: auto auto auto minmax(24rem, auto);
     grid-template-areas:
         "stats      stats       stats       stats"
         "activity   activity    training    training"
@@ -25,8 +23,7 @@
     row-gap: 1.5rem;
     column-gap: 1rem;
     width: 100%;
-    min-height: 0;
-    padding: 1.75rem 2rem 3.75rem;
+    padding: 1.75rem 2rem 0;
 }
 
 .dashboard-stats {
@@ -95,7 +92,9 @@
     min-height: 0;
 }
 
-.dash-training .general-widget {
+.dash-training .general-widget,
+.dash-volume .general-widget,
+.dash-logs .general-widget {
     height: 100%;
 }
 
@@ -123,6 +122,9 @@
     font-size: 0.7rem;
     color: var(--ink-muted);
     padding-bottom: 0.35rem;
+
+    display: flex;
+    justify-content: space-between;
 }
 
 .stat-unit {

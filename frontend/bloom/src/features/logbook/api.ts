@@ -1,117 +1,14 @@
 import { fetchFromServer } from "../../assets/js/data/apiClient.ts";
 import type { ExerciseType, WeightUnit, DistanceUnit } from "../../types.ts";
+import type {
+    LoggedSet,
+    LoggedExercise,
+    LoggedWorkout,
+    ExercisePrResponse,
+    ExerciseVolumeResponse,
+} from "../../assets/js/data/apiTypes.ts";
 
-// ── Response types ────────────────────────────────────────────────────────────
-
-export interface LoggedSet {
-    type: ExerciseType;
-    order: number;
-    duration: string | null;       // TimeSpan string: "HH:mm:ss"
-    distance: number | null;
-    distanceUnit: DistanceUnit | null;
-    reps: number | null;
-    weight: number | null;
-    weightUnit: WeightUnit | null;
-    rir: number | null;
-}
-
-export interface LoggedExercise {
-    exerciseId: string;
-    order: number;
-    sets: LoggedSet[];
-}
-
-export interface LoggedWorkout {
-    id: string;
-    userId: string;
-    loggedAt: string;
-    exercises: LoggedExercise[];
-}
-
-export interface ExercisePr {
-    exerciseId: string;
-    exerciseName: string;
-    exerciseType: ExerciseType;
-    targetMuscles: string[];
-    weight: number;
-    weightUnit: WeightUnit;
-}
-
-export interface MonthlyVolume {
-    year: number;
-    month: number;
-    maxWeight: number;
-    weightUnit: WeightUnit;
-}
-
-export interface ExerciseVolume {
-    exerciseId: string;
-    exerciseName: string;
-    exerciseType: ExerciseType;
-    targetMuscles: string[];
-    monthlyVolume: MonthlyVolume[];
-}
-
-// ── Set factory functions ─────────────────────────────────────────────────────
-
-export function createCardioSet(
-    order: number,
-    duration: string,       // "HH:mm:ss"
-    distance: number,
-    distanceUnit: DistanceUnit
-): LoggedSet {
-    return {
-        type: "Cardio",
-        order,
-        duration,
-        distance,
-        distanceUnit,
-        reps: null,
-        weight: null,
-        weightUnit: null,
-        rir: null,
-    };
-}
-
-export function createStrengthSet(
-    order: number,
-    reps: number,
-    weight: number,
-    weightUnit: WeightUnit,
-    rir: number
-): LoggedSet {
-    return {
-        type: "Strength",
-        order,
-        reps,
-        weight,
-        weightUnit,
-        rir,
-        duration: null,
-        distance: null,
-        distanceUnit: null,
-    };
-}
-
-export function createPlyometricSet(
-    order: number,
-    reps: number,
-    weight: number,
-    weightUnit: WeightUnit,
-    rir: number
-): LoggedSet {
-    return {
-        type: "Plyometric",
-        order,
-        reps,
-        weight,
-        weightUnit,
-        rir,
-        duration: null,
-        distance: null,
-        distanceUnit: null,
-    };
-}
+export type { LoggedSet, LoggedExercise, LoggedWorkout, ExercisePrResponse, ExerciseVolumeResponse };
 
 // ── Filter types ──────────────────────────────────────────────────────────────
 
@@ -128,6 +25,46 @@ export interface VolumeFilters extends ExerciseFilters {
     toMonth?: number;
 }
 
+// ── Set factory functions ─────────────────────────────────────────────────────
+
+export function createCardioSet(
+    order: number,
+    duration: string,
+    distance: number,
+    distanceUnit: DistanceUnit
+): LoggedSet {
+    return {
+        type: "Cardio", order, duration, distance, distanceUnit,
+        reps: null, weight: null, weightUnit: null, rir: null,
+    };
+}
+
+export function createStrengthSet(
+    order: number,
+    reps: number,
+    weight: number,
+    weightUnit: WeightUnit,
+    rir: number
+): LoggedSet {
+    return {
+        type: "Strength", order, reps, weight, weightUnit, rir,
+        duration: null, distance: null, distanceUnit: null,
+    };
+}
+
+export function createPlyometricSet(
+    order: number,
+    reps: number,
+    weight: number,
+    weightUnit: WeightUnit,
+    rir: number
+): LoggedSet {
+    return {
+        type: "Plyometric", order, reps, weight, weightUnit, rir,
+        duration: null, distance: null, distanceUnit: null,
+    };
+}
+
 // ── API functions ─────────────────────────────────────────────────────────────
 
 export async function getLogs(): Promise<LoggedWorkout[]> {
@@ -138,16 +75,32 @@ export async function getLog(logId: string): Promise<LoggedWorkout> {
     return fetchFromServer<LoggedWorkout>(`logs/${logId}`, "GET");
 }
 
-export async function createLog(exercises: LoggedExercise[], loggedAt?: string): Promise<string> {
+export async function createLog(
+    name: string,
+    exercises: LoggedExercise[],
+    note?: string | null,
+    loggedAt?: string
+): Promise<string> {
     const response = await fetchFromServer<{ loggedWorkoutId: string }>("logs", "POST", {
+        name,
         exercises,
+        ...(note != null ? { note } : {}),
         ...(loggedAt ? { loggedAt } : {}),
     });
     return response.loggedWorkoutId;
 }
 
-export async function updateLog(logId: string, loggedAt: string, exercises: LoggedExercise[]): Promise<string> {
-    const response = await fetchFromServer<{ loggedWorkoutId: string }>(`logs/${logId}`, "PUT", { loggedAt, exercises });
+export async function updateLog(
+    logId: string,
+    name: string,
+    loggedAt: string,
+    exercises: LoggedExercise[],
+    note?: string | null
+): Promise<string> {
+    const response = await fetchFromServer<{ loggedWorkoutId: string }>(`logs/${logId}`, "PUT", {
+        name, loggedAt, exercises,
+        ...(note != null ? { note } : {}),
+    });
     return response.loggedWorkoutId;
 }
 
@@ -155,12 +108,12 @@ export async function deleteLog(logId: string): Promise<void> {
     await fetchFromServer<unknown>(`logs/${logId}`, "DELETE");
 }
 
-export async function getPRs(filters?: ExerciseFilters): Promise<ExercisePr[]> {
-    return fetchFromServer<ExercisePr[]>(`logs/pr${buildExerciseParams(filters)}`, "GET");
+export async function getPRs(filters?: ExerciseFilters): Promise<ExercisePrResponse[]> {
+    return fetchFromServer<ExercisePrResponse[]>(`logs/pr${buildExerciseParams(filters)}`, "GET");
 }
 
-export async function getVolume(filters?: VolumeFilters): Promise<ExerciseVolume[]> {
-    return fetchFromServer<ExerciseVolume[]>(`logs/volume${buildVolumeParams(filters)}`, "GET");
+export async function getVolume(filters?: VolumeFilters): Promise<ExerciseVolumeResponse[]> {
+    return fetchFromServer<ExerciseVolumeResponse[]>(`logs/volume${buildVolumeParams(filters)}`, "GET");
 }
 
 // ── Query param helpers ───────────────────────────────────────────────────────

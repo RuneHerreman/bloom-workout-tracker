@@ -241,28 +241,9 @@ export function transformWorkoutLogsForLogPanel(workouts: LoggedWorkout[]): LogE
             return firstSetType;
         });
 
-        const typeCounts: Record<string, number> = {};
-
-        workout.exercises.forEach(ex => {
-            ex.sets.forEach(set => {
-                const type = set.type?.toLowerCase() || "strength";
-                typeCounts[type] = (typeCounts[type] || 0) + 1;
-            });
-        });
-
-        // 2. Find the type with the highest count
-        let majorityType = "strength"; // Default fallback
-        let maxCount = 0;
-
-        for (const [type, count] of Object.entries(typeCounts)) {
-            if (count > maxCount) {
-                maxCount = count;
-                majorityType = type;
-            }
-        }
         return {
             id: workout.id,
-            name: majorityType,
+            name: workout.name,
             date: formatWorkoutDate(new Date(workout.loggedAt)),
             exerciseCount: workout.exercises.length,
             exerciseTypes: exerciseTypes,
@@ -270,29 +251,54 @@ export function transformWorkoutLogsForLogPanel(workouts: LoggedWorkout[]): LogE
     });
 }
 
-/**
- * Transform ExercisePrResponse[] to FocusSegment[] for TrainingFocusWidget
- */
 export function transformPrDataForDonutChart(prData: ExercisePrResponse[]): FocusSegment[] {
-    const typeMap = new Map<string, { count: number; color: string }>();
-    const colors: { [key: string]: string } = {
+    const colors: Record<string, string> = {
         "strength": "#003E1F",
         "cardio": "#E9762B",
         "plyometric": "#2D8055",
         "flexibility": "#7B1616",
         "recovery": "#595959",
     };
-
+    const typeMap = new Map<string, { count: number; color: string }>();
     prData.forEach(pr => {
         const type = pr.exerciseType?.toLowerCase() ?? "strength";
-        const existing = typeMap.get(type) || { count: 0, color: colors[type] || "#595959" };
+        const existing = typeMap.get(type) ?? { count: 0, color: colors[type] ?? "#595959" };
         typeMap.set(type, { count: existing.count + 1, color: existing.color });
     });
-
     return Array.from(typeMap.entries()).map(([label, { count, color }]) => ({
         label: label.charAt(0).toUpperCase() + label.slice(1),
         value: count,
         color,
+    }));
+}
+
+export function transformWorkoutsForFocusChart(workouts: LoggedWorkout[]): FocusSegment[] {
+    const colors: Record<string, string> = {
+        "strength": "#003E1F",
+        "cardio": "#E9762B",
+        "plyometric": "#2D8055",
+        "flexibility": "#7B1616",
+        "recovery": "#595959",
+    };
+    const now = new Date();
+    const typeMap = new Map<string, number>();
+
+    workouts
+        .filter(w => {
+            const d = new Date(w.loggedAt);
+            return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+        })
+        .forEach(w => {
+            w.exercises.forEach(ex => {
+                const type = ex.sets[0]?.type?.toLowerCase() ?? "strength";
+                typeMap.set(type, (typeMap.get(type) ?? 0) + 1);
+            });
+        });
+
+    return Array.from(typeMap.entries()).map(([label, count]) => ({
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+        value: count,
+        color: colors[label] ?? "#595959",
     }));
 }
 
