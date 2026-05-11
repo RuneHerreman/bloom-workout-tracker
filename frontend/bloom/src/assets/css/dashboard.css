@@ -162,9 +162,9 @@
     background: var(--border);
 }
 
-.activity-cell[data-level="1"] { background: var(--accent); }           /* Cardio only - orange */
-.activity-cell[data-level="2"] { background: var(--primary); }           /* Strength only - green */
-.activity-cell[data-level="3"] { background: var(--primary-faded); }           /* Mix - blend of green and orange */
+.activity-cell[data-level="1"] { background: var(--accent); opacity: 0.9; }           /* Cardio only - orange */
+.activity-cell[data-level="2"] { background: var(--primary); opacity: 0.9; }           /* Strength only - green */
+.activity-cell[data-level="3"] { background: var(--primary-faded); opacity: 0.9; }           /* Mix - blend of green and orange */
 
 /* ── Training focus widget ───────────────────────────────────────────────────── */
 
@@ -439,18 +439,44 @@
 
 @media(max-width: 1300px) {
     .dashboard-body {
-        display: grid;
-        flex: 1;
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: auto auto minmax(auto, 25rem) 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto;
         grid-template-areas:
-        "stats      stats       logs"
-        "stats      stats       logs"
-        "training   training    logs"
-        "activity   activity    logs"
-        "volume     volume      volume";
+            "stats    stats"
+            "activity activity"
+            "training training"
+            "notes    notes"
+            "volume   volume"
+            "logs     logs";
         gap: 1.25rem;
-        width: 100%;
-        min-height: 0;
+    }
+
+    .dashboard-stats {
+        flex-wrap: wrap;
+    }
+
+    .stat-widget {
+        flex: 0 0 50%;
+        box-sizing: border-box;
+        border-right: none;
+        border-radius: 0;
+    }
+
+    .stat-widget:first-of-type {
+        border-radius: var(--widget-border-radius) 0 0 0;
+    }
+
+    .stat-widget:nth-of-type(2) {
+        border-radius: 0 var(--widget-border-radius) 0 0;
+        border-right: 0.0625rem solid var(--border);
+    }
+
+    .stat-widget:nth-of-type(3) {
+        border-radius: 0 0 0 var(--widget-border-radius);
+    }
+
+    .stat-widget:last-of-type {
+        border-radius: 0 0 var(--widget-border-radius) 0;
+        border-right: 0.0625rem solid var(--border);
     }
 }
