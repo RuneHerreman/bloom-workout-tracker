@@ -16,6 +16,8 @@ public sealed class GetCurrentUserTests
         Id = id,
         Email = "alice@example.com",
         Username = "alice",
+        FirstName = "Alice",
+        LastName = "Smith",
         Weight = 70m,
         Height = 175,
         ActiveDays = 4
