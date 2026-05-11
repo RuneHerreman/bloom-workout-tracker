@@ -128,13 +128,13 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
             header={
                 <WidgetHeader
                     title={"History of 5 most recent PRs"}
-                    subtitle={"Activity log · Top 5 PR progression"}
+                    subtitle={"Volume logged · Top 5 PR progression"}
                 />
 
             }
             content={
                 <div className="volume-widget">
-                    <div className="chart-area" style={{ height: '300px' }}>
+                    <div className="chart-area">
                         <Line data={chartData} options={options} />
                     </div>
                 </div>

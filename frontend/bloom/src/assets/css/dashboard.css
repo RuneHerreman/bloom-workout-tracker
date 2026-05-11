@@ -135,7 +135,7 @@
 .stat-value {
     font-size: 3rem;
     font-family: var(--serif), serif;
-    font-weight: 500;
+    font-weight: normal;
     line-height: 1;
     margin-bottom: 0.4rem;
 }
@@ -171,15 +171,108 @@
 .training-focus-content {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     height: 100%;
     width: 100%;
 }
 
+.training-focus-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 3rem;
+    flex: 1;
+    min-height: 0;
+}
+
 .training-focus-chart {
-    width: min(100%, 18rem);
+    width: max(18rem, 12rem);
     aspect-ratio: 1;
+    flex-shrink: 0;
+}
+
+.focus-legend {
+    list-style: none;
+    margin: 0;
+    padding-right: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    flex: 1;
+}
+
+.focus-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.focus-legend-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.focus-legend-label {
+    flex: 1;
+    color: var(--ink);
+}
+
+.focus-legend-count {
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 1.2rem;
+    text-align: right;
+}
+
+.focus-legend-pct {
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 2.5rem;
+    text-align: right;
+    font-weight: 300;
+}
+
+/* ── Focus chips ─────────────────────────────────────────────────────────────── */
+
+.focus-chips {
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+    align-self: flex-start;
+}
+
+.focus-chip {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.65rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: 1rem;
+    cursor: pointer;
+    background: none;
+    color: var(--ink-muted);
+    font-family: inherit;
+    font-weight: 400;
+    line-height: 1.5;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.focus-chip:hover {
+    border-color: var(--primary-transparent);
+    color: var(--primary-transparent);
+}
+
+.focus-chip.active {
+    background: var(--primary-transparent);
+    color: white;
+    border-color: transparent;
+}
+
+.focus-empty {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    text-align: center;
+    margin: auto;
 }
 
 /* ── Volume widget ───────────────────────────────────────────────────────────── */

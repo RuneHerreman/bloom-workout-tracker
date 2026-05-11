@@ -1,4 +1,4 @@
-import type { ExercisePrResponse, ExerciseVolumeResponse, LoggedWorkout } from "../../assets/js/data/apiTypes.ts";
+import type { ExerciseVolumeResponse, LoggedWorkout } from "../../assets/js/data/apiTypes.ts";
 import type { ActivityDay } from "./components/ActivityWidget";
 import type { ExerciseSeries } from "./components/VolumeWidget";
 import type { FocusSegment } from "./components/TrainingFocusWidget";
@@ -251,26 +251,49 @@ export function transformWorkoutLogsForLogPanel(workouts: LoggedWorkout[]): LogE
     });
 }
 
-export function transformPrDataForDonutChart(prData: ExercisePrResponse[]): FocusSegment[] {
-    const colors: Record<string, string> = {
-        "strength": "#003E1F",
-        "cardio": "#E9762B",
-        "plyometric": "#2D8055",
-        "flexibility": "#7B1616",
-        "recovery": "#595959",
+export function transformWorkoutsForMuscleChart(workouts: LoggedWorkout[], volumeData: ExerciseVolumeResponse[]): FocusSegment[] {
+    const muscleColors: Record<string, string> = {
+        "chest": "#2D5A8E",
+        "back": "#003E1F",
+        "shoulders": "#5B7E3F",
+        "biceps": "#E9762B",
+        "triceps": "#C14B1E",
+        "quadriceps": "#7B1616",
+        "hamstrings": "#8B3A62",
+        "glutes": "#4A2D8B",
+        "core": "#595959",
+        "calves": "#2D8055",
+        "forearms": "#8B6A2D",
     };
-    const typeMap = new Map<string, { count: number; color: string }>();
-    prData.forEach(pr => {
-        const type = pr.exerciseType?.toLowerCase() ?? "strength";
-        const existing = typeMap.get(type) ?? { count: 0, color: colors[type] ?? "#595959" };
-        typeMap.set(type, { count: existing.count + 1, color: existing.color });
-    });
-    return Array.from(typeMap.entries()).map(([label, { count, color }]) => ({
+
+    const muscleMap = new Map<string, string[]>();
+    volumeData.forEach(ex => muscleMap.set(ex.exerciseId, ex.targetMuscles));
+
+    const now = new Date();
+    const counts = new Map<string, number>();
+
+    workouts
+        .filter(w => {
+            const d = new Date(w.loggedAt);
+            return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+        })
+        .forEach(w => {
+            w.exercises.forEach(ex => {
+                const muscles = muscleMap.get(ex.exerciseId) ?? [];
+                muscles.forEach(muscle => {
+                    const key = muscle.toLowerCase();
+                    counts.set(key, (counts.get(key) ?? 0) + 1);
+                });
+            });
+        });
+
+    return Array.from(counts.entries()).map(([label, count]) => ({
         label: label.charAt(0).toUpperCase() + label.slice(1),
         value: count,
-        color,
+        color: muscleColors[label] ?? "#595959",
     }));
 }
+
 
 export function transformWorkoutsForFocusChart(workouts: LoggedWorkout[]): FocusSegment[] {
     const colors: Record<string, string> = {

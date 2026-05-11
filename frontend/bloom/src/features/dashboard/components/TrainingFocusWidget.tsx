@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import GeneralWidget from "./GeneralWidget.tsx";
 import {
     Chart as ChartJS,
@@ -20,21 +20,25 @@ export interface FocusSegment {
 
 interface TrainingFocusWidgetProps {
     segments?: FocusSegment[];
+    muscleSegments?: FocusSegment[];
 }
 
-function TrainingFocusWidget({ segments = [] }: TrainingFocusWidgetProps) {
+function TrainingFocusWidget({ segments = [], muscleSegments = [] }: TrainingFocusWidgetProps) {
+    const [view, setView] = useState<'type' | 'muscle'>('type');
+
+    const activeSegments = view === 'type' ? segments : muscleSegments;
 
     const data: ChartData<'doughnut'> = useMemo(() => ({
-        labels: segments.map(s => s.label),
+        labels: activeSegments.map(s => s.label),
         datasets: [
             {
-                data: segments.map(s => s.value),
-                backgroundColor: segments.map(s => s.color),
+                data: activeSegments.map(s => s.value),
+                backgroundColor: activeSegments.map(s => s.color),
                 borderWidth: 0,
                 hoverOffset: 15
             }
         ]
-    }), [segments]);
+    }), [activeSegments]);
 
     const options: ChartOptions<'doughnut'> = useMemo(() => ({
         responsive: true,
@@ -43,7 +47,7 @@ function TrainingFocusWidget({ segments = [] }: TrainingFocusWidgetProps) {
         layout: {
             padding: 15 // This creates a buffer so the segment doesn't hit the edge
         },
-        cutout: '60%',
+        cutout: '70%',
         plugins: {
             legend: {
                 display: false
@@ -73,17 +77,43 @@ function TrainingFocusWidget({ segments = [] }: TrainingFocusWidgetProps) {
                 <WidgetHeader title={"Check your split"} subtitle={"Training Focus"}/>
             }
             content={
-                segments.length === 0
-                    ? <div className="training-focus-content empty-state"><p>No training data available.</p></div>
-                    : <div className="training-focus-content">
-                        <div className="training-focus-chart">
-                            <Doughnut
-                                data={data}
-                                options={options}
-                                aria-label="A doughnut chart showing your training focus distribution"
-                            />
-                        </div>
+                <div className="training-focus-content">
+                    <div className="focus-chips">
+                        <button
+                            className={`focus-chip${view === 'type' ? ' active' : ''}`}
+                            onClick={() => setView('type')}
+                        >Type</button>
+                        <button
+                            className={`focus-chip${view === 'muscle' ? ' active' : ''}`}
+                            onClick={() => setView('muscle')}
+                        >Muscle group</button>
                     </div>
+                    {activeSegments.length === 0
+                        ? <p className="focus-empty">No data this month.</p>
+                        : <div className="training-focus-row">
+                            <div className="training-focus-chart">
+                                <Doughnut
+                                    data={data}
+                                    options={options}
+                                    aria-label="A doughnut chart showing your training focus distribution"
+                                />
+                            </div>
+                            <ul className="focus-legend">
+                                {(() => {
+                                    const total = activeSegments.reduce((sum, s) => sum + s.value, 0);
+                                    return [...activeSegments].sort((a, b) => b.value - a.value).map(s => (
+                                        <li key={s.label} className="focus-legend-item">
+                                            <span className="focus-legend-dot" style={{ background: s.color }} />
+                                            <span className="focus-legend-label">{s.label}</span>
+                                            <span className="focus-legend-count">{s.value}</span>
+                                            <span className="focus-legend-pct">({String(Math.round((s.value / total) * 100)).padStart(2, '0')}%)</span>
+                                        </li>
+                                    ));
+                                })()}
+                            </ul>
+                        </div>
+                    }
+                </div>
             }
         />
     );

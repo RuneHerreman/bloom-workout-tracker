@@ -16,6 +16,7 @@ import {
     transFormVolumeDataForLineGraph,
     transformWorkoutLogsForLogPanel,
     transformWorkoutsForFocusChart,
+    transformWorkoutsForMuscleChart,
     transformLogsForActivityCalendar,
     calculateDashboardStats,
     type DashboardStats
@@ -38,6 +39,7 @@ function DashboardPage() {
     const [volumeSeries, setVolumeSeries] = useState<ExerciseSeries[]>([]);
     const [volumeLabels, setVolumeLabels] = useState<string[]>(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]);
     const [focusSegments, setFocusSegments] = useState<FocusSegment[]>([]);
+    const [muscleFocusSegments, setMuscleFocusSegments] = useState<FocusSegment[]>([]);
     const [logEntries, setLogEntries] = useState<LogEntryData[]>([]);
     const [stats, setStats] = useState<DashboardStats | null>(null);
 
@@ -51,6 +53,7 @@ function DashboardPage() {
                 setVolumeSeries(series);
                 setVolumeLabels(labels);
                 setFocusSegments(transformWorkoutsForFocusChart(workouts));
+                setMuscleFocusSegments(transformWorkoutsForMuscleChart(workouts, volume));
                 setLogEntries(transformWorkoutLogsForLogPanel(workouts).slice(0, 5));
                 setStats(calculateDashboardStats(workouts));
             })
@@ -93,7 +96,7 @@ function DashboardPage() {
                 </div>
 
                 <div className="dash-activity"><ActivityWidget data={activityData}/></div>
-                <div className="dash-training"><TrainingFocusWidget segments={focusSegments}/></div>
+                <div className="dash-training"><TrainingFocusWidget segments={focusSegments} muscleSegments={muscleFocusSegments}/></div>
                 <div className="dash-notes"><TechnicalPointsWidget/></div>
                 <div className="dash-logs"><LogWidget entries={logEntries}/></div>
                 <div className="dash-volume"><VolumeWidget series={volumeSeries} monthLabels={volumeLabels}/></div>

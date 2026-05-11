@@ -1,6 +1,7 @@
 :root {
     /* Brand */
     --primary:         #003E1F;
+    --primary-transparent: rgb(0 62 31 / 0.85);
     --primary-muted:   #1C4B33;
     --primary-light:   #2D8055;
     --primary-glow:    rgba(132, 224, 178, 0.50);
