@@ -14,6 +14,7 @@ public record LoggedWorkout(
 public record LoggedExercise(
     Guid ExerciseId,
     int Order,
+    string? GpxData,
     IReadOnlyList<LoggedSet> Sets
 );
 
@@ -45,6 +46,7 @@ public static class LoggedWorkoutExtensions
         new(
             data.ExerciseId,
             data.Order,
+            data.GpxData,
             data.Sets.Select(s => s.ToResponse()).ToList()
         );
 

@@ -52,6 +52,8 @@ public sealed class UpdateLoggedWorkoutTests : ApplicationTestBase
         var saved = await LoggedWorkoutRepository.ById(workout.Id);
         Assert.True(saved.HasValue);
         Assert.Equal(newDate, saved.Value.LoggedAt);
+        Assert.Equal("Updated Workout", saved.Value.Name);
+        Assert.Null(saved.Value.Note);
     }
 
     [Fact]
