@@ -1,5 +1,5 @@
 import { fetchFromServer } from "../../assets/js/data/apiClient.ts";
-import type { User, UpdateUserInfoBody, UpdateTechnicalPointsBody, UpdateTechnicalPointsResponse } from "../../assets/js/data/apiTypes.ts";
+import type { User, UpdateUserInfoBody, UpdateTechnicalPointsBody } from "../../assets/js/data/apiTypes.ts";
 
 export type { User };
 
@@ -40,7 +40,6 @@ export async function changePassword(oldPassword: string, newPassword: string): 
     await fetchFromServer<unknown>("users/me/change-password", "POST", { oldPassword, newPassword });
 }
 
-export async function updateTechnicalPoints(technicalPoints: string | null): Promise<string> {
-    const response = await fetchFromServer<UpdateTechnicalPointsResponse>("users/me/technical-points", "PUT", { technicalPoints } satisfies UpdateTechnicalPointsBody);
-    return response.userId;
+export async function updateTechnicalPoints(technicalPoints: string | null): Promise<void> {
+    await fetchFromServer<unknown>("users/me/technical-points", "PUT", { technicalPoints } satisfies UpdateTechnicalPointsBody);
 }

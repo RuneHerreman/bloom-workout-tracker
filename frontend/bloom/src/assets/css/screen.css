@@ -53,6 +53,7 @@ a {
 
 .button-component.modern:hover {
     border-color: transparent;
+    cursor: pointer;
 }
 
 .button-component.modern:hover::after {

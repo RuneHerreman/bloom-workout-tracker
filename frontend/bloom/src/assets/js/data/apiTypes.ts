@@ -207,7 +207,3 @@ export interface ChangeUserPasswordBody {
 export interface UpdateTechnicalPointsBody {
     technicalPoints: string | null;
 }
-
-export interface UpdateTechnicalPointsResponse {
-    userId: string;
-}
