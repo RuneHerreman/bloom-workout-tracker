@@ -34,6 +34,8 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                     Email = table.Column<string>(type: "text", nullable: false),
                     Username = table.Column<string>(type: "text", nullable: false),
                     HashedPassword = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "text", nullable: false),
+                    LastName = table.Column<string>(type: "text", nullable: false),
                     Weight = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
                     Height = table.Column<int>(type: "integer", nullable: false),
                     ActiveDays = table.Column<int>(type: "integer", nullable: false)
@@ -50,6 +52,8 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     LoggedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Note = table.Column<string>(type: "text", nullable: true),
                     LoggedExercises = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
