@@ -105,7 +105,7 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
                     color: '#F0F0F0',
                 },
                 ticks: {
-                    callback: function(value) {
+                    callback: function(value: number | string) {
                         return value + " kg";
                     }
                 },

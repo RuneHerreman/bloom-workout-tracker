@@ -11,6 +11,8 @@ function SignupCredentials() {
     const [passwordAgain, setPasswordAgain] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [username, setUsername] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
     const [height, setHeight] = useState(0);
     const [weight, setWeight] = useState(0);
     const [activeDays, setActiveDays] = useState(0);
@@ -37,7 +39,7 @@ function SignupCredentials() {
         e.preventDefault();
         if (!checkPasswordMatch()) return;
         try {
-            const token = await register(email, password, height, weight, username, activeDays);
+            const token = await register(email, password, height, weight, username, firstName, lastName, activeDays);
             setToken(token);
             navigate("/dashboard");
         } catch (error) {
@@ -112,6 +114,30 @@ function SignupCredentials() {
                     <h1>Tell us about yourself</h1>
                     <p>Help us personalize your Bloom experience. See personalised graphs showing your performance</p>
                     <form onSubmit={handleSignUp}>
+                        <div>
+                            <div>
+                                <label htmlFor="firstName">First name</label>
+                                <input
+                                    type="text"
+                                    id="firstName"
+                                    placeholder="First name"
+                                    maxLength={100}
+                                    required
+                                    onChange={(e) => setFirstName(e.target.value)}>
+                                </input>
+                            </div>
+                            <div>
+                                <label htmlFor="lastName">Last name</label>
+                                <input
+                                    type="text"
+                                    id="lastName"
+                                    placeholder="Last name"
+                                    maxLength={100}
+                                    required
+                                    onChange={(e) => setLastName(e.target.value)}>
+                                </input>
+                            </div>
+                        </div>
                         <div>
                             <label htmlFor="username">What do you want to be called?</label>
                             <input

@@ -158,6 +158,7 @@ export interface User {
     weight: number;
     height: number;
     activeDays: number;
+    technicalPoints: string | null;
 }
 
 export interface RegisterUserBody {
@@ -201,4 +202,12 @@ export interface UpdateUserInfoResponse {
 export interface ChangeUserPasswordBody {
     oldPassword: string;
     newPassword: string;
+}
+
+export interface UpdateTechnicalPointsBody {
+    technicalPoints: string | null;
+}
+
+export interface UpdateTechnicalPointsResponse {
+    userId: string;
 }

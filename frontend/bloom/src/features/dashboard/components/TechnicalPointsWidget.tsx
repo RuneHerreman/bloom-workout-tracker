@@ -1,14 +1,29 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import GeneralWidget from "./GeneralWidget.tsx";
 import WidgetHeader from "./WidgetHeader.tsx";
 import Button from "../../../components/general/ButtonComponent.tsx";
 
-function TechnicalPointsWidget() {
+interface TechnicalPointsWidgetProps {
+    initialContent?: string | null;
+    onSave?: (content: string) => void;
+}
+
+function TechnicalPointsWidget({ initialContent, onSave }: TechnicalPointsWidgetProps) {
     const editorRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (editorRef.current && initialContent != null) {
+            editorRef.current.innerHTML = initialContent;
+        }
+    }, [initialContent]);
 
     function execFormat(command: string, value?: string) {
         document.execCommand(command, false, value);
         editorRef.current?.focus();
+    }
+
+    function handleSave() {
+        onSave?.(editorRef.current?.innerHTML ?? "");
     }
 
     return (
@@ -17,7 +32,7 @@ function TechnicalPointsWidget() {
                 <WidgetHeader
                     title={"Technical Points"}
                     subtitle={"What needs work?"}
-                    action={<Button text={"Save notes"} style={"modern"}/>}
+                    action={<Button text={"Save notes"} style={"modern"} onClick={handleSave}/>}
                 />
             }
             content={

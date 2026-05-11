@@ -12,6 +12,7 @@ import type { ExerciseSeries } from "./components/VolumeWidget";
 import LogWidget from "./components/LogWidget.tsx";
 import type { LogEntryData } from "./components/LogWidget";
 import { getLogs, getVolume } from "./api.ts";
+import { updateTechnicalPoints } from "../auth/api.ts";
 import {
     transFormVolumeDataForLineGraph,
     transformWorkoutLogsForLogPanel,
@@ -97,7 +98,10 @@ function DashboardPage() {
 
                 <div className="dash-activity"><ActivityWidget data={activityData}/></div>
                 <div className="dash-training"><TrainingFocusWidget segments={focusSegments} muscleSegments={muscleFocusSegments}/></div>
-                <div className="dash-notes"><TechnicalPointsWidget/></div>
+                <div className="dash-notes"><TechnicalPointsWidget
+                    initialContent={user?.technicalPoints}
+                    onSave={(content) => updateTechnicalPoints(content).catch(() => null)}
+                /></div>
                 <div className="dash-logs"><LogWidget entries={logEntries}/></div>
                 <div className="dash-volume"><VolumeWidget series={volumeSeries} monthLabels={volumeLabels}/></div>
             </div>
