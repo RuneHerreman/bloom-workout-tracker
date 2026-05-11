@@ -9,8 +9,10 @@
     --surface-dark:    #01110A;
 
     /* Neutrals */
-    --border:          #E3E3E3;
+    --border:          oklch(0.89 0.012 90);
     --grey:            #CCCCCC;
+
+    --background: #fcfaf4;
 
     /* Text */
     --ink:             #333333;
@@ -21,4 +23,6 @@
 
     /* Sidebar */
     --sidebar-width:   13rem;
+
+    --serif: 'Newsreader', 'Source Serif Pro', Georgia, serif;
 }

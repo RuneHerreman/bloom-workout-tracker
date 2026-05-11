@@ -1,4 +1,6 @@
 import { NavLink } from "react-router-dom";
+import GeneralWidget from "./GeneralWidget.tsx";
+import WidgetHeader from "./WidgetHeader.tsx";
 
 export interface LogEntryData {
     id: string;
@@ -41,15 +43,22 @@ interface LogWidgetProps {
 
 function LogWidget({ entries = [] }: LogWidgetProps) {
     return (
-        <div className="widget log-widget">
-            <div className="log-widget-header">
-                <p className="widget-title" style={{ margin: 0 }}>Recent Logs</p>
-                <NavLink to="/logbook" className="log-widget-view-all">View All</NavLink>
-            </div>
-            {entries.map(entry => (
-                <LogEntry key={entry.id} {...entry}/>
-            ))}
-        </div>
+        <GeneralWidget
+            header={
+                <WidgetHeader
+                    title={"Last sessions"}
+                    subtitle={"Recent"}
+                    action={<NavLink to="/logbook" className="log-widget-view-all">View all →</NavLink>}
+                />
+            }
+            content={
+                <div className="log-widget">
+                    {entries.map(entry => (
+                        <LogEntry key={entry.id} {...entry}/>
+                    ))}
+                </div>
+            }
+        />
     );
 }
 

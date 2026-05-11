@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import GeneralWidget from "./GeneralWidget.tsx";
 import {
     Chart as ChartJS,
     ArcElement,
@@ -7,6 +8,7 @@ import {
 } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import type { TooltipItem, ChartOptions, ChartData } from 'chart.js';
+import WidgetHeader from "./WidgetHeader.tsx";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -36,18 +38,15 @@ function TrainingFocusWidget({ segments = [] }: TrainingFocusWidgetProps) {
 
     const options: ChartOptions<'doughnut'> = useMemo(() => ({
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
+        aspectRatio: 1,
         layout: {
             padding: 15 // This creates a buffer so the segment doesn't hit the edge
         },
         cutout: '60%',
         plugins: {
             legend: {
-                display: true,
-                position: 'bottom',
-                labels: {
-                    padding: 10
-                }
+                display: false
             },
             tooltip: {
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -65,34 +64,28 @@ function TrainingFocusWidget({ segments = [] }: TrainingFocusWidgetProps) {
                 }
 
             },
-            hoverOffset: 20,
         }
     }), []);
 
-    if (!segments || segments.length === 0) {
-        return (
-            <div className="widget training-focus-widget">
-                <p className="widget-title">Training focus</p>
-                <div className="training-focus-content empty-state">
-                    <p>No training data available.</p>
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <div className="widget training-focus-widget">
-            <p className="widget-title">Training focus</p>
-            <div className="training-focus-content" >
-                <div className="training-focus-chart">
-                    <Doughnut
-                        data={data}
-                        options={options}
-                        aria-label="A doughnut chart showing your training focus distribution"
-                    />
-                </div>
-            </div>
-        </div>
+        <GeneralWidget
+            header={
+                <WidgetHeader title={"Check your split"} subtitle={"Training Focus"}/>
+            }
+            content={
+                segments.length === 0
+                    ? <div className="training-focus-content empty-state"><p>No training data available.</p></div>
+                    : <div className="training-focus-content">
+                        <div className="training-focus-chart">
+                            <Doughnut
+                                data={data}
+                                options={options}
+                                aria-label="A doughnut chart showing your training focus distribution"
+                            />
+                        </div>
+                    </div>
+            }
+        />
     );
 }
 

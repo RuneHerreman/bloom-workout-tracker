@@ -20,10 +20,14 @@ import {
     calculateDashboardStats,
     type DashboardStats
 } from "./transforms.ts";
+import Button from "../../components/general/ButtonComponent.tsx";
+import HeaderComponent from "../../components/general/HeaderComponent.tsx";
+import TechnicalPointsWidget from "./components/TechnicalPointsWidget.tsx";
 function formatDate(date: Date): string {
     return date.toLocaleDateString("en-GB", {
+        weekday: "long",
         day: "numeric",
-        month: "short",
+        month: "long",
         year: "numeric",
     });
 }
@@ -47,7 +51,7 @@ function DashboardPage() {
                 setVolumeSeries(series);
                 setVolumeLabels(labels);
                 setFocusSegments(transformPrDataForDonutChart(prs));
-                setLogEntries(transformWorkoutLogsForLogPanel(workouts).slice(0, 10));
+                setLogEntries(transformWorkoutLogsForLogPanel(workouts).slice(0, 5));
                 setStats(calculateDashboardStats(workouts));
             })
             .catch(() => null);
@@ -55,10 +59,11 @@ function DashboardPage() {
 
     return (
         <div className="dashboard">
-            <header>
-                <p className="dashboard-date">{formatDate(new Date())}</p>
-                <h1 className="dashboard-title">Welcome back, {user?.username ?? "—"}!</h1>
-            </header>
+            <HeaderComponent
+                title={`Welcome back, ${user?.username ?? "—"}!`}
+                subtitle={`Today  ·  ${formatDate(new Date())}`}
+                action={<Button text={"Log Workout"} icon="+" style={"green"} target="/logbook" />}
+            />
 
             <div className="dashboard-body">
                 <div className="dashboard-stats">
@@ -66,25 +71,30 @@ function DashboardPage() {
                         label="Workouts (this year)"
                         value={stats?.workoutsThisYear ?? 0}
                         changePercent={stats?.workoutChange}
+                        unit="sessions"
                     />
                     <StatWidget
                         label="Volume (this month)"
                         value={stats?.volumeThisMonth ?? "0"}
                         changePercent={stats?.volumeChange}
+                        unit="tonnes"
                     />
                     <StatWidget
                         label="Active streak"
-                        value={`${stats?.currentStreak ?? 0} days`}
-                        subtext={`best = ${stats?.bestStreak ?? 0} days`}
+                        value={`${stats?.currentStreak ?? 0}`}
+                        subtext={`best: ${stats?.bestStreak ?? 0} days`}
+                        unit="days"
                     />
                     <StatWidget
                         label="Total PRs (this month)"
                         value={stats?.totalPRs ?? 0}
+                        unit="PRs"
                     />
                 </div>
 
                 <div className="dash-activity"><ActivityWidget data={activityData}/></div>
                 <div className="dash-training"><TrainingFocusWidget segments={focusSegments}/></div>
+                <div className="dash-notes"><TechnicalPointsWidget/></div>
                 <div className="dash-logs"><LogWidget entries={logEntries}/></div>
                 <div className="dash-volume"><VolumeWidget series={volumeSeries} monthLabels={volumeLabels}/></div>
             </div>

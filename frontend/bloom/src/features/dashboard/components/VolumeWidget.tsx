@@ -1,3 +1,4 @@
+import GeneralWidget from "./GeneralWidget.tsx";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -9,6 +10,7 @@ import {
     Legend, type TooltipItem
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import WidgetHeader from "./WidgetHeader.tsx";
 
 ChartJS.register(
     CategoryScale,
@@ -122,16 +124,22 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
     };
 
     return (
-        <div className="widget volume-widget">
-            <div className="volume-widget-header">
-                <p className="widget-title" style={{ fontWeight: '600', marginBottom: '1rem' }}>
-                    History of 5 most recent PRs
-                </p>
-            </div>
-            <div className="chart-area" style={{ height: '300px' }}>
-                <Line data={chartData} options={options} />
-            </div>
-        </div>
+        <GeneralWidget
+            header={
+                <WidgetHeader
+                    title={"History of 5 most recent PRs"}
+                    subtitle={"Activity log · Top 5 PR progression"}
+                />
+
+            }
+            content={
+                <div className="volume-widget">
+                    <div className="chart-area" style={{ height: '300px' }}>
+                        <Line data={chartData} options={options} />
+                    </div>
+                </div>
+            }
+        />
     );
 }
 

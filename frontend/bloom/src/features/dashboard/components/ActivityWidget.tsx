@@ -1,4 +1,7 @@
 // Each cell represents one day. Level 0 = no activity, 1–3 = increasing intensity.
+import GeneralWidget from "./GeneralWidget.tsx";
+import WidgetHeader from "./WidgetHeader.tsx";
+
 export interface ActivityDay {
     date: string;   // ISO date string
     level: 0 | 1 | 2 | 3;
@@ -28,19 +31,26 @@ function ActivityWidget({ data }: ActivityWidgetProps) {
     const cells = data ?? generatePlaceholder();
 
     return (
-        <div className="widget">
-            <p className="widget-title">Activity Log</p>
-            <div className="activity-grid">
-                {cells.map(cell => (
-                    <div
-                        key={cell.date}
-                        className="activity-cell"
-                        data-level={cell.level}
-                        title={cell.date}
-                    />
-                ))}
-            </div>
-        </div>
+        <GeneralWidget
+            header={
+                <WidgetHeader
+                    title={"Workouts logged this year"}
+                    subtitle={`Year · ${new Date().getFullYear()}`}
+                />
+            }
+            content={
+                <div className="activity-grid">
+                    {cells.map(cell => (
+                        <div
+                            key={cell.date}
+                            className="activity-cell"
+                            data-level={cell.level}
+                            title={cell.date}
+                        />
+                    ))}
+                </div>
+            }
+        />
     );
 }
 

@@ -2,14 +2,13 @@
 
 interface ButtonComponentProps {
     text: string;
+    icon?: string;
     imageSrc?: string;
     target?: string;
     style: string;
-
 }
 
-
-function Button({ text, imageSrc, target, style }: ButtonComponentProps) {
+function Button({ text, icon, imageSrc, target, style }: ButtonComponentProps) {
     const to = target ? target : "#";
 
     return (
@@ -17,6 +16,7 @@ function Button({ text, imageSrc, target, style }: ButtonComponentProps) {
             to={to}
             className={`button-component ${style ?? ""}`}
         >
+            {icon && <span aria-hidden="true">{icon}</span>}
             {imageSrc && <img src={imageSrc} alt={text} />}
             {text}
         </NavLink>

@@ -56,7 +56,7 @@ function calculateVolume(workouts: LoggedWorkout[], currentYear: number, current
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const volLastMonth = calcVolForMonth(prevMonthYear, prevMonth);
 
-    const volumeThisMonthStr = volThisMonth >= 1000 ? (volThisMonth / 1000).toFixed(1) + 'k' : volThisMonth.toString();
+    const volumeThisMonthStr = volThisMonth >= 1000 ? (volThisMonth / 1000).toFixed(1) : volThisMonth.toString();
     const volumeChange = volLastMonth > 0
         ? Math.round(((volThisMonth - volLastMonth) / volLastMonth) * 100)
         : undefined;
