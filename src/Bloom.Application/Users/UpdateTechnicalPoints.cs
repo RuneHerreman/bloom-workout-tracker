@@ -7,7 +7,7 @@ namespace Bloom.Application.Users;
 
 public sealed record UpdateTechnicalPointsInput(string? TechnicalPoints);
 
-public sealed record UpdateTechnicalPointsOutput(Guid UserId);
+public sealed record UpdateTechnicalPointsOutput;
 
 public class UpdateTechnicalPoints(
     IUnitOfWork uow,
@@ -33,6 +33,6 @@ public class UpdateTechnicalPoints(
 
         logger.LogInformation("Technical points updated | Id: {UserId}", user.Value.Id);
 
-        return new UpdateTechnicalPointsOutput(user.Value.Id.Value);
+        return new UpdateTechnicalPointsOutput();
     }
 }

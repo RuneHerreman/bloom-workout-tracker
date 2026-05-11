@@ -13,18 +13,16 @@ public sealed record UpdateTechnicalPointsRequest(
 
 public sealed record UpdateTechnicalPointsBody(string? TechnicalPoints);
 
-public sealed record UpdateTechnicalPointsResponse(Guid UserId);
-
 public static class UpdateTechnicalPointsController
 {
-    public static async Task<Results<Ok<UpdateTechnicalPointsResponse>, BadRequest>> Invoke(
+    public static async Task<NoContent> Invoke(
         [AsParameters] UpdateTechnicalPointsRequest request
     )
     {
-        var output = await request.UseCase.Execute(new UpdateTechnicalPointsInput(
+        await request.UseCase.Execute(new UpdateTechnicalPointsInput(
             request.Body.TechnicalPoints
         ));
 
-        return TypedResults.Ok(new UpdateTechnicalPointsResponse(output.UserId));
+        return TypedResults.NoContent();
     }
 }

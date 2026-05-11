@@ -10,7 +10,8 @@ public record User(
     string LastName,
     decimal Weight,
     int Height,
-    int ActiveDays
+    int ActiveDays,
+    string? TechnicalPoints
 );
 
 public static class UserExtensions
@@ -25,7 +26,8 @@ public static class UserExtensions
             data.LastName,
             data.Weight,
             data.Height,
-            data.ActiveDays
+            data.ActiveDays,
+            data.TechnicalPoints
         );
     }
 }
