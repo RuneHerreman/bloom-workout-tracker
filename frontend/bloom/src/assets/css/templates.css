@@ -365,6 +365,7 @@
     color: var(--ink);
     width: 100%;
     min-width: 0;
+    box-sizing: border-box;
     outline: none;
     transition: background 0.15s ease-in-out;
 }
