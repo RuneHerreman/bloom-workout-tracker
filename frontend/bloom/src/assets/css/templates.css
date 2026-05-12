@@ -117,8 +117,6 @@
     box-shadow: 0 3px 10px rgba(0,0,0,0.09);
     transform: translateY(-1px);
 }
-.template-card:hover .template-card-delete { opacity: 1; }
-
 .template-card:hover::before {
     border-color: var(--border);
     border-left-width: 0.18rem;
@@ -143,13 +141,6 @@
 .template-card.active.plyometric::before { border-color: color-mix(in srgb, var(--primary-light) 65%, transparent); }
 
 /* ── Card inner structure ── */
-
-.template-card-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.25rem;
-}
 
 .template-card-bottom {
     display: flex;
@@ -183,38 +174,9 @@
     border-radius: 0.25rem;
     line-height: 1;
 }
-.template-card-type-badge.strength   { background: rgb(0 62 31 / 0.1);    color: var(--primary); }
+.template-card-type-badge.strength   { background: rgb(0 62 31 / 0.1);    color: var(--primary-muted); }
 .template-card-type-badge.cardio     { background: rgb(233 118 43 / 0.12); color: var(--accent); }
 .template-card-type-badge.plyometric { background: rgb(45 128 85 / 0.12);  color: var(--primary-light); }
-
-
-/* ── Delete button ── */
-
-.template-card-delete {
-    flex-shrink: 0;
-    background: none;
-    border: none;
-    width: 1.2rem;
-    height: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.25rem;
-    font-size: 1.05rem;
-    line-height: 1;
-    color: var(--ink-muted);
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.12s, background 0.12s, color 0.12s;
-    padding: 0;
-    margin-top: 0.05rem;
-}
-
-.template-card-delete:hover {
-    background: rgba(123, 22, 22, 0.1);
-    color: var(--danger) !important;
-    opacity: 1 !important;
-}
 
 /* ── Filter chips ────────────────────────────────────────────────────────────── */
 
@@ -254,7 +216,7 @@
     font-family: var(--serif), serif;
     font-size: 1.2rem;
     font-weight: 400;
-    color: var(--grey);
+    color: var(--ink-muted);
 }
 
 /* ── Template Detail Card ──────────────────────────────────────────────────────── */
