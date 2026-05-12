@@ -27,10 +27,14 @@ function TemplateDetail({ template, exercises }: TemplateDetailProps) {
 
     return (
         <div className="template-detail-view">
-            <div className="actions-row">
-                <Button text="Edit Template" style="green" />
-                <Button text="Delete Template" style="red" />
+            <div className="template-detail-header">
+                <h3>{template.name}</h3>
+                <div className="actions-row">
+                    <Button text="Edit Template" style="green" />
+                    <Button text="Delete Template" style="red" />
+                </div>
             </div>
+
             {templateExercises.map((exercise) => (
                 <TemplateExerciseCard
                     key={`${template.id}-${exercise.exerciseId}`}

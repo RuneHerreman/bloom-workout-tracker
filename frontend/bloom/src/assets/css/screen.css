@@ -3,12 +3,12 @@
 @import './shared.css';
 
 form * {
-    font-family: 'Archivo', Arial, Helvetica, sans-serif;
+    font-family: var(--sans), sans-serif;
     box-sizing: border-box;
 }
 
 html, body {
-    font-family: "Archivo", Arial, Helvetica, sans-serif;
+    font-family: var(--sans), sans-serif;
     font-size: 1rem;
     scroll-behavior: smooth;
     scrollbar-width: none;
