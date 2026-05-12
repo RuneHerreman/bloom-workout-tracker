@@ -33,6 +33,13 @@ a {
     box-shadow: inset 0 0 0 0.075rem black;
 }
 
+.button-component.red {
+    box-shadow: var(--danger) inset 0 0 0 0.075rem ;
+    background: var(--danger-lighter);
+    color: var(--danger);
+}
+
+
 .button-component.modern {
     position: relative;
     color: var(--primary-muted);

@@ -27,6 +27,7 @@
 
     /* Semantic */
     --danger:          #7B1616;
+    --danger-lighter: rgb(255 225 225 / 0.75);
 
     /* Sidebar */
     --sidebar-width:   13rem;

@@ -3,6 +3,7 @@ import type { WorkoutTemplate } from "../api.ts";
 import type { TemplateExercise, PlannedSet } from "../../../assets/js/data/apiTypes.ts";
 import type { Exercise } from "../../exercises/api.ts";
 import TemplateExerciseCard from "./TemplateExerciseCard.tsx";
+import Button from "../../../components/general/ButtonComponent.tsx";
 
 interface TemplateDetailProps {
     template: WorkoutTemplate;
@@ -26,6 +27,10 @@ function TemplateDetail({ template, exercises }: TemplateDetailProps) {
 
     return (
         <div className="template-detail-view">
+            <div className="actions-row">
+                <Button text="Edit Template" style="green" />
+                <Button text="Delete Template" style="red" />
+            </div>
             {templateExercises.map((exercise) => (
                 <TemplateExerciseCard
                     key={`${template.id}-${exercise.exerciseId}`}
