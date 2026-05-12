@@ -8,6 +8,7 @@ using Bloom.Domain.Shared;
 using Bloom.Domain.Users;
 using Bloom.Domain.Users.ValueObjects;
 using Bloom.Domain.WorkoutTemplates;
+using Bloom.Domain.WorkoutTemplates.ValueObjects;
 using Bloom.Infrastructure.Auth;
 using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 using Microsoft.EntityFrameworkCore;
@@ -174,6 +175,8 @@ public class DomainDbSeeder(DomainDbContext context, ILogger<DomainDbSeeder> log
         var romanianDl      = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490031"));
         var legCurl         = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490032"));
         var calfRaise       = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490037"));
+        var treadmillRun    = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490051"));
+        var rowingMachine   = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490053"));
 
         var templates = new List<WorkoutTemplate>
         {
@@ -261,6 +264,28 @@ public class DomainDbSeeder(DomainDbContext context, ILogger<DomainDbSeeder> log
                     PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 15),
                     PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 15),
                     PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 15),
+                ]),
+            ]),
+
+            WorkoutTemplate.Create(SeededUserId, "Cardio & Strength", [
+                TemplateExercise.Create(treadmillRun, 1, [
+                    PlannedSet.CreateCardio(1, TimeSpan.FromMinutes(10), 2m, PlannedDistanceUnit.Km),
+                    PlannedSet.CreateCardio(2, TimeSpan.FromMinutes(10), 2m, PlannedDistanceUnit.Km),
+                ]),
+                TemplateExercise.Create(benchPress, 2, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 10),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 10),
+                ]),
+                TemplateExercise.Create(rowingMachine, 3, [
+                    PlannedSet.CreateCardio(1, TimeSpan.FromMinutes(5), 1m, PlannedDistanceUnit.Km),
+                    PlannedSet.CreateCardio(2, TimeSpan.FromMinutes(5), 1m, PlannedDistanceUnit.Km),
+                    PlannedSet.CreateCardio(3, TimeSpan.FromMinutes(5), 1m, PlannedDistanceUnit.Km),
+                ]),
+                TemplateExercise.Create(latPulldown, 4, [
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 1, 12),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 2, 12),
+                    PlannedSet.CreateStrengthLike(ExerciseType.Strength, 3, 12),
                 ]),
             ]),
         };

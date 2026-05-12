@@ -2,20 +2,28 @@ import { useEffect, useState } from "react";
 import "../../assets/css/templates.css";
 import { getTemplates, deleteTemplate } from "./api.ts";
 import type { WorkoutTemplate } from "./api.ts";
+import { searchExercises } from "../exercises/api.ts";
+import type { Exercise } from "../exercises/api.ts";
 import TemplateSideBar from "./components/TemplateSideBar.tsx";
+import TemplateDetail from "./components/TemplateDetail.tsx";
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
+import Button from "../../components/general/ButtonComponent.tsx";
 
 const TemplatePage = () => {
     const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
+    const [exercises, setExercises] = useState<Record<string, Exercise>>({});
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getTemplates().then(tpls => {
+        Promise.all([getTemplates(), searchExercises()]).then(([tpls, exs]) => {
             setTemplates(tpls);
+            setExercises(Object.fromEntries(exs.map(e => [e.id, e])));
             setLoading(false);
         });
     }, []);
+
+    const selectedTemplate = templates.find(t => t.id === selectedId) ?? null;
 
     const handleDelete = async (id: string) => {
         setTemplates(prev => prev.filter(t => t.id !== id));
@@ -30,7 +38,7 @@ const TemplatePage = () => {
 
     return (
         <div className="templates-page">
-            <HeaderComponent title="Templates" subtitle="Library" />
+            <HeaderComponent title="Templates" subtitle="Library" action={<Button text={"New template"} icon="+" style={"green"} />}/>
             <div className="templates-body">
                 <TemplateSideBar
                     templates={templates}
@@ -40,11 +48,14 @@ const TemplatePage = () => {
                     onDelete={handleDelete}
                 />
                 <div className="template-detail">
-                    {!selectedId && (
-                        <div className="template-detail-empty">
-                            <p>Select a template to see details</p>
-                        </div>
-                    )}
+                    {selectedTemplate
+                        ? <TemplateDetail template={selectedTemplate} exercises={exercises} />
+                        : (
+                            <div className="template-detail-empty">
+                                <p>Select a template to see details</p>
+                            </div>
+                        )
+                    }
                 </div>
             </div>
         </div>
