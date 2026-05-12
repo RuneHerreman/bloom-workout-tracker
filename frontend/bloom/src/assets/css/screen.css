@@ -41,11 +41,26 @@ a {
     transition: 0.15s ease-in-out;
 }
 
-.button-component.modern:hover {
-    transform: translateY(-0.1rem) translateX(0.1rem);
+.button-component.modern::before {
+    content: '';
+    position: absolute;
+    inset: -0.12rem;
+    border: 0.12rem solid var(--primary-muted);
     border-bottom-width: 0.2rem;
     border-left-width: 0.2rem;
+    border-radius: 0.495rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.button-component.modern:hover {
+    transform: translateY(-0.1rem) translateX(0.1rem);
     cursor: pointer;
+}
+
+.button-component.modern:hover::before {
+    opacity: 1;
 }
 
 .button-component.green {

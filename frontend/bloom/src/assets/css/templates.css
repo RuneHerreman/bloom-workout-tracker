@@ -95,37 +95,47 @@
     border: 0.0625rem solid var(--border);
     box-shadow: none;
     transition: 0.15s all;
-    overflow: hidden;
+    position: relative;
+}
+
+.template-card::before {
+    content: '';
+    position: absolute;
+    inset: -0.0625rem;
+    border: 0.0625rem solid transparent;
+    border-radius: 0.5rem;
+    pointer-events: none;
+    transition: 0.15s all;
 }
 
 .template-card:hover {
     box-shadow: 0 3px 10px rgba(0,0,0,0.09);
     transform: translateY(-1px);
-    border-left-width: 0.18rem;
-    border-bottom-width: 0.18rem;
 }
 .template-card:hover .template-card-delete { opacity: 1; }
 
-.template-card:hover.strength   { border-left-color: color-mix(in srgb, var(--primary) 65%, transparent);       border-bottom-color: color-mix(in srgb, var(--primary) 65%, transparent); }
-.template-card:hover.cardio     { border-left-color: color-mix(in srgb, var(--accent) 65%, transparent);         border-bottom-color: color-mix(in srgb, var(--accent) 65%, transparent); }
-.template-card:hover.plyometric { border-left-color: color-mix(in srgb, var(--primary-light) 65%, transparent);  border-bottom-color: color-mix(in srgb, var(--primary-light) 65%, transparent); }
+.template-card:hover::before {
+    border-color: var(--border);
+    border-left-width: 0.18rem;
+    border-bottom-width: 0.18rem;
+}
+.template-card:hover.strength::before   { border-left-color: color-mix(in srgb, var(--primary) 65%, transparent);       border-bottom-color: color-mix(in srgb, var(--primary) 65%, transparent); }
+.template-card:hover.cardio::before     { border-left-color: color-mix(in srgb, var(--accent) 65%, transparent);         border-bottom-color: color-mix(in srgb, var(--accent) 65%, transparent); }
+.template-card:hover.plyometric::before { border-left-color: color-mix(in srgb, var(--primary-light) 65%, transparent);  border-bottom-color: color-mix(in srgb, var(--primary-light) 65%, transparent); }
 
 .template-card.active {
     transform: translateY(-1px);
+}
+.template-card.active::before {
     border-width: 0.15rem;
+    border-color: var(--border);
 }
-.template-card.active.strength   {
-    border-color: color-mix(in srgb, var(--primary) 65%, transparent);
-    box-shadow: 0 3px 5px rgba(0, 62, 31, 0.14);
-}
-.template-card.active.cardio     {
-    border-color: color-mix(in srgb, var(--accent) 65%, transparent);
-    box-shadow: 0 3px 5px rgba(233, 118, 43, 0.14);
-}
-.template-card.active.plyometric {
-    border-color: color-mix(in srgb, var(--primary-light) 65%, transparent);
-    box-shadow: 0 3px 5px rgba(45, 128, 85, 0.14);
-}
+.template-card.active.strength   { box-shadow: 0 3px 5px rgba(0, 62, 31, 0.14); }
+.template-card.active.cardio     { box-shadow: 0 3px 5px rgba(233, 118, 43, 0.14); }
+.template-card.active.plyometric { box-shadow: 0 3px 5px rgba(45, 128, 85, 0.14); }
+.template-card.active.strength::before   { border-color: color-mix(in srgb, var(--primary) 65%, transparent); }
+.template-card.active.cardio::before     { border-color: color-mix(in srgb, var(--accent) 65%, transparent); }
+.template-card.active.plyometric::before { border-color: color-mix(in srgb, var(--primary-light) 65%, transparent); }
 
 /* ── Card inner structure ── */
 

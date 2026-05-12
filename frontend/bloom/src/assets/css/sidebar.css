@@ -103,9 +103,9 @@
 }
 
 .sidebar-item.active {
-    background: var(--primary-light);
-    color: #fff;
-    font-weight: 500;
+    background: color-mix(in srgb, var(--primary-glow) 50%, transparent);
+    color: var(--primary-transparent);
+    font-weight: 550;
 }
 
 .sidebar-item svg {

@@ -162,9 +162,9 @@
     background: var(--border);
 }
 
-.activity-cell[data-level="1"] { background: var(--accent); opacity: 0.9; }           /* Cardio only - orange */
-.activity-cell[data-level="2"] { background: var(--primary); opacity: 0.9; }           /* Strength only - green */
-.activity-cell[data-level="3"] { background: var(--primary-faded); opacity: 0.9; }           /* Mix - blend of green and orange */
+.activity-cell[data-level="1"] { background: var(--accent); opacity: 0.9; }
+.activity-cell[data-level="2"] { background: var(--primary); opacity: 0.9; }
+.activity-cell[data-level="3"] { background: var(--primary-light); opacity: 0.85; }
 
 /* ── Training focus widget ───────────────────────────────────────────────────── */
 
@@ -228,7 +228,6 @@
 
 .focus-legend-pct {
     color: var(--ink-muted);
-    font-variant-numeric: tabular-nums;
     min-width: 2.5rem;
     text-align: right;
     font-weight: 300;
