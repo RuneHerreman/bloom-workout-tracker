@@ -103,13 +103,18 @@
 .template-card:hover { background: var(--background); }
 .template-card:hover .template-card-delete { opacity: 1; }
 
-.template-card.active.strength   { background: rgb(0 120 65 / 0.1); }
-.template-card.active.cardio     { background: rgb(255 98 0 / 0.08); }
-.template-card.active.plyometric { background: rgb(60 172 114 / 0.08); }
+.template-card.active {
+    border-radius: 0.375rem;
+    border: 0.0625rem solid;
+}
+
+.template-card.active.strength   { background: rgb(0 120 65 / 0.1); border: var(rgb(0 120 65 / 0.1)); }
+.template-card.active.cardio     { background: rgb(255 98 0 / 0.08); border: rgb(255 98 0 / 0.08); }
+.template-card.active.plyometric { background: rgb(60 172 114 / 0.08); border: rgb(60 172 114 / 0.08); }
 
 .template-card-name {
-    font-size: 0.84rem;
-    font-weight: 500;
+    font-size: 1rem;
+    font-weight: 400;
     color: var(--ink);
     white-space: nowrap;
     overflow: hidden;
