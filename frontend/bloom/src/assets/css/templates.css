@@ -99,7 +99,6 @@
     gap: 0.4rem;
     background: white;
     border: 0.0625rem solid var(--border);
-    box-shadow: none;
     transition: 0.15s all;
     position: relative;
 }
@@ -281,10 +280,6 @@
     gap: 0.4rem;
 }
 
-.detail-exercise-name {
-
-}
-
 .detail-exercise-info {
     color: var(--ink-muted);
     font-size: 85%;
@@ -350,10 +345,6 @@
 .set-drag-handle:active { cursor: grabbing; }
 
 /* ── Inputs ─────────────────── */
-.set-row > input {
-    border-right: 0.0625rem solid var(--border);
-}
-
 .set-row input {
     text-align: center;
     border: none;

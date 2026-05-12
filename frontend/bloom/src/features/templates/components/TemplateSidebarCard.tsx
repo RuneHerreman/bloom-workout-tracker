@@ -2,6 +2,7 @@ import type { WorkoutTemplate } from "../api.ts";
 
 interface TemplateSidebarCardProps {
     template: WorkoutTemplate;
+    colorClass: "strength" | "cardio" | "plyometric";
     isActive: boolean;
     onSelect: () => void;
     onDelete: () => void;
@@ -9,19 +10,9 @@ interface TemplateSidebarCardProps {
 
 const TYPE_LABELS = { strength: "Strength", cardio: "Cardio", plyometric: "Plyo" } as const;
 
-function TemplateSidebarCard({ template, isActive, onSelect, onDelete }: TemplateSidebarCardProps) {
+function TemplateSidebarCard({ template, colorClass, isActive, onSelect, onDelete }: TemplateSidebarCardProps) {
     const exerciseCount = template.exercises.length;
-    const sets = template.exercises.flatMap(ex => ex.sets);
-    const setCount = sets.length;
-    const cardioSets   = sets.filter(s => s.type === "Cardio").length;
-    const plyoSets     = sets.filter(s => s.type === "Plyometric").length;
-    const strengthSets = setCount - cardioSets - plyoSets;
-
-    const colorClass = cardioSets >= strengthSets && cardioSets >= plyoSets
-        ? "cardio"
-        : plyoSets > strengthSets
-            ? "plyometric"
-            : "strength";
+    const setCount = template.exercises.reduce((n, ex) => n + ex.sets.length, 0);
 
     return (
         <div className={`template-card ${colorClass}${isActive ? " active" : ""}`} onClick={onSelect}>

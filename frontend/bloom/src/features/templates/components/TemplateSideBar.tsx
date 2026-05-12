@@ -68,6 +68,7 @@ function TemplateSideBar({ templates, selectedId, loading, onSelect, onDelete }:
                         <TemplateSidebarCard
                             key={t.id}
                             template={t}
+                            colorClass={dominantType(t).toLowerCase() as "strength" | "cardio" | "plyometric"}
                             isActive={t.id === selectedId}
                             onSelect={() => onSelect(t.id)}
                             onDelete={() => onDelete(t.id)}
