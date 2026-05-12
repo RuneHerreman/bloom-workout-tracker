@@ -38,27 +38,14 @@ a {
     color: var(--primary-muted);
     background: white;
     border: 0.12rem solid var(--primary-muted);
-    transition: 0.1s ease-in-out;
-}
-
-.button-component.modern::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='6' ry='6' stroke='%23333333' stroke-width='2' stroke-dasharray='6%208' stroke-linecap='round'/%3e%3c/svg%3e");
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
+    transition: 0.15s ease-in-out;
 }
 
 .button-component.modern:hover {
-    border-color: transparent;
+    transform: translateY(-0.1rem) translateX(0.1rem);
+    border-bottom-width: 0.2rem;
+    border-left-width: 0.2rem;
     cursor: pointer;
-}
-
-.button-component.modern:hover::after {
-    opacity: 1;
 }
 
 .button-component.green {

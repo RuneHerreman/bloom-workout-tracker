@@ -134,10 +134,10 @@
 
 .stat-value {
     font-size: 3rem;
+    line-height: 1;
     font-family: var(--serif), serif;
     font-weight: normal;
-    line-height: 1;
-    margin-bottom: 0.4rem;
+    margin: 0.8rem 0 0.4rem;
 }
 
 .stat-subtext {

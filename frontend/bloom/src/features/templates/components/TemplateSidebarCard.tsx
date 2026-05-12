@@ -13,19 +13,15 @@ function TemplateSidebarCard({ template, isActive, onSelect, onDelete }: Templat
     const exerciseCount = template.exercises.length;
     const sets = template.exercises.flatMap(ex => ex.sets);
     const setCount = sets.length;
-    const cardioSets    = sets.filter(s => s.type === "Cardio").length;
-    const plyoSets      = sets.filter(s => s.type === "Plyometric").length;
-    const strengthSets  = setCount - cardioSets - plyoSets;
+    const cardioSets   = sets.filter(s => s.type === "Cardio").length;
+    const plyoSets     = sets.filter(s => s.type === "Plyometric").length;
+    const strengthSets = setCount - cardioSets - plyoSets;
 
     const colorClass = cardioSets >= strengthSets && cardioSets >= plyoSets
         ? "cardio"
         : plyoSets > strengthSets
             ? "plyometric"
             : "strength";
-
-    const strengthPct  = setCount > 0 ? (strengthSets / setCount) * 100 : 0;
-    const cardioPct    = setCount > 0 ? (cardioSets   / setCount) * 100 : 0;
-    const plyoPct      = setCount > 0 ? (plyoSets     / setCount) * 100 : 0;
 
     return (
         <div className={`template-card ${colorClass}${isActive ? " active" : ""}`} onClick={onSelect}>
@@ -45,13 +41,6 @@ function TemplateSidebarCard({ template, isActive, onSelect, onDelete }: Templat
                     {exerciseCount} ex · {setCount} sets
                 </span>
             </div>
-            {setCount > 0 && (
-                <div className="template-card-bar">
-                    {strengthSets > 0 && <div className="bar-segment strength" style={{ width: `${strengthPct}%` }} />}
-                    {cardioSets   > 0 && <div className="bar-segment cardio"   style={{ width: `${cardioPct}%` }} />}
-                    {plyoSets     > 0 && <div className="bar-segment plyometric" style={{ width: `${plyoPct}%` }} />}
-                </div>
-            )}
         </div>
     );
 }
