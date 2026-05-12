@@ -299,8 +299,17 @@
 .set-grid-header,
 .set-row {
     display: grid;
-    grid-template-columns: 3rem repeat(auto-fit, minmax(0, 1fr));
     border-bottom: 0.0625rem solid var(--border);
+}
+
+.detail-body.is-strength .set-grid-header,
+.detail-body.is-strength .set-row {
+    grid-template-columns: 3rem 1fr 2.75rem;
+}
+
+.detail-body.is-cardio .set-grid-header,
+.detail-body.is-cardio .set-row {
+    grid-template-columns: 3rem 1fr 1fr 2.75rem;
 }
 
 .set-grid-header > * {
@@ -320,7 +329,8 @@
 }
 
 .set-grid-header > *:last-child,
-.set-row > *:last-child {
+.set-row > *:last-child,
+.set-row > *:nth-last-child(2) {
     border-right: none;
 }
 
@@ -341,19 +351,75 @@
 .set-drag-handle:active { cursor: grabbing; }
 
 /* ── Inputs ─────────────────── */
+.set-row > input {
+    border-right: 0.0625rem solid var(--border);
+}
+
 .set-row input {
     text-align: center;
     border: none;
-    font-family: var(--sans) 'sans-serif';
-    font-size: 1rem;
+    background: transparent;
+    font-family: var(--sans), sans-serif;
+    font-size: 0.95rem;
     font-weight: 500;
+    color: var(--ink);
+    width: 100%;
+    min-width: 0;
+    outline: none;
+    transition: background 0.15s ease-in-out;
 }
-.set-row input:hover, .set-row input:focus {
-    transition: 0.15s ease-in-out;
+
+.set-row > input:hover,
+.set-row > input:focus,
+.distance-input:hover,
+.distance-input:focus-within,
+.duration-input:hover,
+.duration-input:focus-within {
     background: var(--background);
 }
 
+/* hide number spinners */
+.set-row input[type=number]::-webkit-inner-spin-button,
+.set-row input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+.set-row input[type=number] { -moz-appearance: textfield; }
 
-.set-row input:focus {
-    outline: none;
+/* ── Distance cell ── */
+.distance-input {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0.75rem 0.5rem;
+}
+
+.distance-input input { padding: 0; }
+
+.unit-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+
+/* ── Duration cell ── */
+.duration-input {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+    padding: 0.75rem 0.25rem;
+}
+
+.duration-input input {
+    width: 2rem;
+    padding: 0;
+}
+
+.duration-sep {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+    line-height: 1;
+    user-select: none;
 }

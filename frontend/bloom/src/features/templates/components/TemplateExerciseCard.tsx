@@ -17,7 +17,48 @@ interface RowItem {
     set: PlannedSet;
 }
 
-function SortableSetRow({ item, index, type }: { item: RowItem; index: number; type: string | undefined }) {
+function parseDuration(raw: string | null): [number, number, number] {
+    if (!raw) return [0, 0, 0];
+    const parts = raw.split(":").map(Number);
+    if (parts.length === 3) return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0];
+    if (parts.length === 2) return [0, parts[0] ?? 0, parts[1] ?? 0];
+    return [0, 0, parts[0] ?? 0];
+}
+
+function formatDuration(h: number, m: number, s: number): string {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+
+function DurationInput({ value, onChange }: { value: string | null; onChange: (v: string | null) => void }) {
+    const [h, m, s] = parseDuration(value);
+
+    function handleChange(part: "h" | "m" | "s", raw: string) {
+        const n = raw === "" ? 0 : Math.max(0, Number(raw));
+        const clamped = part === "h" ? Math.min(n, 99) : Math.min(n, 59);
+        const next = part === "h" ? formatDuration(clamped, m, s)
+                   : part === "m" ? formatDuration(h, clamped, s)
+                   :                formatDuration(h, m, clamped);
+        onChange(next === "00:00:00" ? null : next);
+    }
+
+    return (
+        <div className="duration-input">
+            <input type="number" min={0} max={99} value={h === 0 ? "" : h} placeholder="0" onChange={e => handleChange("h", e.target.value)} />
+            <span className="duration-sep">:</span>
+            <input type="number" min={0} max={59} value={m === 0 ? "" : m} placeholder="00" onChange={e => handleChange("m", e.target.value)} />
+            <span className="duration-sep">:</span>
+            <input type="number" min={0} max={59} value={s === 0 ? "" : s} placeholder="00" onChange={e => handleChange("s", e.target.value)} />
+        </div>
+    );
+}
+
+function SortableSetRow({ item, index, type, onSetChange }: {
+    item: RowItem;
+    index: number;
+    type: string | undefined;
+    onSetChange: (id: string, set: PlannedSet) => void;
+}) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
 
     return (
@@ -34,11 +75,34 @@ function SortableSetRow({ item, index, type }: { item: RowItem; index: number; t
         >
             <p>{index + 1}</p>
             {type === "Strength" ? (
-                <input readOnly value={item.set.reps?.toString() ?? ""} />
+                <input
+                    type="number"
+                    min={0}
+                    value={item.set.reps ?? ""}
+                    onChange={e => onSetChange(item.id, {
+                        ...item.set,
+                        reps: e.target.value === "" ? null : Number(e.target.value),
+                    })}
+                />
             ) : (
                 <>
-                    <input readOnly value={`${item.set.distance ?? ""} ${item.set.distanceUnit ?? ""}`} />
-                    <input readOnly value={item.set.duration?.toString() ?? ""} />
+                    <div className="distance-input">
+                        <input
+                            type="number"
+                            min={0}
+                            value={item.set.distance != null ? Math.round(item.set.distance * 1000) : ""}
+                            placeholder="0"
+                            onChange={e => {
+                                const meters = e.target.value === "" ? null : Math.max(0, Number(e.target.value));
+                                onSetChange(item.id, { ...item.set, distance: meters == null ? null : meters / 1000 });
+                            }}
+                        />
+                        <span className="unit-label">m</span>
+                    </div>
+                    <DurationInput
+                        value={item.set.duration ?? null}
+                        onChange={v => onSetChange(item.id, { ...item.set, duration: v })}
+                    />
                 </>
             )}
             <span className="set-drag-handle" {...attributes} {...listeners}>⠿</span>
@@ -53,18 +117,28 @@ function TemplateExerciseCard({ exercise, exerciseInfo, onSetsChange }: Template
             .map((set, i) => ({ id: `${exercise.exerciseId}-${i}`, set }))
     );
 
+    function pushChange(updated: RowItem[]) {
+        const updatedSets = updated.map((item, i) => ({ ...item.set, order: i + 1 }));
+        onSetsChange?.(exercise.exerciseId, updatedSets);
+    }
+
     function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event;
         if (!over || active.id === over.id) return;
-
         const oldIndex = items.findIndex(item => item.id === active.id);
         const newIndex = items.findIndex(item => item.id === over.id);
         const reordered = arrayMove(items, oldIndex, newIndex);
         setItems(reordered);
-
-        const updatedSets = reordered.map((item, i) => ({ ...item.set, order: i + 1 }));
-        onSetsChange?.(exercise.exerciseId, updatedSets);
+        pushChange(reordered);
     }
+
+    function handleSetChange(id: string, updatedSet: PlannedSet) {
+        const updated = items.map(item => item.id === id ? { ...item, set: updatedSet } : item);
+        setItems(updated);
+        pushChange(updated);
+    }
+
+    const bodyClass = `detail-body ${exerciseInfo?.type === "Strength" ? "is-strength" : "is-cardio"}`;
 
     return (
         <div className="template-exercise-card">
@@ -74,7 +148,7 @@ function TemplateExerciseCard({ exercise, exerciseInfo, onSetsChange }: Template
                     <p className="detail-exercise-info">{exerciseInfo?.type} · {exerciseInfo?.targetMuscles.join(" - ")}</p>
                 </div>
             </header>
-            <section className="detail-body">
+            <section className={bodyClass}>
                 <div className="set-grid-header">
                     <p>Set</p>
                     {exerciseInfo?.type === "Strength" ? (
@@ -87,7 +161,13 @@ function TemplateExerciseCard({ exercise, exerciseInfo, onSetsChange }: Template
                 <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
                         {items.map((item, index) => (
-                            <SortableSetRow key={item.id} item={item} index={index} type={exerciseInfo?.type} />
+                            <SortableSetRow
+                                key={item.id}
+                                item={item}
+                                index={index}
+                                type={exerciseInfo?.type}
+                                onSetChange={handleSetChange}
+                            />
                         ))}
                     </SortableContext>
                 </DndContext>
