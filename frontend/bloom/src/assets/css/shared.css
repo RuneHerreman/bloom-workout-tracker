@@ -8,12 +8,16 @@
     --primary-faded:     rgba(148, 209, 179, 0.50);
     --accent:          #E9762B;
     --surface-dark:    #01110A;
+    --dark-text: #00261a;
 
     /* Neutrals */
-    --border:          oklch(0.89 0.012 90);
+    --border: rgb(10 51 31 / 0.75);
+    --grey-light: oklch(0.89 0.012 90);
+;
     --grey:            #CCCCCC;
 
-    --background: #fcfaf4;
+    --surface-light: #fcfaf4;
+    --surface-lighter: #fffefb;
 
     /* Text */
     --ink:             #333333;
@@ -24,7 +28,9 @@
 
     /* Sidebar */
     --sidebar-width:   13rem;
+    --widget-border-radius: 0.5rem;
 
     --serif: 'Newsreader', 'Source Serif Pro', Georgia, serif;
     --sans: "Archivo", Arial, Helvetica, sans-serif;
+
 }

@@ -60,7 +60,7 @@
 
 .template-sidebar-count {
     font-size: 0.7rem;
-    background: var(--border);
+    background: var(--grey-light);
     border-radius: 100rem;
     min-width: 1.35rem;
     height: 1.35rem;
@@ -228,7 +228,7 @@
 .template-filter-chip {
     font-size: 0.7rem;
     padding: 0.4rem 0.6rem;
-    border-radius: 1rem;
+    border-radius: 0.25rem;
     border: 0.0625rem solid var(--border);
     background: none;
     color: var(--ink-muted);
@@ -241,7 +241,7 @@
 .template-filter-chip.cardio.active     { background: rgba(233, 118, 43, 0.08); border-color: var(--accent);        color: var(--accent); }
 .template-filter-chip.plyometric.active { background: rgba(45, 128, 85, 0.08);  border-color: var(--primary-light); color: var(--primary-light); }
 
-.template-filter-chip:not(.active):hover { background: var(--background); }
+.template-filter-chip:not(.active):hover { background: var(--surface-light); }
 
 /* ── Detail empty state ──────────────────────────────────────────────────────── */
 
@@ -376,7 +376,7 @@
 .distance-input:focus-within,
 .duration-input:hover,
 .duration-input:focus-within {
-    background: var(--background);
+    background: var(--surface-light);
 }
 
 /* hide number spinners */

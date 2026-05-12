@@ -38,12 +38,7 @@ function TechnicalPointsWidget({ initialContent, onSave }: TechnicalPointsWidget
             content={
                 <div className="technical-points">
                     <div className="technical-points-toolbar">
-                        <button onMouseDown={e => { e.preventDefault(); execFormat("bold"); }} title="Bold"><b>B</b></button>
-                        <button onMouseDown={e => { e.preventDefault(); execFormat("italic"); }} title="Italic"><i>I</i></button>
                         <button onMouseDown={e => { e.preventDefault(); execFormat("underline"); }} title="Underline"><u>U</u></button>
-                        <span className="technical-points-divider" />
-                        <button onMouseDown={e => { e.preventDefault(); execFormat("insertUnorderedList"); }} title="Bullet list">≡</button>
-                        <button onMouseDown={e => { e.preventDefault(); execFormat("insertOrderedList"); }} title="Numbered list">1.</button>
                     </div>
                     <div
                         ref={editorRef}

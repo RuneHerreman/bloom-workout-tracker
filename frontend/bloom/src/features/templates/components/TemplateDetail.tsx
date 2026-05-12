@@ -26,9 +26,9 @@ function TemplateDetail({ template, exercises }: TemplateDetailProps) {
 
     return (
         <div className="template-detail-view">
-            {templateExercises.map((exercise, index) => (
+            {templateExercises.map((exercise) => (
                 <TemplateExerciseCard
-                    key={index}
+                    key={`${template.id}-${exercise.exerciseId}`}
                     exercise={exercise}
                     exerciseInfo={exercises[exercise.exerciseId]}
                     onSetsChange={handleSetsChange}

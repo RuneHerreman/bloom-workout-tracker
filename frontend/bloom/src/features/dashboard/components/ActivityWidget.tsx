@@ -45,7 +45,7 @@ function ActivityWidget({ data }: ActivityWidgetProps) {
                             key={cell.date}
                             className="activity-cell"
                             data-level={cell.level}
-                            title={cell.date}
+                            title={new Date(cell.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
                         />
                     ))}
                 </div>

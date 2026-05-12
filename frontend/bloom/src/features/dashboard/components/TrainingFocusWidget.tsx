@@ -95,7 +95,6 @@ function TrainingFocusWidget({ segments = [], muscleSegments = [] }: TrainingFoc
                                 <Doughnut
                                     data={data}
                                     options={options}
-                                    aria-label="A doughnut chart showing your training focus distribution"
                                 />
                             </div>
                             <ul className="focus-legend">
