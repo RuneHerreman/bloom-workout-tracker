@@ -380,7 +380,7 @@
 .actions-row {
     display: flex;
     gap: 0.5rem;
-    width: 100%;
+    width: 50%;
     justify-content: flex-end;
 }
 

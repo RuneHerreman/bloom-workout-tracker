@@ -24,7 +24,7 @@ interface TemplateSideBarProps {
     onDelete: (id: string) => void;
 }
 
-function TemplateSideBar({ templates, selectedId, loading, onSelect, onDelete }: TemplateSideBarProps) {
+function TemplateSideBar({ templates, selectedId, loading, onSelect }: TemplateSideBarProps) {
     const [activeFilters, setActiveFilters] = useState<Set<FilterType>>(new Set());
 
     const toggleFilter = (type: FilterType) => {
