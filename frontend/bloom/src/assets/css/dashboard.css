@@ -25,6 +25,9 @@
 .dashboard-stats {
     grid-area: stats;
     display: flex;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--widget-border-radius);
+    overflow: hidden;
 }
 
 .dash-activity { grid-area: activity; }
@@ -96,18 +99,14 @@
 
 /* ────── Stat Widget ────── */
 .stat-widget {
+    border: none;
+    border-right: 0.0625rem solid var(--border);
     border-radius: 0;
-    border-right: none;
     flex: 1;
 }
 
-.stat-widget:first-of-type{
-    border-radius: var(--widget-border-radius) 0 0 var(--widget-border-radius);
-}
-
-.stat-widget:last-of-type{
-    border-radius: 0 var(--widget-border-radius) var(--widget-border-radius) 0;
-    border-right: 0.0625rem solid var(--border);
+.stat-widget:last-child {
+    border-right: none;
 }
 
 .stat-change.positive { color: var(--primary); }
@@ -239,25 +238,14 @@
 }
 
 .focus-chip {
-    font-size: 0.7rem;
     padding: 0.2rem 0.65rem;
-    border: 0.0625rem solid var(--border);
-    border-radius: 0.2rem;
-    cursor: pointer;
-    background: none;
-    color: var(--ink-muted);
-    font-family: inherit;
-    font-weight: 400;
     line-height: 1.5;
-    transition: background 0.12s, color 0.12s, border-color 0.12s;
-}
-
-.focus-chip:hover {
-    background: var(--surface-light);
 }
 
 .focus-chip.active {
-    background: rgba(45, 128, 85, 0.08);  border-color: var(--primary-light); color: var(--primary-light);
+    background: rgba(45, 128, 85, 0.08);
+    border-color: var(--primary-light);
+    color: var(--primary-light);
 }
 
 .focus-empty {
@@ -430,7 +418,7 @@
     pointer-events: none;
 }
 
-@media(max-width: 800px) {
+@media (max-width: 768px) {
     .training-focus-row {
         flex-direction: column;
         align-items: flex-start;
@@ -485,28 +473,14 @@
 
     .stat-widget {
         flex: 0 0 50%;
-        box-sizing: border-box;
+        border-bottom: 0.0625rem solid var(--border);
+    }
+
+    .stat-widget:nth-child(even) {
         border-right: none;
-        border-radius: 0;
     }
 
-    .stat-widget:first-of-type {
-        border-radius: var(--widget-border-radius) 0 0 0;
-    }
-
-    .stat-widget:nth-of-type(2) {
-        border-radius: 0 var(--widget-border-radius) 0 0;
-        border-right: 0.0625rem solid var(--border);
-    }
-
-    .stat-widget:nth-of-type(3) {
-        border-radius: 0 0 0 var(--widget-border-radius);
-        border-top: none;
-    }
-
-    .stat-widget:last-of-type {
-        border-radius: 0 0 var(--widget-border-radius) 0;
-        border-right: 0.0625rem solid var(--border);
-        border-top: none;
+    .stat-widget:nth-last-child(-n+2) {
+        border-bottom: none;
     }
 }

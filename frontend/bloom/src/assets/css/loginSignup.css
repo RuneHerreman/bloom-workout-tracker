@@ -1,21 +1,20 @@
-main{
+.login-page {
     padding: 2rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
     height: calc(100vh - 4rem);
 }
 
-h1{
+.login-page h1 {
     font-size: 2.5rem;
     font-weight: 400;
 }
 
-main > section{
+.login-page > section {
     height: 100%;
     display: grid;
     grid-template-rows: min-content 1fr;
 }
-
 
 .logo {
     width: 7.5rem;
@@ -25,20 +24,19 @@ main > section{
 .showcase-image {
     height: 100%;
     width: 100%;
-    background: grey;
     border-radius: 1rem;
     background: url("/media/showcase-image.png") center center no-repeat;
     background-size: cover;
 }
 
-.loginsignup-form > p {
+.login-page .loginsignup-form > p {
     color: var(--ink-muted);
     font-size: .9rem;
     line-height: 125%;
     margin: .75rem 0 1.5rem;
 }
 
-.loginsignup-form {
+.login-page .loginsignup-form {
     padding-right: 3rem;
     width: 55%;
     align-self: center;
@@ -46,14 +44,14 @@ main > section{
     padding-bottom: 5rem;
 }
 
-.loginsignup-form > div {
+.login-page .loginsignup-form > div {
     width: 100%;
 }
 
-form input {
+.login-page form input {
     margin-top: 0.75rem;
     border: var(--border) 0.1rem solid;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-md);
     padding: 0.75rem;
     width: 100%;
     font-weight: 300;
@@ -61,22 +59,22 @@ form input {
     transition: border-color var(--transition);
 }
 
-form input:focus {
+.login-page form input:focus {
     border-color: var(--primary-light);
     outline: none;
 }
 
-form button {
+.login-page form button {
     padding: .9rem;
     color: white;
     background-color: var(--primary);
     border: none;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-md);
     grid-column: 1/-1;
     transition: background-color var(--transition);
 }
 
-form button:hover {
+.login-page form button:hover {
     cursor: pointer;
     background-color: var(--primary-muted);
 }
@@ -89,7 +87,7 @@ form button:hover {
     font-size: 0.8rem;
 }
 
-#login-checks div{
+#login-checks div {
     display: flex;
     flex-direction: row-reverse;
     align-items: center;
@@ -130,39 +128,39 @@ form button:hover {
     font-weight: 550;
 }
 
-#onboarding form div:has(input){
+.login-page #onboarding form div:has(input) {
     margin-top: 1rem;
 }
 
-#onboarding form div label{
+.login-page #onboarding form div label {
     font-size: .85rem;
     font-weight: 400;
     color: var(--ink);
 }
 
-#onboarding form div input{
+.login-page #onboarding form div input {
     margin-top: 0.45rem;
 }
 
-#onboarding form div:has(div) {
+.login-page #onboarding form div:has(div) {
     display: flex;
     justify-content: space-between;
     gap: 0.5rem;
     margin-top: 0;
 }
 
-@media (max-width: 1200px) {
-    main {
+@media (max-width: 1024px) {
+    .login-page {
         grid-template-columns: 1fr;
     }
 
-    main > .showcase-image {
+    .login-page > .showcase-image {
         display: none;
     }
 }
 
-@media (max-width: 750px) {
-    main {
+@media (max-width: 768px) {
+    .login-page {
         padding: 2rem;
     }
 
@@ -170,18 +168,19 @@ form button:hover {
         width: 100%;
     }
 
-    .loginsignup-form {
+    .login-page .loginsignup-form {
         padding-left: 1rem;
         width: 90%;
         align-self: center;
         justify-self: left;
+        padding-right: 0;
     }
 
-    #onboarding form div:has(div) {
+    .login-page #onboarding form div:has(div) {
         display: block;
     }
 
-    #onboarding form div label{
+    .login-page #onboarding form div label {
         font-size: .8rem;
         font-weight: 400;
     }

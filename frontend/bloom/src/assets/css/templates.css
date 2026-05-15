@@ -95,16 +95,7 @@
 .exercise-library-chips::-webkit-scrollbar { display: none; }
 
 .exercise-library-chip {
-    font-size: 0.7rem;
     white-space: nowrap;
-    padding: 0.4rem 0.6rem;
-    border-radius: 0.25rem;
-    border: 0.0625rem solid var(--border);
-    background: none;
-    color: var(--ink-muted);
-    cursor: pointer;
-    font-family: var(--sans), sans-serif;
-    transition: background var(--transition), border-color var(--transition), color var(--transition);
 }
 
 .exercise-library-chip.active {
@@ -112,8 +103,6 @@
     border-color: var(--primary);
     color: var(--primary);
 }
-
-.exercise-library-chip:not(.active):hover { background: var(--surface-less-light); }
 
 .exercise-library-divider {
     border: none;
@@ -201,7 +190,7 @@
 
 /* ── Responsive ──────────────────────────────────────────────────────────────── */
 
-@media(max-width: 1000px) {
+@media (max-width: 1024px) {
     .actions-row {
         flex-direction: column;
         width: fit-content;

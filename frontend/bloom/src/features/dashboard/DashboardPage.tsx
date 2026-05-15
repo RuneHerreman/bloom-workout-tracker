@@ -99,9 +99,9 @@ function DashboardPage() {
     return (
         <div className="dashboard">
             <HeaderComponent
-                title={`Welcome back, ${user?.firstName ?? "—"}!`}
+                title={`Welcome back, ${user?.firstName ?? "Stranger"}!`}
                 subtitle={`Today  ·  ${formatWorkoutDate(new Date())}`}
-                action={<Button text={"Log Workout"} icon={<PlusIcon size={15} />} style={"green"} onClick={() => navigate("/logbook", { state: { openStart: true } })} />}
+                action={<Button text={"Log"} icon={<PlusIcon size={15} />} style={"green"} onClick={() => navigate("/logbook", { state: { openStart: true } })} />}
             />
 
             {error && <div className="error-banner" style={{ margin: "0 2rem" }}>{error}</div>}
