@@ -133,12 +133,17 @@
 
 .exercise-library-row {
     display: grid;
-    grid-template-columns: 4.5rem auto;
+    grid-template-columns: 1.25rem auto;
     gap: 1rem;
     padding: 0.6rem 0.5rem;
     border-radius: 0.375rem;
     cursor: pointer;
     transition: background var(--transition);
+}
+
+.exercise-library-row .type-dot {
+    justify-self: center;
+    align-self: center;
 }
 
 .exercise-library-row:hover,

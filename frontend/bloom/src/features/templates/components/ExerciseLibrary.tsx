@@ -114,9 +114,7 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
                                 className="exercise-library-row"
                                 onClick={() => handleSelect(e)}
                             >
-                                <span className={`type-badge ${e.type.toLowerCase()}`}>
-                                    {TYPE_LABELS[e.type] ?? e.type}
-                                </span>
+                                <span className={`type-dot ${e.type.toLowerCase()}`} data-label={TYPE_LABELS[e.type] ?? e.type} />
                                 <div>
                                     <p className="exercise-library-name">{e.name}</p>
                                     <p className="exercise-library-muscles">{e.targetMuscles.join(", ")}</p>
@@ -137,9 +135,7 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
                         onClick={() => handleSelect(e)}
                         onMouseEnter={() => setHighlighted(i)}
                     >
-                        <span className={`type-badge ${e.type.toLowerCase()}`}>
-                            {TYPE_LABELS[e.type] ?? e.type}
-                        </span>
+                        <span className={`type-dot ${e.type.toLowerCase()}`} data-label={TYPE_LABELS[e.type] ?? e.type} />
                         <div>
                             <p className="exercise-library-name">{e.name}</p>
                             <p className="exercise-library-muscles">{e.targetMuscles.join(", ")}</p>
