@@ -59,13 +59,13 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
     return (
         <div
             ref={setNodeRef}
-            className="template-exercise-card"
+            className="exercise-card"
             style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
         >
             <header>
                 <div>
-                    <h3 className="detail-exercise-name">{exerciseInfo?.name}</h3>
-                    <p className="detail-exercise-info">{exerciseInfo?.type} · {exerciseInfo?.targetMuscles.join(" - ")}</p>
+                    <h3 className="exercise-name">{exerciseInfo?.name}</h3>
+                    <p className="exercise-info">{exerciseInfo?.type} · {exerciseInfo?.targetMuscles.join(" - ")}</p>
                 </div>
                 <div className="exercise-card-actions">
                     <span className="exercise-drag-handle" {...attributes} {...listeners} tabIndex={-1}><GripVertical size={16} /></span>
@@ -96,7 +96,7 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
                     </SortableContext>
                 </DndContext>
             </section>
-            <section className="detail-footer">
+            <section className="exercise-footer">
                 <Button text="Add set" style="modern" icon={<PlusIcon size={15} />} onClick={handleAddSet} />
             </section>
         </div>

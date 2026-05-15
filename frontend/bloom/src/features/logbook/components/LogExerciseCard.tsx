@@ -67,13 +67,13 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete }:
     return (
         <div
             ref={setNodeRef}
-            className="log-exercise-card"
+            className="exercise-card"
             style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
         >
             <header>
                 <div>
-                    <h3 className="log-exercise-name">{exerciseInfo?.name ?? "Unknown exercise"}</h3>
-                    <p className="log-exercise-info">{exerciseType} · {exerciseInfo?.targetMuscles.join(" - ")}</p>
+                    <h3 className="exercise-name">{exerciseInfo?.name ?? "Unknown exercise"}</h3>
+                    <p className="exercise-info">{exerciseType} · {exerciseInfo?.targetMuscles.join(" - ")}</p>
                 </div>
                 <div className="exercise-card-actions">
                     <span className="exercise-drag-handle" {...attributes} {...listeners} tabIndex={-1}><GripVertical size={16} /></span>
@@ -81,7 +81,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete }:
                 </div>
             </header>
             <section className={bodyClass}>
-                <div className="log-set-grid-header">
+                <div className="set-grid-header">
                     <p>Set</p>
                     {isCardio ? (
                         <><p>Distance</p><p>Duration</p></>
@@ -105,7 +105,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete }:
                     </SortableContext>
                 </DndContext>
             </section>
-            <section className="log-footer">
+            <section className="exercise-footer">
                 <Button text="Add set" style="modern" icon={<PlusIcon size={15} />} onClick={handleAddSet} />
             </section>
         </div>

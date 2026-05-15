@@ -25,7 +25,7 @@ function LogSortableSetRow({ item, index, type, onSetChange, onDelete }: LogSort
     return (
         <div
             ref={setNodeRef}
-            className="log-set-row"
+            className="set-row"
             style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
         >
             <p>{index + 1}</p>
@@ -58,7 +58,7 @@ function LogSortableSetRow({ item, index, type, onSetChange, onDelete }: LogSort
                         placeholder="0"
                         onChange={e => onSetChange(item.id, { ...item.set, reps: e.target.value === "" ? null : Number(e.target.value) })}
                     />
-                    <div className="log-weight-cell">
+                    <div className="weight-cell">
                         <input
                             type="number"
                             min={0}
@@ -66,14 +66,7 @@ function LogSortableSetRow({ item, index, type, onSetChange, onDelete }: LogSort
                             placeholder="0"
                             onChange={e => onSetChange(item.id, { ...item.set, weight: e.target.value === "" ? null : Number(e.target.value) })}
                         />
-                        <select
-                            className="log-unit-select"
-                            value={item.set.weightUnit ?? "kg"}
-                            onChange={e => onSetChange(item.id, { ...item.set, weightUnit: e.target.value as "kg" | "lbs" })}
-                        >
-                            <option value="kg">kg</option>
-                            <option value="lbs">lbs</option>
-                        </select>
+                        <span className="unit-label">kg</span>
                     </div>
                     <input
                         type="number"
@@ -85,9 +78,9 @@ function LogSortableSetRow({ item, index, type, onSetChange, onDelete }: LogSort
                     />
                 </>
             )}
-            <span className="log-set-actions">
+            <span className="set-actions">
                 <span className="set-drag-handle" {...attributes} {...listeners} tabIndex={-1}><GripVertical size={14} /></span>
-                <button className="log-set-delete" tabIndex={-1} onClick={() => onDelete(item.id)}><X size={12} /></button>
+                <button className="set-delete" tabIndex={-1} onClick={() => onDelete(item.id)}><X size={12} /></button>
             </span>
         </div>
     );
