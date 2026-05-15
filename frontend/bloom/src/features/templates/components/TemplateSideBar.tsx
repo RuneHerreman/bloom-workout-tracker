@@ -1,25 +1,9 @@
 import { useState } from "react";
 import type { WorkoutTemplate } from "../api.ts";
+import { type FilterType, dominantType, matchesFilter } from "../templateUtils.ts";
 import TemplateSidebarCard from "./TemplateSidebarCard.tsx";
 
-type FilterType = "Cardio" | "Strength" | "Plyometric";
-
 const FILTERS: FilterType[] = ["Strength", "Cardio", "Plyometric"];
-
-function dominantType(template: WorkoutTemplate): "cardio" | "strength" | "plyometric" | "mix" {
-    const sets = template.exercises.flatMap(ex => ex.sets);
-    const cardio   = sets.filter(s => s.type === "Cardio").length;
-    const plyo     = sets.filter(s => s.type === "Plyometric").length;
-    const strength = sets.length - cardio - plyo;
-    if (cardio > 0 && (strength > 0 || plyo > 0)) return "mix";
-    if (cardio >= strength && cardio >= plyo) return "cardio";
-    if (plyo > strength) return "plyometric";
-    return "strength";
-}
-
-function matchesFilter(template: WorkoutTemplate, filter: FilterType): boolean {
-    return template.exercises.flatMap(ex => ex.sets).some(s => s.type === filter);
-}
 
 interface TemplateSideBarProps {
     templates: WorkoutTemplate[];
