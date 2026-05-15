@@ -138,7 +138,7 @@ export function parseGpxTrackPoints(xml: string): GpxTrackPoint[] {
                 ...(getExt(pt, "watt", "power", "PowerInWatts") !== undefined
                     ? { power: getExt(pt, "watt", "power", "PowerInWatts") } : {}),
             });
-            const prevEle = prev?.ele;
+            const prevEle: number | undefined = prev == null ? undefined : prev.ele;
             prev = { lat, lon, ele: ele !== undefined && !isNaN(ele) ? ele : prevEle, timeMs };
         }
 
