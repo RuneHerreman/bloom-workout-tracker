@@ -94,7 +94,7 @@ function DashboardPage() {
             .catch(e => dispatch({ type: "ERROR", error: e instanceof Error ? e.message : "Failed to load dashboard" }));
     }, []);
 
-    const { user, stats, activityData, focusSegments, muscleFocusSegments, volumeSeries, volumeLabels, logEntries, loading, error } = state;
+    const { user, stats, activityData, focusSegments, muscleFocusSegments, volumeSeries, volumeLabels, logEntries, error } = state;
 
     return (
         <div className="dashboard">

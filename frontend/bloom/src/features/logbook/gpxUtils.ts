@@ -86,7 +86,7 @@ function smooth(points: GpxTrackPoint[], key: keyof GpxTrackPoint, window: numbe
         const lo = Math.max(0, i - window), hi = Math.min(points.length - 1, i + window);
         const slice = vals.slice(lo, hi + 1).filter((v): v is number => v !== undefined);
         if (slice.length > 0)
-            (points[i] as Record<string, unknown>)[key] = slice.reduce((a, b) => a + b, 0) / slice.length;
+            (points[i] as unknown as Record<string, unknown>)[key] = slice.reduce((a, b) => a + b, 0) / slice.length;
     }
 }
 
@@ -138,7 +138,8 @@ export function parseGpxTrackPoints(xml: string): GpxTrackPoint[] {
                 ...(getExt(pt, "watt", "power", "PowerInWatts") !== undefined
                     ? { power: getExt(pt, "watt", "power", "PowerInWatts") } : {}),
             });
-            prev = { lat, lon, ele: ele !== undefined && !isNaN(ele) ? ele : prev?.ele, timeMs };
+            const prevEle = prev?.ele;
+            prev = { lat, lon, ele: ele !== undefined && !isNaN(ele) ? ele : prevEle, timeMs };
         }
 
         smooth(points, "speedKph", 5);

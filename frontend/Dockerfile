@@ -2,7 +2,7 @@
 WORKDIR /app
 COPY bloom/package.json ./
 COPY bloom/package-lock.json ./
-RUN npm install --legacy-peer-deps
+RUN npm install
 COPY bloom/ .
 RUN npm run build
 
