@@ -2,6 +2,7 @@ export interface GpxTrackPoint {
     lat: number;
     lon: number;
     distanceKm: number;
+    elapsedMs?: number;
     ele?: number;
     hr?: number;
     cad?: number;
@@ -9,6 +10,13 @@ export interface GpxTrackPoint {
     power?: number;
     atemp?: number;
     grade?: number;
+}
+
+export interface KmSplit {
+    km: number;
+    durationMs: number;
+    pace: number; // min/km
+    avgHr?: number;
 }
 
 export interface GpxStats {
@@ -89,6 +97,7 @@ export function parseGpxTrackPoints(xml: string): GpxTrackPoint[] {
         const rawPts = Array.from(doc.querySelectorAll("trkpt"));
         const points: GpxTrackPoint[] = [];
         let cumDist = 0;
+        let firstTimeMs: number | null = null;
         let prev: { lat: number; lon: number; ele: number | undefined; timeMs: number | null } | null = null;
 
         for (const pt of rawPts) {
@@ -98,6 +107,7 @@ export function parseGpxTrackPoints(xml: string): GpxTrackPoint[] {
 
             const timeText = pt.querySelector("time")?.textContent;
             const timeMs   = timeText ? new Date(timeText).getTime() : null;
+            if (timeMs !== null && firstTimeMs === null) firstTimeMs = timeMs;
             const eleRaw   = pt.querySelector("ele")?.textContent;
             const ele      = eleRaw != null ? parseFloat(eleRaw) : undefined;
 
@@ -114,8 +124,11 @@ export function parseGpxTrackPoints(xml: string): GpxTrackPoint[] {
             if (prev?.ele !== undefined && ele !== undefined && !isNaN(ele) && segDistKm > 0)
                 grade = ((ele - prev.ele) / (segDistKm * 1000)) * 100;
 
+            const elapsedMs = firstTimeMs !== null && timeMs !== null ? timeMs - firstTimeMs : undefined;
+
             points.push({
                 lat, lon, distanceKm: cumDist,
+                ...(elapsedMs !== undefined        ? { elapsedMs }                                           : {}),
                 ...(ele !== undefined && !isNaN(ele) ? { ele } : {}),
                 ...(speedKph !== undefined          ? { speedKph } : {}),
                 ...(grade    !== undefined          ? { grade }    : {}),
@@ -147,4 +160,37 @@ export function formatPace(minPerKm: number): string {
     const min = Math.floor(minPerKm);
     const sec = Math.round((minPerKm - min) * 60);
     return `${min}:${sec.toString().padStart(2, "0")}`;
+}
+
+export function computeKmSplits(points: GpxTrackPoint[]): KmSplit[] {
+    if (points.length < 2) return [];
+    const maxKm = Math.floor(points[points.length - 1].distanceKm);
+    const splits: KmSplit[] = [];
+
+    for (let k = 1; k <= maxKm; k++) {
+        const seg = points.filter(p => p.distanceKm >= k - 1 && p.distanceKm < k);
+        if (seg.length < 2) continue;
+
+        const first = seg[0], last = seg[seg.length - 1];
+        const actualDist = last.distanceKm - first.distanceKm;
+        if (actualDist <= 0) continue;
+
+        let durationMs: number;
+        if (first.elapsedMs !== undefined && last.elapsedMs !== undefined) {
+            durationMs = last.elapsedMs - first.elapsedMs;
+        } else {
+            const speeds = seg.map(p => p.speedKph).filter((v): v is number => v !== undefined && v > 0.5);
+            if (speeds.length === 0) continue;
+            const avgKph = speeds.reduce((a, b) => a + b, 0) / speeds.length;
+            durationMs = (actualDist / avgKph) * 3_600_000;
+        }
+
+        if (durationMs <= 0) continue;
+        const pace = (durationMs / 60000) / actualDist;
+        const hrs = seg.map(p => p.hr).filter((v): v is number => v !== undefined);
+        const avgHr = hrs.length ? Math.round(hrs.reduce((a, b) => a + b, 0) / hrs.length) : undefined;
+
+        splits.push({ km: k, durationMs, pace, avgHr });
+    }
+    return splits;
 }

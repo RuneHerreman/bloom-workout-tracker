@@ -1,19 +1,23 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { MapContainer, TileLayer, Polyline, CircleMarker, Marker, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { Line } from "react-chartjs-2";
+import { Line, Bar } from "react-chartjs-2";
 import {
     Chart as ChartJS, CategoryScale, LinearScale,
     PointElement, LineElement, Filler, Tooltip,
+    BarController, BarElement,
 } from "chart.js";
 import type { ActiveElement, ChartEvent } from "chart.js";
 import type { GpxStats, GpxTrackPoint } from "../gpxUtils.ts";
-import { formatDuration, formatPace } from "../gpxUtils.ts";
+import { formatDuration, formatPace, computeKmSplits } from "../gpxUtils.ts";
 import { MapPin, TrendingUp, Clock, Ruler } from "lucide-react";
 import L, { type LatLngTuple } from "leaflet";
 import Overlay from "../../../components/general/OverlayComponent.tsx";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
+ChartJS.register(
+    CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip,
+    BarController, BarElement,
+);
 
 interface GpxMapOverlayProps {
     points: GpxTrackPoint[];
@@ -180,6 +184,75 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
         return all.filter(c => c.points.length > 0);
     }, [points]);
 
+    const splits = useMemo(() => computeKmSplits(points), [points]);
+    const hasHr = splits.some(s => s.avgHr !== undefined);
+
+    const splitsBarData = useMemo(() => {
+        const minP = Math.min(...splits.map(s => s.pace));
+        const maxP = Math.max(...splits.map(s => s.pace));
+        const range = maxP - minP || 1;
+        return {
+            labels: splits.map(s => String(s.km)),
+            datasets: [{
+                data: splits.map(s => s.pace),
+                backgroundColor: splits.map(s => {
+                    const t = (s.pace - minP) / range;
+                    const r = Math.round(45 + t * (233 - 45));
+                    const g = Math.round(128 + t * (118 - 128));
+                    const b = Math.round(85 + t * (43 - 85));
+                    return `rgba(${r},${g},${b},0.75)`;
+                }),
+                borderRadius: 3,
+                borderWidth: 0,
+            }],
+        };
+    }, [splits]);
+
+    const splitsBarOptions = useMemo(() => ({
+        indexAxis: "y" as const,
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false as const,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: "rgba(255,255,255,0.95)",
+                titleColor: "#333", bodyColor: "#666",
+                borderColor: "#e3e3e3", borderWidth: 1,
+                padding: 10,
+                callbacks: {
+                    title: (items: { label: string }[]) => `km ${items[0]?.label}`,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    label: (item: any) => {
+                        const split = splits[item.dataIndex];
+                        const parts = [` ${formatPace(item.raw as number)} /km  ${formatDuration(split.durationMs)}`];
+                        if (split.avgHr) parts.push(` ♥ ${split.avgHr} bpm`);
+                        return parts;
+                    },
+                },
+            },
+        },
+        scales: {
+            x: {
+                border: { display: false },
+                grid: { color: "#F0F0F0" },
+                ticks: {
+                    font: { size: 10 }, color: "#999", maxTicksLimit: 5,
+                    callback: (v: number | string) =>
+                        formatPace(typeof v === "number" ? v : parseFloat(v as string)),
+                },
+            },
+            y: {
+                border: { display: false },
+                grid: { display: false },
+                ticks: {
+                    font: { size: 10 }, color: "#999",
+                    callback: (_v: number | string, i: number) => `${i + 1} km`,
+                },
+            },
+        },
+    }), [splits]);
+
     const chartsRef = useRef<Record<string, ChartJS<"line">>>({});
     const [hoverDistKm, setHoverDistKm] = useState<number | null>(null);
 
@@ -255,30 +328,47 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
         elements: { point: { radius: 0, hoverRadius: 6, hoverBorderWidth: 2, hoverBorderColor: "#fff" }, line: { tension: 0.3 } },
     });
 
+    const splitsBarHeight = `${Math.max(6, splits.length * 1.55)}rem`;
+
     return (
         <Overlay title="Route" subtitle="GPX" onClose={onClose} noPadding panelClassName="overlay-panel-wide">
-            <div className="gpx-map-container">
-                <div className="gpx-map-inner">
-                    <MapContainer center={center} zoom={13} style={{ width: "100%", height: "100%" }} zoomControl>
-                        <TileLayer
-                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-                        />
-                        <Polyline positions={positions} pathOptions={{ color: "#2D8055", weight: 3, opacity: 0.85 }} />
-                        {positions.length > 0 && <Marker position={positions[0]} icon={START_ICON} />}
-                        {positions.length > 1 && <Marker position={positions[positions.length - 1]} icon={END_ICON} />}
-                        {arrowMarkers.map((a, i) => <Marker key={i} position={a.pos} icon={arrowIcon(a.deg)} />)}
-                        {hoverMapPoint && (
-                            <CircleMarker center={[hoverMapPoint.lat, hoverMapPoint.lon]} radius={7}
-                                pathOptions={{ color: "#fff", fillColor: "#2D8055", fillOpacity: 1, weight: 2.5 }} />
-                        )}
-                        <FitBounds positions={positions} />
-                        <MapHoverTracker points={points} onHover={handleMapHover} />
-                    </MapContainer>
+            <div className="gpx-layout">
+
+                {/* Left col — sticky: map + splits */}
+                <div className="gpx-left-col">
+                    <div className="gpx-map-cell">
+                        <div className="gpx-map-inner">
+                            <MapContainer center={center} zoom={13} style={{ width: "100%", height: "100%" }} zoomControl>
+                                <TileLayer
+                                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+                                />
+                                <Polyline positions={positions} pathOptions={{ color: "#2D8055", weight: 3, opacity: 0.85 }} />
+                                {positions.length > 0 && <Marker position={positions[0]} icon={START_ICON} />}
+                                {positions.length > 1 && <Marker position={positions[positions.length - 1]} icon={END_ICON} />}
+                                {arrowMarkers.map((a, i) => <Marker key={i} position={a.pos} icon={arrowIcon(a.deg)} />)}
+                                {hoverMapPoint && (
+                                    <CircleMarker center={[hoverMapPoint.lat, hoverMapPoint.lon]} radius={7}
+                                        pathOptions={{ color: "#fff", fillColor: "#2D8055", fillOpacity: 1, weight: 2.5 }} />
+                                )}
+                                <FitBounds positions={positions} />
+                                <MapHoverTracker points={points} onHover={handleMapHover} />
+                            </MapContainer>
+                        </div>
+                    </div>
+                    {splits.length > 0 && (
+                        <div className="gpx-splits-cell">
+                            <p className="gpx-section-title">Splits</p>
+                            {hasHr && <p className="gpx-splits-meta">Hover for avg HR</p>}
+                            <div className="gpx-splits-bar-area" style={{ height: splitsBarHeight }}>
+                                <Bar data={splitsBarData} options={splitsBarOptions as never} />
+                            </div>
+                        </div>
+                    )}
                 </div>
-            </div>
-            {chartConfigs.length > 0 && (
-                <div className="gpx-charts">
+
+                {/* Right col — all line charts */}
+                <div className="gpx-charts-cell">
                     {chartConfigs.map(cfg => (
                         <div key={cfg.key} className="gpx-chart-wrap">
                             <p className="gpx-chart-title">{cfg.title}</p>
@@ -300,12 +390,14 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
                         </div>
                     ))}
                 </div>
-            )}
-            <div className="gpx-map-stats">
-                <div className="gpx-map-stat"><Ruler size={14} /><span>{stats.distanceKm.toFixed(2)} km</span></div>
-                {stats.elevationGainM > 0 && <div className="gpx-map-stat"><TrendingUp size={14} /><span>+{Math.round(stats.elevationGainM)} m</span></div>}
-                {stats.durationMs > 0 && <div className="gpx-map-stat"><Clock size={14} /><span>{formatDuration(stats.durationMs)}</span></div>}
-                {stats.durationMs > 0 && stats.distanceKm > 0 && <div className="gpx-map-stat"><MapPin size={14} /><span>{formatPace(stats.durationMs / 60000 / stats.distanceKm)} /km</span></div>}
+
+                {/* Stats bar — full width */}
+                <div className="gpx-map-stats">
+                    <div className="gpx-map-stat"><Ruler size={14} /><span>{stats.distanceKm.toFixed(2)} km</span></div>
+                    {stats.elevationGainM > 0 && <div className="gpx-map-stat"><TrendingUp size={14} /><span>+{Math.round(stats.elevationGainM)} m</span></div>}
+                    {stats.durationMs > 0 && <div className="gpx-map-stat"><Clock size={14} /><span>{formatDuration(stats.durationMs)}</span></div>}
+                    {stats.durationMs > 0 && stats.distanceKm > 0 && <div className="gpx-map-stat"><MapPin size={14} /><span>{formatPace(stats.durationMs / 60000 / stats.distanceKm)} /km</span></div>}
+                </div>
             </div>
         </Overlay>
     );

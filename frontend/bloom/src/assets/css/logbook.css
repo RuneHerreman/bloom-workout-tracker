@@ -127,32 +127,53 @@
 .start-session-blank:hover { background: var(--surface-light); color: var(--ink); }
 
 /* ── GPX map overlay ─────────────────────────────────────────────────────────── */
+.gpx-layout {
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    grid-template-rows: auto auto;
+    align-items: start;
+}
 
-.gpx-map-container {
-    padding: 1rem;
+.gpx-left-col {
+    grid-column: 1;
+    grid-row: 1;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    min-width: 0;
+}
+
+.gpx-map-cell {
+    padding: 1rem 1rem 0.75rem;
+    border-bottom: 0.0625rem solid var(--border);
 }
 
 .gpx-map-inner {
     border: 0.0625rem solid var(--border);
-    height: 22rem;
+    height: 18rem;
     border-radius: var(--widget-border-radius);
     overflow: hidden;
 }
 
-.gpx-charts {
+.gpx-splits-cell {
+    padding: 1rem 1rem 0.75rem;
+    min-width: 0;
+}
+
+.gpx-charts-cell {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    overflow-y: visible;
     padding: 1rem;
+    border-left: 0.0625rem solid var(--border);
 }
 
 .gpx-chart-wrap {
-    padding: 1rem;
-}
-
-.gpx-chart-wrap + .gpx-chart-wrap {
-    border-top: 0.0625rem solid var(--border);
-    padding-top: 0.75rem;
+    min-width: 0;
+    padding: 0.75rem 0.5rem;
 }
 
 .gpx-chart-title {
@@ -161,20 +182,88 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--ink-muted);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
 }
 
 .gpx-chart-area {
-    height: 7rem;
+    height: 9rem;
+    min-width: 0;
+    overflow: hidden;
     position: relative;
 }
 
+/* ── GPX splits bar ──────────────────────────────────────────────────────────── */
+
+.gpx-section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-muted);
+    margin-bottom: 0.5rem;
+}
+
+.gpx-splits-meta {
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    margin-bottom: 0.5rem;
+}
+
+.gpx-splits-bar-area {
+    position: relative;
+    width: 100%;
+}
+
+/* ── GPX responsive ──────────────────────────────────────────────────────────── */
+
+@media(max-width: 1300px) {
+    .gpx-layout {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+    }
+}
+
+@media (max-width: 850px) {
+    .gpx-layout {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .gpx-left-col {
+        position: static;
+        border-bottom: 0.0625rem solid var(--border);
+    }
+
+    .gpx-map-cell {
+        border-bottom: 0.0625rem solid var(--border);
+    }
+
+    .gpx-charts-cell {
+        border-left: none;
+        border-top: 0.0625rem solid var(--border);
+    }
+
+    .gpx-map-stats {
+        grid-column: unset;
+        grid-row: unset;
+    }
+}
+
+/* ── GPX stats bar ───────────────────────────────────────────────────────────── */
+
 .gpx-map-stats {
+    grid-column: 1 / 3;
+    grid-row: 3;
     display: flex;
     gap: 1.5rem;
     padding: 0.875rem 1.25rem;
-    border-top: 0.0625rem solid var(--border);
     flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    background: oklch(0.998 0.004 95);
+    border-top: 0.0625rem solid var(--border);
+    border-radius: 0 0 var(--widget-border-radius) var(--widget-border-radius);
+    z-index: 1;
 }
 
 .gpx-map-stat {

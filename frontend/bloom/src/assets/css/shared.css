@@ -111,8 +111,9 @@
 }
 
 .overlay-panel-wide {
-    min-width: 52rem;
-    max-width: 90vw;
+    width: 95vw;
+    max-width: 95vw;
+    max-height: 92vh;
 }
 
 /* ── Panel page layout ───────────────────────────────────────────────────────── */
