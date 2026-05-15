@@ -152,8 +152,6 @@ public static class Module
             });
         }
 
-        app.UseExceptionHandler();
-
         app.Use(async (ctx, next) =>
         {
             ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
@@ -162,6 +160,7 @@ public static class Module
             await next();
         });
 
+        app.UseExceptionHandler();
         app.UseCors("AllowLocalhost");
         app.UseHttpsRedirection();
         app.UseAuthentication();

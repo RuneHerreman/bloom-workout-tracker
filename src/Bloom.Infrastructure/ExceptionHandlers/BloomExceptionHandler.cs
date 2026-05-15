@@ -16,9 +16,11 @@ public sealed class BloomExceptionHandler : IExceptionHandler
         {
             UserAlreadyExistsException e => (StatusCodes.Status409Conflict, e.Message),
             InvalidCredentialsException e => (StatusCodes.Status401Unauthorized, e.Message),
+            InvalidWorkoutTemplateException e => (StatusCodes.Status400BadRequest, e.Message),
 
-            // Unify not-found and access-denied → 404 to prevent resource enumeration
+            // Unify not-found and access-denied → same 404 to prevent resource enumeration
             UserNotFoundException
+                or UserAccessDeniedException
                 or ExerciseNotFoundException
                 or LoggedWorkoutNotFoundException
                 or LoggedWorkoutAccessDeniedException
@@ -34,13 +36,13 @@ public sealed class BloomExceptionHandler : IExceptionHandler
 
         httpContext.Response.StatusCode = status;
         await httpContext.Response.WriteAsJsonAsync(
-            new ProblemDetails { Status = status, Title = ReasonPhrases(status), Detail = detail },
+            new ProblemDetails { Status = status, Title = ToTitle(status), Detail = detail },
             cancellationToken);
 
         return true;
     }
 
-    private static string ReasonPhrases(int status) => status switch
+    private static string ToTitle(int status) => status switch
     {
         StatusCodes.Status400BadRequest => "Bad Request",
         StatusCodes.Status401Unauthorized => "Unauthorized",

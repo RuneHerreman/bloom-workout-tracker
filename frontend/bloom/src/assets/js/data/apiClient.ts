@@ -38,7 +38,14 @@ export async function fetchFromServer<T>(
     const json = await response.json();
 
     if (!response.ok || json.failure) {
-        throw json as ApiError;
+        // Normalize ProblemDetails (detail/title) and legacy ApiError (error/message) into one shape
+        const error: ApiError = {
+            ...json,
+            failure: true,
+            error: json.error ?? json.detail ?? json.title ?? "An unexpected error occurred.",
+            message: json.message ?? json.detail,
+        };
+        throw error;
     }
 
     return json as T;
