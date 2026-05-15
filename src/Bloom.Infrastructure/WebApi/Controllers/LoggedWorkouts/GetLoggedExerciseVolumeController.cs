@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Application.LoggedWorkouts;
 using Microsoft.AspNetCore.Http;
@@ -7,13 +8,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bloom.Infrastructure.WebApi.Controllers.LoggedWorkouts;
 
 public sealed record GetLoggedExerciseVolumeRequest(
-    [FromQuery] string? Name,
+    [FromQuery, MaxLength(200)] string? Name,
     [FromQuery] string[]? TargetMuscleGroups,
     [FromQuery] string[]? ExerciseTypes,
-    [FromQuery] int? FromYear,
-    [FromQuery] int? FromMonth,
-    [FromQuery] int? ToYear,
-    [FromQuery] int? ToMonth,
+    [FromQuery, Range(1900, 2200)] int? FromYear,
+    [FromQuery, Range(1, 12)] int? FromMonth,
+    [FromQuery, Range(1900, 2200)] int? ToYear,
+    [FromQuery, Range(1, 12)] int? ToMonth,
     [FromServices] IUseCase<GetLoggedExerciseVolumeInput, GetLoggedExerciseVolumeOutput> UseCase
 );
 

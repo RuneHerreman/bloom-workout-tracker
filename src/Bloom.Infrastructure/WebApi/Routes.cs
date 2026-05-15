@@ -4,6 +4,7 @@ using Bloom.Infrastructure.WebApi.Controllers.Users;
 using Bloom.Infrastructure.WebApi.Controllers.WorkoutTemplates;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Routing;
 
 namespace Bloom.Infrastructure.WebApi;
@@ -30,11 +31,18 @@ public static class Routes
         userGroup.MapPost("/register", RegisterUserController.Invoke)
             .WithName(nameof(RegisterUserController))
             .WithDescription("Register a new user.")
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .RequireRateLimiting("auth");
 
         userGroup.MapPost("/login", LoginUserController.Invoke)
             .WithName(nameof(LoginUserController))
             .WithDescription("Authenticate a user with email and password.")
+            .AllowAnonymous()
+            .RequireRateLimiting("auth");
+
+        userGroup.MapPost("/logout", LogoutUserController.Invoke)
+            .WithName(nameof(LogoutUserController))
+            .WithDescription("Clear the auth cookie and end the session.")
             .AllowAnonymous();
 
         userGroup.MapGet("/me", GetCurrentUserController.Invoke)

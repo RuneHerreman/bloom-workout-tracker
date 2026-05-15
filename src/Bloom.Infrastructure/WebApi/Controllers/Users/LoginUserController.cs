@@ -1,15 +1,19 @@
 using System.ComponentModel.DataAnnotations;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Application.Users;
+using Bloom.Infrastructure.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Bloom.Infrastructure.WebApi.Controllers.Users;
 
 public sealed record LoginUserRequest(
     [FromBody] LoginUserBody Body,
-    [FromServices] IUseCase<LoginUserInput, LoginUserOutput> UseCase
+    [FromServices] IUseCase<LoginUserInput, LoginUserOutput> UseCase,
+    [FromServices] IOptions<JwtOptions> JwtOptions,
+    HttpContext HttpContext
 );
 
 public sealed record LoginUserBody(
@@ -17,11 +21,9 @@ public sealed record LoginUserBody(
     [Required] string Password
 );
 
-public sealed record LoginUserResponse(string Token);
-
 public static class LoginUserController
 {
-    public static async Task<Results<Ok<LoginUserResponse>, BadRequest>> Invoke(
+    public static async Task<NoContent> Invoke(
         [AsParameters] LoginUserRequest request
     )
     {
@@ -30,6 +32,16 @@ public static class LoginUserController
             request.Body.Password
         ));
 
-        return TypedResults.Ok(new LoginUserResponse(output.Token));
+        var opts = request.JwtOptions.Value;
+        request.HttpContext.Response.Cookies.Append(opts.CookieName, output.Token, new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.Lax,
+            Secure = request.HttpContext.Request.IsHttps,
+            Expires = DateTimeOffset.UtcNow.AddMinutes(opts.ExpiryMinutes),
+            Path = "/"
+        });
+
+        return TypedResults.NoContent();
     }
 }

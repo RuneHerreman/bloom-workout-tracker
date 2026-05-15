@@ -1,15 +1,19 @@
 using System.ComponentModel.DataAnnotations;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Application.Users;
+using Bloom.Infrastructure.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Bloom.Infrastructure.WebApi.Controllers.Users;
 
 public sealed record RegisterUserRequest(
     [FromBody] RegisterUserBody Body,
-    [FromServices] IUseCase<RegisterUserInput, RegisterUserOutput> UseCase
+    [FromServices] IUseCase<RegisterUserInput, RegisterUserOutput> UseCase,
+    [FromServices] IOptions<JwtOptions> JwtOptions,
+    HttpContext HttpContext
 );
 
 public sealed record RegisterUserBody(
@@ -23,11 +27,9 @@ public sealed record RegisterUserBody(
     [Range(0, 7)] int ActiveDays
 );
 
-public sealed record RegisterUserResponse(string Token);
-
 public static class RegisterUserController
 {
-    public static async Task<Results<Ok<RegisterUserResponse>, BadRequest>> Invoke(
+    public static async Task<NoContent> Invoke(
         [AsParameters] RegisterUserRequest request
     )
     {
@@ -42,6 +44,16 @@ public static class RegisterUserController
             request.Body.ActiveDays
         ));
 
-        return TypedResults.Ok(new RegisterUserResponse(output.Token));
+        var opts = request.JwtOptions.Value;
+        request.HttpContext.Response.Cookies.Append(opts.CookieName, output.Token, new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.Lax,
+            Secure = request.HttpContext.Request.IsHttps,
+            Expires = DateTimeOffset.UtcNow.AddMinutes(opts.ExpiryMinutes),
+            Path = "/"
+        });
+
+        return TypedResults.NoContent();
     }
 }
