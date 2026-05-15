@@ -54,6 +54,12 @@ function LogDetail({ log, exercises, onSave, onDelete }: LogDetailProps) {
         );
     }
 
+    function handleGpxChange(exerciseId: string, gpxData: string | null) {
+        setLogExercises(prev =>
+            prev.map(ex => ex.exerciseId === exerciseId ? { ...ex, gpxData } : ex)
+        );
+    }
+
     function handleDeleteExercise(exerciseId: string) {
         setLogExercises(prev =>
             prev.filter(ex => ex.exerciseId !== exerciseId).map((ex, i) => ({ ...ex, order: i + 1 }))
@@ -136,6 +142,7 @@ function LogDetail({ log, exercises, onSave, onDelete }: LogDetailProps) {
                             exerciseInfo={exercises[ex.exerciseId]}
                             onSetsChange={handleSetsChange}
                             onDelete={handleDeleteExercise}
+                            onGpxChange={handleGpxChange}
                         />
                     ))}
                 </SortableContext>

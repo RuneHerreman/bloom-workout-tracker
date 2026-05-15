@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -6,7 +6,8 @@ import type { LoggedExercise, LoggedSet } from "../api.ts";
 import type { Exercise } from "../../exercises/api.ts";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import LogSortableSetRow, { type LogRowItem } from "./LogSortableSetRow.tsx";
-import { PlusIcon, GripVertical, X } from "lucide-react";
+import { parseGpx, formatDuration, type GpxStats } from "../gpxUtils.ts";
+import { PlusIcon, GripVertical, X, MapPin } from "lucide-react";
 
 interface LogExerciseCardProps {
     id: string;
@@ -14,10 +15,15 @@ interface LogExerciseCardProps {
     exerciseInfo?: Exercise;
     onSetsChange: (exerciseId: string, sets: LoggedSet[]) => void;
     onDelete: (exerciseId: string) => void;
+    onGpxChange?: (exerciseId: string, gpxData: string | null) => void;
 }
 
-function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete }: LogExerciseCardProps) {
+function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, onGpxChange }: LogExerciseCardProps) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [gpxStats, setGpxStats] = useState<GpxStats | null>(() =>
+        exercise.gpxData ? parseGpx(exercise.gpxData) : null
+    );
 
     const [items, setItems] = useState<LogRowItem[]>(() =>
         [...exercise.sets]
@@ -54,6 +60,25 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete }:
     const exerciseType = exerciseInfo?.type ?? "Strength";
     const isCardio = exerciseType === "Cardio";
     const bodyClass = `log-body ${isCardio ? "is-cardio" : "is-strength"}`;
+
+    function handleGpxFile(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            const xml = ev.target?.result as string;
+            const stats = parseGpx(xml);
+            setGpxStats(stats);
+            onGpxChange?.(exercise.exerciseId, xml);
+        };
+        reader.readAsText(file);
+        e.target.value = "";
+    }
+
+    function handleRemoveGpx() {
+        setGpxStats(null);
+        onGpxChange?.(exercise.exerciseId, null);
+    }
 
     function handleAddSet() {
         const last = items[items.length - 1]?.set;
@@ -110,6 +135,22 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete }:
             </section>
             <section className="exercise-footer">
                 <Button text="Add set" style="modern" icon={<PlusIcon size={15} />} onClick={handleAddSet} />
+                {isCardio && (
+                    gpxStats ? (
+                        <div className="gpx-stats">
+                            <MapPin size={12} className="gpx-stats-icon" />
+                            <span>{gpxStats.distanceKm.toFixed(2)} km</span>
+                            {gpxStats.elevationGainM > 0 && <span>+{Math.round(gpxStats.elevationGainM)} m</span>}
+                            {gpxStats.durationMs > 0 && <span>{formatDuration(gpxStats.durationMs)}</span>}
+                            <button className="gpx-remove" onClick={handleRemoveGpx} aria-label="Remove GPX"><X size={11} /></button>
+                        </div>
+                    ) : (
+                        <>
+                            <input ref={fileInputRef} type="file" accept=".gpx" style={{ display: "none" }} onChange={handleGpxFile} />
+                            <Button text="Attach GPX" style="modern" icon={<MapPin size={14} />} onClick={() => fileInputRef.current?.click()} />
+                        </>
+                    )
+                )}
             </section>
         </div>
     );
