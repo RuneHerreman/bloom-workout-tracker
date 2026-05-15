@@ -6,14 +6,19 @@ type FilterType = "Cardio" | "Strength" | "Plyometric";
 
 const FILTERS: FilterType[] = ["Strength", "Cardio", "Plyometric"];
 
-function dominantType(template: WorkoutTemplate): FilterType {
+function dominantType(template: WorkoutTemplate): "cardio" | "strength" | "plyometric" | "mix" {
     const sets = template.exercises.flatMap(ex => ex.sets);
     const cardio   = sets.filter(s => s.type === "Cardio").length;
     const plyo     = sets.filter(s => s.type === "Plyometric").length;
     const strength = sets.length - cardio - plyo;
-    if (cardio >= strength && cardio >= plyo) return "Cardio";
-    if (plyo > strength) return "Plyometric";
-    return "Strength";
+    if (cardio > 0 && (strength > 0 || plyo > 0)) return "mix";
+    if (cardio >= strength && cardio >= plyo) return "cardio";
+    if (plyo > strength) return "plyometric";
+    return "strength";
+}
+
+function matchesFilter(template: WorkoutTemplate, filter: FilterType): boolean {
+    return template.exercises.flatMap(ex => ex.sets).some(s => s.type === filter);
 }
 
 interface TemplateSideBarProps {
@@ -37,7 +42,7 @@ function TemplateSideBar({ templates, selectedId, loading, onSelect }: TemplateS
 
     const visible = activeFilters.size === 0
         ? templates
-        : templates.filter(t => activeFilters.has(dominantType(t)));
+        : templates.filter(t => [...activeFilters].some(f => matchesFilter(t, f)));
 
     return (
         <aside className="template-sidebar">
@@ -68,7 +73,7 @@ function TemplateSideBar({ templates, selectedId, loading, onSelect }: TemplateS
                         <TemplateSidebarCard
                             key={t.id}
                             template={t}
-                            colorClass={dominantType(t).toLowerCase() as "strength" | "cardio" | "plyometric"}
+                            colorClass={dominantType(t)}
                             isActive={t.id === selectedId}
                             onSelect={() => onSelect(t.id)}
                         />

@@ -125,6 +125,7 @@
 .template-card:hover.strength::before   { border-left-color: color-mix(in srgb, var(--primary) 65%, transparent);       border-bottom-color: color-mix(in srgb, var(--primary) 65%, transparent); }
 .template-card:hover.cardio::before     { border-left-color: color-mix(in srgb, var(--accent) 65%, transparent);         border-bottom-color: color-mix(in srgb, var(--accent) 65%, transparent); }
 .template-card:hover.plyometric::before { border-left-color: color-mix(in srgb, var(--primary-light) 65%, transparent);  border-bottom-color: color-mix(in srgb, var(--primary-light) 65%, transparent); }
+.template-card:hover.mix::before        { border-left-color: color-mix(in srgb, var(--primary) 65%, transparent); border-bottom-color: color-mix(in srgb, var(--accent) 65%, transparent); }
 
 .template-card.active {
     transform: translateY(-1px);
@@ -136,9 +137,11 @@
 .template-card.active.strength   { box-shadow: 0 3px 5px rgba(0, 62, 31, 0.14); }
 .template-card.active.cardio     { box-shadow: 0 3px 5px rgba(233, 118, 43, 0.14); }
 .template-card.active.plyometric { box-shadow: 0 3px 5px rgba(45, 128, 85, 0.14); }
+.template-card.active.mix        { box-shadow: 0 3px 5px rgba(116, 90, 37, 0.14); }
 .template-card.active.strength::before   { border-color: color-mix(in srgb, var(--primary) 65%, transparent); }
 .template-card.active.cardio::before     { border-color: color-mix(in srgb, var(--accent) 65%, transparent); }
 .template-card.active.plyometric::before { border-color: color-mix(in srgb, var(--primary-light) 65%, transparent); }
+.template-card.active.mix::before        { border-top-color: color-mix(in srgb, var(--primary) 65%, transparent); border-left-color: color-mix(in srgb, var(--primary) 65%, transparent); border-bottom-color: color-mix(in srgb, var(--accent) 65%, transparent); border-right-color: color-mix(in srgb, var(--accent) 65%, transparent); }
 
 /* ── Card inner structure ── */
 
@@ -177,6 +180,10 @@
 .template-card-type-badge.strength   { background: rgb(0 62 31 / 0.1);    color: var(--primary-muted); }
 .template-card-type-badge.cardio     { background: rgb(233 118 43 / 0.12); color: var(--accent); }
 .template-card-type-badge.plyometric { background: rgb(45 128 85 / 0.12);  color: var(--primary-light); }
+.template-card-type-badge.mix {
+    background: linear-gradient(to right, rgb(0 62 31 / 0.1), rgb(233 118 43 / 0.12));
+    color: var(--ink-muted);
+}
 
 /* ── Filter chips ────────────────────────────────────────────────────────────── */
 

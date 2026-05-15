@@ -2,12 +2,12 @@ import type { WorkoutTemplate } from "../api.ts";
 
 interface TemplateSidebarCardProps {
     template: WorkoutTemplate;
-    colorClass: "strength" | "cardio" | "plyometric";
+    colorClass: "strength" | "cardio" | "plyometric" | "mix";
     isActive: boolean;
     onSelect: () => void;
 }
 
-const TYPE_LABELS = { strength: "Strength", cardio: "Cardio", plyometric: "Plyo" } as const;
+const TYPE_LABELS = { strength: "Strength", cardio: "Cardio", plyometric: "Plyo", mix: "Mix" } as const;
 
 function TemplateSidebarCard({ template, colorClass, isActive, onSelect }: TemplateSidebarCardProps) {
     const exerciseCount = template.exercises.length;
