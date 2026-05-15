@@ -6,12 +6,14 @@ interface OverlayProps {
     subtitle: string;
     children?: ReactNode;
     onClose: () => void;
+    noPadding?: boolean;
+    panelClassName?: string;
 }
 
-function Overlay({ title, subtitle, children, onClose }: OverlayProps) {
+function Overlay({ title, subtitle, children, onClose, noPadding, panelClassName }: OverlayProps) {
     return (
         <div className="overlay-backdrop" onClick={onClose}>
-            <div className="overlay-panel" onClick={e => e.stopPropagation()}>
+            <div className={`overlay-panel${panelClassName ? ` ${panelClassName}` : ""}`} onClick={e => e.stopPropagation()}>
                 <header className="overlay-header">
                     <div>
                         <p className="general-widget-subtitle">{subtitle}</p>
@@ -21,7 +23,7 @@ function Overlay({ title, subtitle, children, onClose }: OverlayProps) {
                         <X size={16} />
                     </button>
                 </header>
-                <div className="overlay-content">
+                <div className={`overlay-content${noPadding ? " overlay-content-no-padding" : ""}`}>
                     {children}
                 </div>
             </div>

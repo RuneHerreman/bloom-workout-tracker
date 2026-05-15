@@ -2,6 +2,10 @@ export interface GpxTrackPoint {
     lat: number;
     lon: number;
     ele?: number;
+    hr?: number;
+    cad?: number;
+    speedKph?: number;
+    distanceKm: number;
 }
 
 export interface GpxStats {
@@ -67,18 +71,68 @@ export function parseGpx(xml: string): GpxStats | null {
     }
 }
 
+function getExtField(pt: Element, name: string): number | undefined {
+    const el = pt.getElementsByTagNameNS("*", name)[0];
+    if (!el) return undefined;
+    const v = parseFloat(el.textContent ?? "");
+    return isNaN(v) ? undefined : v;
+}
+
+function smoothSpeed(points: GpxTrackPoint[], window = 5): void {
+    const speeds = points.map(p => p.speedKph);
+    for (let i = 0; i < points.length; i++) {
+        const lo = Math.max(0, i - window);
+        const hi = Math.min(points.length - 1, i + window);
+        const vals = speeds.slice(lo, hi + 1).filter((v): v is number => v !== undefined);
+        if (vals.length > 0) points[i].speedKph = vals.reduce((a, b) => a + b, 0) / vals.length;
+    }
+}
+
 export function parseGpxTrackPoints(xml: string): GpxTrackPoint[] {
     try {
         const doc = new DOMParser().parseFromString(xml, "application/xml");
         if (doc.querySelector("parsererror")) return [];
-        return Array.from(doc.querySelectorAll("trkpt")).flatMap(pt => {
+        const rawPts = Array.from(doc.querySelectorAll("trkpt"));
+        const points: GpxTrackPoint[] = [];
+        let cumDist = 0;
+        let prev: { lat: number; lon: number; timeMs: number | null } | null = null;
+
+        for (const pt of rawPts) {
             const lat = parseFloat(pt.getAttribute("lat") ?? "");
             const lon = parseFloat(pt.getAttribute("lon") ?? "");
-            if (isNaN(lat) || isNaN(lon)) return [];
+            if (isNaN(lat) || isNaN(lon)) continue;
+
+            const timeText = pt.querySelector("time")?.textContent;
+            const timeMs = timeText ? new Date(timeText).getTime() : null;
+
+            let segDistKm = 0;
+            if (prev) {
+                segDistKm = haversineM(prev.lat, prev.lon, lat, lon) / 1000;
+                cumDist += segDistKm;
+            }
+
             const eleText = pt.querySelector("ele")?.textContent;
             const ele = eleText != null ? parseFloat(eleText) : undefined;
-            return [{ lat, lon, ...(ele !== undefined && !isNaN(ele) ? { ele } : {}) }];
-        });
+
+            let speedKph: number | undefined;
+            if (prev?.timeMs != null && timeMs != null) {
+                const dtH = (timeMs - prev.timeMs) / 3_600_000;
+                if (dtH > 0) speedKph = segDistKm / dtH;
+            }
+
+            points.push({
+                lat, lon,
+                distanceKm: cumDist,
+                ...(ele !== undefined && !isNaN(ele) ? { ele } : {}),
+                ...(getExtField(pt, "hr")  !== undefined ? { hr:  getExtField(pt, "hr")  } : {}),
+                ...(getExtField(pt, "cad") !== undefined ? { cad: getExtField(pt, "cad") } : {}),
+                ...(speedKph !== undefined ? { speedKph } : {}),
+            });
+            prev = { lat, lon, timeMs };
+        }
+
+        smoothSpeed(points);
+        return points;
     } catch {
         return [];
     }

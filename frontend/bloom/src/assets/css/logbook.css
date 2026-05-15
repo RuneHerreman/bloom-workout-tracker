@@ -128,38 +128,45 @@
 
 /* ── GPX map overlay ─────────────────────────────────────────────────────────── */
 
-.gpx-map-panel {
-    background: white;
+.gpx-map-container {
+    padding: 1rem;
+}
+
+.gpx-map-inner {
     border: 0.0625rem solid var(--border);
+    height: 22rem;
     border-radius: var(--widget-border-radius);
+    overflow: hidden;
+}
+
+.gpx-charts {
     display: flex;
     flex-direction: column;
-    width: 52rem;
-    max-width: 90vw;
-    max-height: 85vh;
-    box-shadow: 0 8px 32px rgb(0 0 0 / 0.12);
-    overflow: hidden;
+    gap: 0;
+    padding: 1rem;
 }
 
-.gpx-map-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    border-bottom: 0.0625rem solid var(--border);
-    flex-shrink: 0;
+.gpx-chart-wrap {
+    padding: 1rem;
 }
 
-.gpx-map-title {
-    font-size: 0.8rem;
-    font-weight: 500;
+.gpx-chart-wrap + .gpx-chart-wrap {
+    border-top: 0.0625rem solid var(--border);
+    padding-top: 0.75rem;
+}
+
+.gpx-chart-title {
+    font-size: 0.7rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     color: var(--ink-muted);
+    margin-bottom: 0.5rem;
 }
 
-.gpx-map-container {
-    overflow: hidden;
+.gpx-chart-area {
+    height: 7rem;
+    position: relative;
 }
 
 .gpx-map-stats {

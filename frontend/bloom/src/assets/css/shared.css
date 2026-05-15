@@ -106,6 +106,15 @@
     flex: 1;
 }
 
+.overlay-content-no-padding {
+    padding: 0;
+}
+
+.overlay-panel-wide {
+    min-width: 52rem;
+    max-width: 90vw;
+}
+
 /* ── Panel page layout ───────────────────────────────────────────────────────── */
 
 .panel-page {
