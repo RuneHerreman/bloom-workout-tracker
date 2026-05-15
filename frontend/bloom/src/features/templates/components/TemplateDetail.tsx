@@ -11,7 +11,7 @@ interface TemplateDetailProps {
     template: WorkoutTemplate;
     exercises: Record<string, Exercise>;
     onDelete: (id: string) => void;
-    onSave: (id: string, exercises: TemplateExercise[]) => void;
+    onSave: (id: string, name: string, exercises: TemplateExercise[]) => void;
 }
 
 export interface TemplateDetailHandle {
@@ -52,15 +52,16 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
             sets: [...ex.sets].sort((a, b) => a.order - b.order),
         }));
 
-    const hasChanges = JSON.stringify(normalize(templateExercises)) !== JSON.stringify(normalize(template.exercises));
+    const hasChanges = name !== template.name ||
+        JSON.stringify(normalize(templateExercises)) !== JSON.stringify(normalize(template.exercises));
 
     const [saving, setSaving] = useState(false);
 
     async function handleSave() {
         setSaving(true);
         try {
-            await updateTemplate(template.id, template.name, templateExercises);
-            onSave(template.id, templateExercises);
+            await updateTemplate(template.id, name, templateExercises);
+            onSave(template.id, name, templateExercises);
         } finally {
             setSaving(false);
         }
@@ -69,7 +70,11 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
     return (
         <div className="template-detail-view">
             <div className="template-detail-header">
-                <h3>{template.name}</h3>
+                <input
+                    className="template-title-input"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                />
                 <div className="actions-row">
                     <Button text="Save Changes" style="green" icon={<Save size={14} />} disabled={!hasChanges || saving} onClick={handleSave} />
                     <Button text="Delete Template" style="red" icon={<Trash2 size={14} />} onClick={() => onDelete(template.id)} />

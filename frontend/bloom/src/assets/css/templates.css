@@ -531,11 +531,27 @@
     align-items: baseline;
 }
 
-.template-detail-header h3 {
+.template-title-input {
     font-family: var(--serif), serif;
     color: var(--dark-text);
     font-size: 3rem;
     font-weight: 500;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    width: 100%;
+    min-width: 0;
+    border-bottom: 0.125rem solid transparent;
+    transition: border-color 0.15s;
+}
+
+.template-title-input:hover {
+    border-bottom-color: var(--border);
+}
+
+.template-title-input:focus {
+    border-bottom-color: var(--primary-light);
 }
 
 @media(max-width: 1000px) {

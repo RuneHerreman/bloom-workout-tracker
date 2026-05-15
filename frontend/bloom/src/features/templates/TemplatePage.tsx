@@ -31,8 +31,8 @@ const TemplatePage = () => {
 
     const selectedTemplate = templates.find(t => t.id === selectedId) ?? null;
 
-    const handleSave = (id: string, exercises: TemplateExercise[]) => {
-        setTemplates(prev => prev.map(t => t.id === id ? { ...t, exercises } : t));
+    const handleSave = (id: string, name: string, exercises: TemplateExercise[]) => {
+        setTemplates(prev => prev.map(t => t.id === id ? { ...t, name, exercises } : t));
     };
 
     const handleDelete = async (id: string) => {
