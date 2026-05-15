@@ -16,7 +16,6 @@ public sealed record CreateLoggedWorkoutBody(
     [Required, MinLength(1), MaxLength(200)] string Name,
 
     [Required]
-    [MinLength(1, ErrorMessage = "At least one exercise is required")]
     List<LoggedExerciseBody> Exercises,
 
     string? Note = null,

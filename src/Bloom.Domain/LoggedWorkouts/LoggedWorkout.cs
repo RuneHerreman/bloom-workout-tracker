@@ -71,6 +71,5 @@ public class LoggedWorkout : AggregateRoot<LoggedWorkoutId>
     {
         Asserts.EnsureNotEmpty(UserId);
         Asserts.EnsureNotEmpty(Name);
-        Asserts.EnsureNotEmpty(_loggedExercises);
     }
 }

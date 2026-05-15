@@ -61,6 +61,71 @@
 .log-note-area:focus { border-color: var(--primary-light); }
 .log-note-area::placeholder { color: var(--ink-muted); font-style: italic; }
 
+/* ── Start session overlay ───────────────────────────────────────────────────── */
+
+.start-session-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.start-session-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: 0.625rem;
+}
+
+.start-session-card {
+    padding: 0.875rem 1rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--widget-border-radius);
+    background: white;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    transition: background var(--transition), box-shadow var(--transition);
+}
+
+.start-session-card:hover {
+    background: var(--surface-less-light);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.07);
+}
+
+.start-session-card-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+}
+
+.start-session-card-meta {
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+}
+
+.start-session-empty {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.start-session-blank {
+    width: 100%;
+    padding: 0.7rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--widget-border-radius);
+    background: none;
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+}
+
+.start-session-blank:hover { background: var(--surface-light); color: var(--ink); }
+
 /* ── Set grid columns ────────────────────────────────────────────────────────── */
 
 .log-body.is-strength .set-grid-header,

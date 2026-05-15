@@ -20,7 +20,6 @@ public sealed record UpdateLoggedWorkoutBody(
     DateTime LoggedAt,
 
     [Required]
-    [MinLength(1, ErrorMessage = "At least one exercise is required")]
     List<LoggedExerciseBody> Exercises,
 
     string? Note = null

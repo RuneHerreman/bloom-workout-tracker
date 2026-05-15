@@ -59,6 +59,5 @@ public class WorkoutTemplate: AggregateRoot<WorkoutTemplateId>
     {
         Asserts.EnsureNotEmpty(UserId);
         Asserts.EnsureNotEmpty(Name);
-        Asserts.EnsureNotEmpty(_templateExercises);
     }
 }
