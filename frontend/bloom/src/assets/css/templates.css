@@ -141,7 +141,8 @@
     transition: background var(--transition);
 }
 
-.exercise-library-row:hover { background: var(--surface-less-light); }
+.exercise-library-row:hover,
+.exercise-library-row.highlighted { background: var(--surface-less-light); }
 
 .exercise-library-row .type-badge {
     height: fit-content;

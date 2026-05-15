@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import type { Exercise } from "../../exercises/api.ts";
-import {X} from "lucide-react";
+import { X } from "lucide-react";
 import Button from "../../../components/general/ButtonComponent.tsx";
 
 const TYPE_LABELS: Record<string, string> = { Strength: "Strength", Cardio: "Cardio", Plyometric: "Plyo" };
@@ -8,6 +8,11 @@ const TYPE_LABELS: Record<string, string> = { Strength: "Strength", Cardio: "Car
 function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSelect: (exercise: Exercise) => void }) {
     const [search, setSearch] = useState("");
     const [activeMuscles, setActiveMuscles] = useState<Set<string>>(new Set());
+    const [highlighted, setHighlighted] = useState(0);
+    const searchRef = useRef<HTMLInputElement>(null);
+    const listRef = useRef<HTMLUListElement>(null);
+
+    useEffect(() => { searchRef.current?.focus(); }, []);
 
     const allMuscles = useMemo(() =>
         [...new Set(exercises.flatMap(e => e.targetMuscles))].sort(),
@@ -30,6 +35,13 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
         });
     }, [exercises, search, activeMuscles]);
 
+    useEffect(() => { setHighlighted(0); }, [filtered]);
+
+    useEffect(() => {
+        const item = listRef.current?.children[highlighted] as HTMLElement | undefined;
+        item?.scrollIntoView({ block: "nearest" });
+    }, [highlighted]);
+
     const hasFilters = search.trim() !== "" || activeMuscles.size > 0;
 
     const clearAll = () => {
@@ -37,18 +49,34 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
         setActiveMuscles(new Set());
     };
 
+    function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+        if (filtered.length === 0) return;
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setHighlighted(h => Math.min(h + 1, filtered.length - 1));
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setHighlighted(h => Math.max(h - 1, 0));
+        } else if (e.key === "Enter") {
+            e.preventDefault();
+            onSelect(filtered[highlighted]);
+        }
+    }
+
     return (
         <div className="exercise-library">
             <div className="exercise-library-search-wrap">
                 <input
+                    ref={searchRef}
                     className="exercise-library-search"
                     type="text"
                     placeholder="Search exercises…"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
+                    onKeyDown={handleKeyDown}
                 />
                 {hasFilters && (
-                    <Button style="exercise-library-clear" onClick={clearAll} aria-label="Clear filters" text={"Clear all"} icon={<X size={13} />}/>
+                    <Button style="exercise-library-clear" onClick={clearAll} aria-label="Clear filters" text={"Clear all"} icon={<X size={13} />} />
                 )}
             </div>
             <div className="exercise-library-chips">
@@ -63,11 +91,16 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
                 ))}
             </div>
             <hr className="exercise-library-divider" />
-            <ul className="exercise-library-list">
+            <ul ref={listRef} className="exercise-library-list">
                 {filtered.length === 0 ? (
                     <p className="exercise-library-empty">No exercises found</p>
-                ) : filtered.map(e => (
-                    <li key={e.id} className="exercise-library-row" onClick={() => onSelect(e)}>
+                ) : filtered.map((e, i) => (
+                    <li
+                        key={e.id}
+                        className={`exercise-library-row${i === highlighted ? " highlighted" : ""}`}
+                        onClick={() => onSelect(e)}
+                        onMouseEnter={() => setHighlighted(i)}
+                    >
                         <span className={`type-badge ${e.type.toLowerCase()}`}>
                             {TYPE_LABELS[e.type] ?? e.type}
                         </span>
