@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Polyline, CircleMarker, Marker, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { Line } from "react-chartjs-2";
 import {
@@ -10,8 +10,7 @@ import type { ActiveElement, ChartEvent } from "chart.js";
 import type { GpxStats, GpxTrackPoint } from "../gpxUtils.ts";
 import { formatDuration } from "../gpxUtils.ts";
 import { MapPin, TrendingUp, Clock, Ruler } from "lucide-react";
-import type { LatLngTuple } from "leaflet";
-import type L from "leaflet";
+import L, { type LatLngTuple } from "leaflet";
 import Overlay from "../../../components/general/OverlayComponent.tsx";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
@@ -26,6 +25,51 @@ function downsample<T>(arr: T[], max: number): T[] {
     if (arr.length <= max) return arr;
     const step = arr.length / max;
     return Array.from({ length: max }, (_, i) => arr[Math.round(i * step)]);
+}
+
+function bearingDeg(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const toRad = (d: number) => d * Math.PI / 180;
+    const dLon = toRad(lon2 - lon1);
+    const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+    const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2))
+             - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+const START_ICON = L.divIcon({
+    className: "",
+    iconSize: [22, 30],
+    iconAnchor: [11, 30],
+    html: `<svg width="22" height="30" viewBox="0 0 22 30" xmlns="http://www.w3.org/2000/svg">
+             <path d="M11 0C4.9 0 0 4.9 0 11c0 7 11 19 11 19S22 18 22 11C22 4.9 17.1 0 11 0z"
+                   fill="#2D8055" stroke="white" stroke-width="1.5"/>
+             <polygon points="8,7.5 8,14.5 15.5,11" fill="white"/>
+           </svg>`,
+});
+
+const END_ICON = L.divIcon({
+    className: "",
+    iconSize: [22, 30],
+    iconAnchor: [11, 30],
+    html: `<svg width="22" height="30" viewBox="0 0 22 30" xmlns="http://www.w3.org/2000/svg">
+             <path d="M11 0C4.9 0 0 4.9 0 11c0 7 11 19 11 19S22 18 22 11C22 4.9 17.1 0 11 0z"
+                   fill="#2c2c2c" stroke="white" stroke-width="1.5"/>
+             <rect x="9.5" y="6" width="1.5" height="9" fill="white"/>
+             <path d="M11 6.5 L17 8.5 L11 10.5 Z" fill="white"/>
+           </svg>`,
+});
+
+function arrowIcon(deg: number) {
+    return L.divIcon({
+        className: "",
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+        html: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"
+                    style="transform:rotate(${deg}deg);display:block;">
+                 <circle cx="10" cy="10" r="9" fill="white" stroke="#2D8055" stroke-width="1.5"/>
+                 <path d="M10 4 L15 15 L10 11.5 L5 15 Z" fill="#2D8055"/>
+               </svg>`,
+    });
 }
 
 function nearestIndex(pts: GpxTrackPoint[], distKm: number): number {
@@ -62,7 +106,7 @@ function MapHoverTracker({ points, onHover }: { points: GpxTrackPoint[], onHover
 }
 
 export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayProps) {
-    const positions: LatLngTuple[] = points.map(p => [p.lat, p.lon]);
+    const positions = useMemo<LatLngTuple[]>(() => points.map(p => [p.lat, p.lon]), [points]);
     const center: LatLngTuple = positions.length > 0
         ? positions[Math.floor(positions.length / 2)]
         : [51.505, -0.09];
@@ -77,6 +121,16 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
     const speedChartRef = useRef<ChartJS<"line">>(null);
     const cadChartRef   = useRef<ChartJS<"line">>(null);
     const [hoverDistKm, setHoverDistKm] = useState<number | null>(null);
+
+    const arrowMarkers = useMemo(() => {
+        if (positions.length < 4) return [];
+        return [0.2, 0.4, 0.6, 0.8].map(frac => {
+            const i = Math.floor(frac * (positions.length - 2));
+            const [lat1, lon1] = positions[i];
+            const [lat2, lon2] = positions[i + 1];
+            return { pos: positions[i] as LatLngTuple, deg: bearingDeg(lat1, lon1, lat2, lon2) };
+        });
+    }, [positions]);
 
     const hoverMapPoint = useMemo(() => {
         if (hoverDistKm === null || points.length === 0) return null;
@@ -125,7 +179,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
         responsive: true,
         maintainAspectRatio: false,
         animation: false as const,
-        interaction: { mode: "index" as const, intersect: true },
+        interaction: { mode: "index" as const, intersect: false },
         onHover,
         plugins: {
             legend: { display: false },
@@ -155,7 +209,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
                     callback: (v: number | string) => `${v} ${unit}` },
             },
         },
-        elements: { point: { radius: 0, hitRadius: 8, hoverRadius: 6, hoverBorderWidth: 2, hoverBorderColor: "#fff" }, line: { tension: 0.3 } },
+        elements: { point: { radius: 0, hoverRadius: 6, hoverBorderWidth: 2, hoverBorderColor: "#fff" }, line: { tension: 0.3 } },
     });
 
     const elevationData = {
@@ -208,6 +262,15 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
                         />
                         <Polyline positions={positions} pathOptions={{ color: "#2D8055", weight: 3, opacity: 0.85 }} />
+                        {positions.length > 0 && (
+                            <Marker position={positions[0]} icon={START_ICON} />
+                        )}
+                        {positions.length > 1 && (
+                            <Marker position={positions[positions.length - 1]} icon={END_ICON} />
+                        )}
+                        {arrowMarkers.map((a, i) => (
+                            <Marker key={i} position={a.pos} icon={arrowIcon(a.deg)} />
+                        ))}
                         {hoverMapPoint && (
                             <CircleMarker
                                 center={[hoverMapPoint.lat, hoverMapPoint.lon]}
