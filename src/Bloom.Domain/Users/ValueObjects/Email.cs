@@ -1,12 +1,17 @@
+using System.Text.RegularExpressions;
 using Bloom.Domain.Shared;
 
 namespace Bloom.Domain.Users.ValueObjects;
 
-public record Email: ValueObject
+public record Email : ValueObject
 {
+    // Minimal RFC 5321 structure: local@domain.tld
+    private static readonly Regex Pattern =
+        new(@"^[^@\s]+@[^@\s]+\.[^@\s]{2,}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     public string Value { get; }
 
-    private Email() { }
+    private Email() { Value = string.Empty; }
 
     private Email(string value)
     {
@@ -24,7 +29,10 @@ public record Email: ValueObject
     {
         Asserts.EnsureNotEmpty(Value);
 
-        if (!Value.Contains('@'))
-            throw new ArgumentException("Email is not valid.");
+        if (Value.Length > 320)
+            throw new ArgumentException("Email address is too long.");
+
+        if (!Pattern.IsMatch(Value))
+            throw new ArgumentException("Email address is not valid.");
     }
 }
