@@ -1,23 +1,83 @@
-import type { LoggedExercise } from "../api.ts";
+import { useState } from "react";
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { LoggedExercise, LoggedSet } from "../api.ts";
 import type { Exercise } from "../../exercises/api.ts";
-import { displayDuration } from "../logbookUtils.ts";
+import Button from "../../../components/general/ButtonComponent.tsx";
+import LogSortableSetRow, { type LogRowItem } from "./LogSortableSetRow.tsx";
+import { PlusIcon, GripVertical, X } from "lucide-react";
 
 interface LogExerciseCardProps {
+    id: string;
     exercise: LoggedExercise;
     exerciseInfo?: Exercise;
+    onSetsChange: (exerciseId: string, sets: LoggedSet[]) => void;
+    onDelete: (exerciseId: string) => void;
 }
 
-function LogExerciseCard({ exercise, exerciseInfo }: LogExerciseCardProps) {
+function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete }: LogExerciseCardProps) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
+    const [items, setItems] = useState<LogRowItem[]>(() =>
+        [...exercise.sets]
+            .sort((a, b) => a.order - b.order)
+            .map(set => ({ id: crypto.randomUUID(), set }))
+    );
+
+    function pushChange(updated: LogRowItem[]) {
+        onSetsChange(exercise.exerciseId, updated.map((item, i) => ({ ...item.set, order: i + 1 })));
+    }
+
+    function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        const oldIndex = items.findIndex(item => item.id === active.id);
+        const newIndex = items.findIndex(item => item.id === over.id);
+        const reordered = arrayMove(items, oldIndex, newIndex);
+        setItems(reordered);
+        pushChange(reordered);
+    }
+
+    function handleSetChange(itemId: string, updatedSet: LoggedSet) {
+        const updated = items.map(item => item.id === itemId ? { ...item, set: updatedSet } : item);
+        setItems(updated);
+        pushChange(updated);
+    }
+
+    function handleDeleteSet(itemId: string) {
+        const updated = items.filter(item => item.id !== itemId);
+        setItems(updated);
+        pushChange(updated);
+    }
+
     const exerciseType = exerciseInfo?.type ?? "Strength";
     const isCardio = exerciseType === "Cardio";
     const bodyClass = `log-body ${isCardio ? "is-cardio" : "is-strength"}`;
 
+    function handleAddSet() {
+        const newSet: LoggedSet = isCardio
+            ? { type: "Cardio", order: items.length + 1, reps: null, weight: null, weightUnit: null, rir: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
+            : { type: exerciseType, order: items.length + 1, reps: 10, weight: 60, weightUnit: "kg", rir: 2, duration: null, distance: null, distanceUnit: null };
+        const updated = [...items, { id: crypto.randomUUID(), set: newSet }];
+        setItems(updated);
+        pushChange(updated);
+    }
+
     return (
-        <div className="log-exercise-card">
+        <div
+            ref={setNodeRef}
+            className="log-exercise-card"
+            style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+        >
             <header>
                 <div>
                     <h3 className="log-exercise-name">{exerciseInfo?.name ?? "Unknown exercise"}</h3>
                     <p className="log-exercise-info">{exerciseType} · {exerciseInfo?.targetMuscles.join(" - ")}</p>
+                </div>
+                <div className="exercise-card-actions">
+                    <span className="exercise-drag-handle" {...attributes} {...listeners} tabIndex={-1}><GripVertical size={16} /></span>
+                    <button className="exercise-delete-btn" tabIndex={-1} onClick={() => onDelete(exercise.exerciseId)}><X size={14} /></button>
                 </div>
             </header>
             <section className={bodyClass}>
@@ -28,24 +88,25 @@ function LogExerciseCard({ exercise, exerciseInfo }: LogExerciseCardProps) {
                     ) : (
                         <><p>Reps</p><p>Weight</p><p>RIR</p></>
                     )}
+                    <span />
                 </div>
-                {[...exercise.sets].sort((a, b) => a.order - b.order).map((set, i) => (
-                    <div key={i} className="log-set-row">
-                        <p>{i + 1}</p>
-                        {isCardio ? (
-                            <>
-                                <p>{set.distance != null ? `${Math.round(set.distance * 1000)} m` : "—"}</p>
-                                <p>{displayDuration(set.duration)}</p>
-                            </>
-                        ) : (
-                            <>
-                                <p>{set.reps ?? "—"}</p>
-                                <p>{set.weight != null ? `${set.weight} ${set.weightUnit ?? ""}`.trim() : "—"}</p>
-                                <p>{set.rir != null ? set.rir : "—"}</p>
-                            </>
-                        )}
-                    </div>
-                ))}
+                <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                        {items.map((item, index) => (
+                            <LogSortableSetRow
+                                key={item.id}
+                                item={item}
+                                index={index}
+                                type={exerciseType}
+                                onSetChange={handleSetChange}
+                                onDelete={handleDeleteSet}
+                            />
+                        ))}
+                    </SortableContext>
+                </DndContext>
+            </section>
+            <section className="log-footer">
+                <Button text="Add set" style="modern" icon={<PlusIcon size={15} />} onClick={handleAddSet} />
             </section>
         </div>
     );

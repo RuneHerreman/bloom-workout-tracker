@@ -78,7 +78,7 @@
     justify-content: space-between;
 }
 
-.log-exercise-card header div {
+.log-exercise-card header > div:first-child {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
@@ -95,6 +95,10 @@
     font-size: 85%;
 }
 
+.log-footer {
+    padding: 1rem 1.25rem;
+}
+
 /* ── Log set grid ────────────────────────────────────────────────────────────── */
 
 .log-set-grid-header,
@@ -105,12 +109,12 @@
 
 .log-body.is-strength .log-set-grid-header,
 .log-body.is-strength .log-set-row {
-    grid-template-columns: 3rem 1fr 1fr 1fr;
+    grid-template-columns: 3rem 1fr 1fr 1fr 2.75rem;
 }
 
 .log-body.is-cardio .log-set-grid-header,
 .log-body.is-cardio .log-set-row {
-    grid-template-columns: 3rem 1fr 1fr;
+    grid-template-columns: 3rem 1fr 1fr 2.75rem;
 }
 
 .log-set-grid-header > * {
@@ -127,16 +131,101 @@
 
 .log-set-row > * {
     border-right: 0.0625rem solid var(--border);
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: var(--ink);
 }
 
 .log-set-grid-header > *:last-child,
-.log-set-row > *:last-child {
+.log-set-row > *:last-child,
+.log-set-row > *:has(+ .log-set-actions) {
     border-right: none;
 }
 
 .log-set-row:last-child {
     border-bottom: none;
 }
+
+/* ── Set inputs ──────────────────────────────────────────────────────────────── */
+
+.log-set-row input {
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-family: var(--sans), sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--ink);
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    outline: none;
+    transition: background var(--transition);
+}
+
+.log-set-row > input:hover,
+.log-set-row > input:focus,
+.log-set-row .distance-input:hover,
+.log-set-row .distance-input:focus-within,
+.log-set-row .duration-input:hover,
+.log-set-row .duration-input:focus-within,
+.log-set-row .log-weight-cell:hover,
+.log-set-row .log-weight-cell:focus-within {
+    background: var(--surface-light);
+}
+
+.log-set-row input[type=number]::-webkit-inner-spin-button,
+.log-set-row input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+.log-set-row input[type=number] { -moz-appearance: textfield; }
+
+/* ── Weight cell ─────────────────────────────────────────────────────────────── */
+
+.log-weight-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0.75rem 0.25rem;
+}
+
+.log-weight-cell input { padding: 0; }
+
+.log-unit-select {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    border: none;
+    background: transparent;
+    outline: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+/* ── Set actions (delete + drag) ─────────────────────────────────────────────── */
+
+.log-set-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+}
+
+.log-set-delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-muted);
+    opacity: 0;
+    transition: opacity var(--transition), color var(--transition);
+    padding: 0.15rem;
+    border-radius: 0.2rem;
+}
+
+.log-set-row:hover .log-set-delete { opacity: 0.5; }
+.log-set-delete:hover { opacity: 1 !important; color: var(--danger); }
+
+/* ── Exercise card drag handle + delete ──────────────────────────────────────── */
+
+.log-exercise-card:hover .exercise-drag-handle { opacity: 0.5; }
+.log-exercise-card:hover .exercise-delete-btn { opacity: 0.5; }

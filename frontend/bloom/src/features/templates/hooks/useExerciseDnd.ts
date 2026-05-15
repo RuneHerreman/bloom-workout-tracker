@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { arrayMove } from "@dnd-kit/sortable";
 import type { DragStartEvent, DragEndEvent } from "@dnd-kit/core";
-import type { TemplateExercise } from "../../../assets/js/data/apiTypes.ts";
 
-export function useExerciseDnd(
-    exercises: TemplateExercise[],
-    onReorder: (reordered: TemplateExercise[]) => void
+export function useExerciseDnd<T extends { exerciseId: string }>(
+    exercises: T[],
+    onReorder: (reordered: T[]) => void
 ) {
     const [activeId, setActiveId] = useState<string | null>(null);
     const activeExercise = exercises.find(ex => ex.exerciseId === activeId) ?? null;
