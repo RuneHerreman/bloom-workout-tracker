@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../../assets/css/dashboard.css";
 import { getMe } from "../auth/api.ts";
 import type { User } from "../auth/api.ts";
@@ -37,6 +38,7 @@ function formatDate(date: Date): string {
 
 function DashboardPage() {
     const [user, setUser] = useState<User | null>(null);
+    const navigate = useNavigate();
     const [activityData, setActivityData] = useState<ActivityDay[]>([]);
     const [volumeSeries, setVolumeSeries] = useState<ExerciseSeries[]>([]);
     const [volumeLabels, setVolumeLabels] = useState<string[]>(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]);
@@ -67,7 +69,7 @@ function DashboardPage() {
             <HeaderComponent
                 title={`Welcome back, ${user?.firstName ?? "—"}!`}
                 subtitle={`Today  ·  ${formatDate(new Date())}`}
-                action={<Button text={"Log Workout"} icon={<PlusIcon size={15} />} style={"green"} target="/logbook" />}
+                action={<Button text={"Log Workout"} icon={<PlusIcon size={15} />} style={"green"} onClick={() => navigate("/logbook", { state: { openStart: true } })} />}
             />
 
             <div className="dashboard-body">

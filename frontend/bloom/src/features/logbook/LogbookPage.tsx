@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import "../../assets/css/logbook.css";
 import { getLogs, createLog, deleteLog } from "./api.ts";
 import type { LoggedWorkout } from "./api.ts";
@@ -23,11 +24,12 @@ function plannedToLogged(s: PlannedSet, order: number): LoggedSet {
 }
 
 const LogbookPage = () => {
+    const location = useLocation();
     const [logs, setLogs] = useState<LoggedWorkout[]>([]);
     const [exercises, setExercises] = useState<Record<string, Exercise>>({});
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
-    const [startOpen, setStartOpen] = useState(false);
+    const [startOpen, setStartOpen] = useState(() => !!(location.state as { openStart?: boolean } | null)?.openStart);
 
     useEffect(() => {
         Promise.all([getLogs(), searchExercises()]).then(([fetchedLogs, exs]) => {

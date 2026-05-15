@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
+import { NavLink } from "react-router-dom";
 import SidebarComponent from "./SidebarComponent.tsx";
 
 function AppLayout({ children }: { children: ReactNode }) {
@@ -21,7 +22,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     >
                         <span /><span /><span />
                     </button>
-                    <img src="/media/bloom_logo.png" alt="Bloom" className="mobile-logo" />
+                    <NavLink to="/dashboard"><img src="/media/bloom_logo.png" alt="Bloom" className="mobile-logo" /></NavLink>
                 </div>
                 {children}
             </main>
