@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import "../../assets/css/templates.css";
 import { getTemplates, deleteTemplate } from "./api.ts";
-import type { WorkoutTemplate } from "./api.ts";
+import type { WorkoutTemplate, TemplateExercise } from "./api.ts";
 import { searchExercises } from "../exercises/api.ts";
 import type { Exercise } from "../exercises/api.ts";
 import TemplateSideBar from "./components/TemplateSideBar.tsx";
 import TemplateDetail from "./components/TemplateDetail.tsx";
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
 import Button from "../../components/general/ButtonComponent.tsx";
+import {PlusIcon} from "lucide-react";
 
 const TemplatePage = () => {
     const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
@@ -25,6 +26,10 @@ const TemplatePage = () => {
 
     const selectedTemplate = templates.find(t => t.id === selectedId) ?? null;
 
+    const handleSave = (id: string, exercises: TemplateExercise[]) => {
+        setTemplates(prev => prev.map(t => t.id === id ? { ...t, exercises } : t));
+    };
+
     const handleDelete = async (id: string) => {
         setTemplates(prev => prev.filter(t => t.id !== id));
         if (selectedId === id) setSelectedId(null);
@@ -38,7 +43,7 @@ const TemplatePage = () => {
 
     return (
         <div className="templates-page">
-            <HeaderComponent title="Templates" subtitle="Library" action={<Button text={"New template"} icon="+" style={"green"} />}/>
+            <HeaderComponent title="Templates" subtitle="Library" action={<Button text={"New template"} icon={<PlusIcon size={15} />} style={"green"} />}/>
             <div className="templates-body">
                 <TemplateSideBar
                     templates={templates}
@@ -48,7 +53,7 @@ const TemplatePage = () => {
                     onDelete={handleDelete}
                 />
                 <div className="template-detail">
-                    {selectedTemplate ? <TemplateDetail key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} />
+                    {selectedTemplate ? <TemplateDetail key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} />
                         : (
                             <div className="template-detail-empty">
                                 <p>Select a template to see details</p>

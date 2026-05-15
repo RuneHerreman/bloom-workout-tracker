@@ -25,6 +25,7 @@ import {
 import Button from "../../components/general/ButtonComponent.tsx";
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
 import TechnicalPointsWidget from "./components/TechnicalPointsWidget.tsx";
+import {PlusIcon} from "lucide-react";
 function formatDate(date: Date): string {
     return date.toLocaleDateString("en-GB", {
         weekday: "long",
@@ -66,7 +67,7 @@ function DashboardPage() {
             <HeaderComponent
                 title={`Welcome back, ${user?.firstName ?? "—"}!`}
                 subtitle={`Today  ·  ${formatDate(new Date())}`}
-                action={<Button text={"Log Workout"} icon="+" style={"green"} target="/logbook" />}
+                action={<Button text={"Log Workout"} icon={<PlusIcon size={15} />} style={"green"} target="/logbook" />}
             />
 
             <div className="dashboard-body">

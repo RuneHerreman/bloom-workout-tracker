@@ -1,5 +1,7 @@
 // Single source of truth for all API types — derived from OpenAPI spec bloommain--v1.yaml
 
+import type { ExerciseType, DistanceUnit } from "../../../types.ts";
+
 // ── Shared ────────────────────────────────────────────────────────────────────
 
 export interface MonthlyVolumeResponse {
@@ -102,12 +104,12 @@ export interface UpdateLoggedWorkoutResponse {
 // ── Planned sets & exercises ──────────────────────────────────────────────────
 
 export interface PlannedSet {
-    type: string;
+    type: ExerciseType;
     order: number;
     reps: number | null;
     duration: string | null;
     distance: number | null;
-    distanceUnit: string | null;
+    distanceUnit: DistanceUnit | null;
 }
 
 export type PlannedSetBody = PlannedSet;

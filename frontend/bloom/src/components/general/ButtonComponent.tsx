@@ -1,8 +1,9 @@
+import type { ReactNode } from "react";
 import { NavLink } from 'react-router-dom';
 
 interface ButtonComponentProps {
     text: string;
-    icon?: string;
+    icon?: ReactNode;
     imageSrc?: string;
     target?: string;
     style: string;
@@ -14,7 +15,7 @@ function Button({ text, icon, imageSrc, target, style, onClick, disabled }: Butt
     if (onClick || disabled) {
         return (
             <button type="button" className={`button-component ${style ?? ""}`} onClick={onClick} disabled={disabled}>
-                {icon && <span aria-hidden="true">{icon}</span>}
+                {icon}
                 {imageSrc && <img src={imageSrc} alt={text} />}
                 {text}
             </button>
@@ -24,7 +25,7 @@ function Button({ text, icon, imageSrc, target, style, onClick, disabled }: Butt
     const to = target ?? "#";
     return (
         <NavLink to={to} className={`button-component ${style ?? ""}`}>
-            {icon && <span aria-hidden="true">{icon}</span>}
+            {icon}
             {imageSrc && <img src={imageSrc} alt={text} />}
             {text}
         </NavLink>

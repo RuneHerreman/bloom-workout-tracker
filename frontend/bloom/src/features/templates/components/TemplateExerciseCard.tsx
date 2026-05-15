@@ -5,6 +5,7 @@ import type { TemplateExercise, PlannedSet } from "../../../assets/js/data/apiTy
 import type { Exercise } from "../../exercises/api.ts";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import SortableSetRow, { type RowItem } from "./SortableSetRow.tsx";
+import {PlusIcon} from "lucide-react";
 
 interface TemplateExerciseCardProps {
     exercise: TemplateExercise;
@@ -75,7 +76,7 @@ function TemplateExerciseCard({ exercise, exerciseInfo, onSetsChange }: Template
                 </DndContext>
             </section>
             <section className="detail-footer">
-                <Button text="Add set" style="modern" icon="+" />
+                <Button text="Add set" style="modern" icon={<PlusIcon size={15} />} />
             </section>
         </div>
     );
