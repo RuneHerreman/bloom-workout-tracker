@@ -1,5 +1,5 @@
 import { useState, forwardRef, useImperativeHandle } from "react";
-import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, closestCenter, DragOverlay, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import type { WorkoutTemplate } from "../api.ts";
 import { updateTemplate } from "../api.ts";
@@ -73,6 +73,9 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
     const hasChanges = name !== template.name ||
         JSON.stringify(normalize(templateExercises)) !== JSON.stringify(normalize(template.exercises));
 
+    const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
+    const activeExercise = templateExercises.find(ex => ex.exerciseId === activeExerciseId) ?? null;
+
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -104,7 +107,12 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
                 </div>
             </div>
 
-            <DndContext collisionDetection={closestCenter} onDragEnd={handleExerciseDragEnd}>
+            <DndContext
+                collisionDetection={closestCenter}
+                onDragStart={(e: DragStartEvent) => setActiveExerciseId(e.active.id as string)}
+                onDragEnd={event => { handleExerciseDragEnd(event); setActiveExerciseId(null); }}
+                onDragCancel={() => setActiveExerciseId(null)}
+            >
                 <SortableContext items={templateExercises.map(ex => ex.exerciseId)} strategy={verticalListSortingStrategy}>
                     {templateExercises.map((exercise) => (
                         <TemplateExerciseCard
@@ -117,6 +125,15 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
                         />
                     ))}
                 </SortableContext>
+                <DragOverlay>
+                    {activeExercise && (
+                        <TemplateExerciseCard
+                            id={activeExercise.exerciseId}
+                            exercise={activeExercise}
+                            exerciseInfo={exercises[activeExercise.exerciseId]}
+                        />
+                    )}
+                </DragOverlay>
             </DndContext>
         </div>
     );
