@@ -1,4 +1,4 @@
-import { useState, forwardRef, useImperativeHandle } from "react";
+import { useState, useEffect } from "react";
 import { DndContext, closestCenter, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { WorkoutTemplate } from "../api.ts";
@@ -15,16 +15,11 @@ interface TemplateDetailProps {
     exercises: Record<string, Exercise>;
     onDelete: (id: string) => void;
     onSave: (id: string, name: string, exercises: TemplateExercise[]) => void;
+    pendingExerciseId?: string | null;
+    onExerciseAdded?: () => void;
 }
 
-export interface TemplateDetailHandle {
-    addExercise: (exerciseId: string) => void;
-}
-
-const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(function TemplateDetail(
-    { template, exercises, onDelete, onSave },
-    ref
-) {
+function TemplateDetail({ template, exercises, onDelete, onSave, pendingExerciseId, onExerciseAdded }: TemplateDetailProps) {
     const [templateExercises, setTemplateExercises] = useState<TemplateExercise[]>(() =>
         [...template.exercises].sort((a, b) => a.order - b.order)
     );
@@ -37,18 +32,18 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
         reordered => setTemplateExercises(reordered)
     );
 
-    useImperativeHandle(ref, () => ({
-        addExercise(exerciseId: string) {
-            const type = exercises[exerciseId]?.type ?? "Strength";
-            const defaultSet: PlannedSet = type === "Cardio"
-                ? { type: "Cardio", order: 1, reps: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
-                : { type,           order: 1, reps: 10,   duration: null,       distance: null, distanceUnit: null };
-            setTemplateExercises(prev => [
-                ...prev,
-                { exerciseId, order: prev.length + 1, sets: [defaultSet] },
-            ]);
-        },
-    }));
+    useEffect(() => {
+        if (!pendingExerciseId) return;
+        const type = exercises[pendingExerciseId]?.type ?? "Strength";
+        const defaultSet: PlannedSet = type === "Cardio"
+            ? { type: "Cardio", order: 1, reps: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
+            : { type,           order: 1, reps: 10,   duration: null,       distance: null, distanceUnit: null };
+        setTemplateExercises(prev => [
+            ...prev,
+            { exerciseId: pendingExerciseId, order: prev.length + 1, sets: [defaultSet] },
+        ]);
+        onExerciseAdded?.();
+    }, [pendingExerciseId]);
 
     function handleDeleteExercise(exerciseId: string) {
         setTemplateExercises(prev =>
@@ -106,7 +101,7 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
                             key={`${template.id}-${exercise.exerciseId}`}
                             id={exercise.exerciseId}
                             exercise={exercise}
-                            exerciseInfo={exercises[exercise.exerciseId]}
+                            exerciseInfo={exercises[exercise.exerciseId] ?? null}
                             onSetsChange={handleSetsChange}
                             onDelete={handleDeleteExercise}
                         />
@@ -117,13 +112,13 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
                         <TemplateExerciseCard
                             id={activeExercise.exerciseId}
                             exercise={activeExercise}
-                            exerciseInfo={exercises[activeExercise.exerciseId]}
+                            exerciseInfo={exercises[activeExercise.exerciseId] ?? null}
                         />
                     )}
                 </DragOverlay>
             </DndContext>
         </div>
     );
-});
+}
 
 export default TemplateDetail;

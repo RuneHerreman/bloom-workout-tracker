@@ -466,13 +466,6 @@
 
 .gpx-remove:hover { color: var(--danger); }
 
-@media (max-width: 768px) {
-    .gpx-stats {
-        padding: 0.5rem 0.75rem;
-        align-self: flex-start;
-    }
-}
-
 /* ── Set grid ────────────────────────────────────────────────────────────────── */
 
 .set-grid-header,
@@ -756,6 +749,11 @@
 
     .exercise-delete-btn {
         opacity: 0.5;
+    }
+
+    .gpx-stats {
+        padding: 0.5rem 0.75rem;
+        align-self: flex-start;
     }
 
 }

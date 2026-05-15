@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import "../../assets/css/templates.css";
 import { getTemplates, getTemplate, createTemplate, deleteTemplate } from "./api.ts";
 import type { WorkoutTemplate, TemplateExercise } from "./api.ts";
 import { searchExercises } from "../exercises/api.ts";
 import type { Exercise } from "../exercises/api.ts";
 import TemplateSideBar from "./components/TemplateSideBar.tsx";
-import TemplateDetail, { type TemplateDetailHandle } from "./components/TemplateDetail.tsx";
+import TemplateDetail from "./components/TemplateDetail.tsx";
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
 import Button from "../../components/general/ButtonComponent.tsx";
 import Overlay from "../../components/general/OverlayComponent.tsx";
@@ -20,7 +20,7 @@ const TemplatePage = () => {
     const [loading, setLoading] = useState(true);
     const [addExerciseOpen, setAddExerciseOpen] = useState(false);
     const [creating, setCreating] = useState(false);
-    const detailRef = useRef<TemplateDetailHandle>(null);
+    const [pendingExerciseId, setPendingExerciseId] = useState<string | null>(null);
 
     useEffect(() => {
         Promise.all([getTemplates(), searchExercises()]).then(([tpls, exs]) => {
@@ -73,7 +73,7 @@ const TemplatePage = () => {
                     <ExerciseLibrary
                         exercises={Object.values(exercises)}
                         onSelect={e => {
-                            detailRef.current?.addExercise(e.id);
+                            setPendingExerciseId(e.id);
                             setAddExerciseOpen(false);
                         }}
                     />
@@ -90,7 +90,7 @@ const TemplatePage = () => {
                     <button className="panel-back-btn" onClick={() => setSelectedId(null)}>
                         <ChevronLeft size={16} /> Templates
                     </button>
-                    {selectedTemplate ? (<> <TemplateDetail ref={detailRef} key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)
+                    {selectedTemplate ? (<> <TemplateDetail key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} pendingExerciseId={pendingExerciseId} onExerciseAdded={() => setPendingExerciseId(null)} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)
                         : (
                             <div className="panel-empty">
                                 <p>Select a template to see details</p>

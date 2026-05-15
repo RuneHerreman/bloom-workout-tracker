@@ -1,4 +1,5 @@
 import type { ExerciseVolumeResponse, LoggedWorkout } from "../../assets/js/data/apiTypes.ts";
+import { formatWorkoutDate } from "../../utils/workoutUtils.ts";
 import type { ActivityDay } from "./components/ActivityWidget";
 import type { ExerciseSeries } from "./components/VolumeWidget";
 import type { FocusSegment } from "./components/TrainingFocusWidget";
@@ -367,11 +368,3 @@ export function transformLogsForActivityCalendar(workouts: LoggedWorkout[]): Act
     return days;
 }
 
-function formatWorkoutDate(date: Date): string {
-    return date.toLocaleDateString("en-GB", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    });
-}
