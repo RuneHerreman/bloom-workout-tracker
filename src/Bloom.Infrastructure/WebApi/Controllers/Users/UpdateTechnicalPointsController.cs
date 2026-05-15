@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Application.Users;
 using Microsoft.AspNetCore.Http;
@@ -11,7 +12,7 @@ public sealed record UpdateTechnicalPointsRequest(
     [FromServices] IUseCase<UpdateTechnicalPointsInput, UpdateTechnicalPointsOutput> UseCase
 );
 
-public sealed record UpdateTechnicalPointsBody(string? TechnicalPoints);
+public sealed record UpdateTechnicalPointsBody([MaxLength(50000)] string? TechnicalPoints);
 
 public static class UpdateTechnicalPointsController
 {

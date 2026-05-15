@@ -18,7 +18,7 @@ public sealed record CreateLoggedWorkoutBody(
     [Required]
     List<LoggedExerciseBody> Exercises,
 
-    string? Note = null,
+    [MaxLength(2000)] string? Note = null,
     DateTime? LoggedAt = null
 );
 

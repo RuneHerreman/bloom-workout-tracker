@@ -22,7 +22,7 @@ public sealed record UpdateLoggedWorkoutBody(
     [Required]
     List<LoggedExerciseBody> Exercises,
 
-    string? Note = null
+    [MaxLength(2000)] string? Note = null
 );
 
 public sealed record UpdateLoggedWorkoutResponse(Guid LoggedWorkoutId);
