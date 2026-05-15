@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import DOMPurify from "dompurify";
 import GeneralWidget from "./GeneralWidget.tsx";
 import WidgetHeader from "./WidgetHeader.tsx";
 import Button from "../../../components/general/ButtonComponent.tsx";
@@ -13,17 +14,31 @@ function TechnicalPointsWidget({ initialContent, onSave }: TechnicalPointsWidget
 
     useEffect(() => {
         if (editorRef.current && initialContent != null) {
-            editorRef.current.innerHTML = initialContent;
+            editorRef.current.innerHTML = DOMPurify.sanitize(initialContent);
         }
     }, [initialContent]);
 
-    function execFormat(command: string, value?: string) {
-        document.execCommand(command, false, value);
+    function applyUnderline() {
         editorRef.current?.focus();
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+
+        const range = selection.getRangeAt(0);
+        const fragment = range.extractContents();
+        const u = document.createElement("u");
+        u.appendChild(fragment);
+        range.insertNode(u);
+
+        // Restore selection around the new element
+        const newRange = document.createRange();
+        newRange.selectNodeContents(u);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
     }
 
     function handleSave() {
-        onSave?.(editorRef.current?.innerHTML ?? "");
+        const raw = editorRef.current?.innerHTML ?? "";
+        onSave?.(DOMPurify.sanitize(raw));
     }
 
     return (
@@ -38,7 +53,12 @@ function TechnicalPointsWidget({ initialContent, onSave }: TechnicalPointsWidget
             content={
                 <div className="technical-points">
                     <div className="technical-points-toolbar">
-                        <button onMouseDown={e => { e.preventDefault(); execFormat("underline"); }} title="Underline"><u>U</u></button>
+                        <button
+                            onMouseDown={e => { e.preventDefault(); applyUnderline(); }}
+                            title="Underline"
+                        >
+                            <u>U</u>
+                        </button>
                     </div>
                     <div
                         ref={editorRef}
