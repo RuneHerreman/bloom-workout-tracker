@@ -298,6 +298,7 @@
     flex: 1;
 }
 
+
 /* ── Log widget ──────────────────────────────────────────────────────────────── */
 
 .log-widget {
@@ -450,7 +451,13 @@
     }
 
     .activity-grid {
-        gap: 2px;
+        gap: 1px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dash-volume {
+        min-height: 26rem;
     }
 }
 
