@@ -34,12 +34,12 @@ function SortableSetRow({ item, index, type, onSetChange }: {
                     <div className="distance-input">
                         <input
                             type="number"
-                            min={0}
+                            min={1}
                             value={item.set.distance != null ? Math.round(item.set.distance * 1000) : ""}
                             placeholder="0"
                             onChange={e => {
-                                const meters = e.target.value === "" ? null : Math.max(0, Number(e.target.value));
-                                onSetChange(item.id, { ...item.set, distance: meters == null ? null : meters / 1000 });
+                                const meters = e.target.value === "" ? null : Number(e.target.value);
+                                onSetChange(item.id, { ...item.set, distance: meters == null || meters <= 0 ? null : meters / 1000, distanceUnit: "km" });
                             }}
                         />
                         <span className="unit-label">m</span>

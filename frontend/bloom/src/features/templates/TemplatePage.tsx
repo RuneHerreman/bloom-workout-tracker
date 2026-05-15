@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "../../assets/css/templates.css";
 import { getTemplates, deleteTemplate } from "./api.ts";
 import type { WorkoutTemplate, TemplateExercise } from "./api.ts";
 import { searchExercises } from "../exercises/api.ts";
 import type { Exercise } from "../exercises/api.ts";
 import TemplateSideBar from "./components/TemplateSideBar.tsx";
-import TemplateDetail from "./components/TemplateDetail.tsx";
+import TemplateDetail, { type TemplateDetailHandle } from "./components/TemplateDetail.tsx";
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
 import Button from "../../components/general/ButtonComponent.tsx";
 import Overlay from "../../components/general/OverlayComponent.tsx";
@@ -19,6 +19,7 @@ const TemplatePage = () => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [addExerciseOpen, setAddExerciseOpen] = useState(false);
+    const detailRef = useRef<TemplateDetailHandle>(null);
 
     useEffect(() => {
         Promise.all([getTemplates(), searchExercises()]).then(([tpls, exs]) => {
@@ -50,7 +51,13 @@ const TemplatePage = () => {
             <HeaderComponent title="Templates" subtitle="Library" action={<Button text={"New template"} icon={<PlusIcon size={15} />} style={"green"} />}/>
             {addExerciseOpen && (
                 <Overlay title="Exercise library" subtitle="Add exercise" onClose={() => setAddExerciseOpen(false)}>
-                    <ExerciseLibrary exercises={Object.values(exercises)} />
+                    <ExerciseLibrary
+                        exercises={Object.values(exercises)}
+                        onSelect={e => {
+                            detailRef.current?.addExercise(e.id);
+                            setAddExerciseOpen(false);
+                        }}
+                    />
                 </Overlay>
             )}
             <div className="templates-body">
@@ -62,7 +69,7 @@ const TemplatePage = () => {
                     onDelete={handleDelete}
                 />
                 <div className="template-detail">
-                    {selectedTemplate ? (<> <TemplateDetail key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)
+                    {selectedTemplate ? (<> <TemplateDetail ref={detailRef} key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)
                         : (
                             <div className="template-detail-empty">
                                 <p>Select a template to see details</p>

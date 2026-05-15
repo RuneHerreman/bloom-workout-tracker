@@ -5,7 +5,7 @@ import Button from "../../../components/general/ButtonComponent.tsx";
 
 const TYPE_LABELS: Record<string, string> = { Strength: "Strength", Cardio: "Cardio", Plyometric: "Plyo" };
 
-function ExerciseLibrary({ exercises }: { exercises: Exercise[] }) {
+function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSelect: (exercise: Exercise) => void }) {
     const [search, setSearch] = useState("");
     const [activeMusclces, setActiveMuscles] = useState<Set<string>>(new Set());
 
@@ -67,7 +67,7 @@ function ExerciseLibrary({ exercises }: { exercises: Exercise[] }) {
                 {filtered.length === 0 ? (
                     <p className="exercise-library-empty">No exercises found</p>
                 ) : filtered.map(e => (
-                    <li key={e.id} className="exercise-library-row">
+                    <li key={e.id} className="exercise-library-row" onClick={() => onSelect(e)}>
                         <span className={`template-card-type-badge ${e.type.toLowerCase()}`}>
                             {TYPE_LABELS[e.type] ?? e.type}
                         </span>

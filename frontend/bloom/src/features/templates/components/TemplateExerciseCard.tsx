@@ -43,6 +43,15 @@ function TemplateExerciseCard({ exercise, exerciseInfo, onSetsChange }: Template
     const isCardio = exerciseInfo?.type === "Cardio";
     const bodyClass = `detail-body ${isCardio ? "is-cardio" : "is-strength"}`;
 
+    function handleAddSet() {
+        const newSet: PlannedSet = isCardio
+            ? { type: "Cardio", order: items.length + 1, reps: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
+            : { type: exerciseInfo?.type ?? "Strength", order: items.length + 1, reps: 10, duration: null, distance: null, distanceUnit: null };
+        const updated = [...items, { id: crypto.randomUUID(), set: newSet }];
+        setItems(updated);
+        pushChange(updated);
+    }
+
     return (
         <div className="template-exercise-card">
             <header>
@@ -76,7 +85,7 @@ function TemplateExerciseCard({ exercise, exerciseInfo, onSetsChange }: Template
                 </DndContext>
             </section>
             <section className="detail-footer">
-                <Button text="Add set" style="modern" icon={<PlusIcon size={15} />} />
+                <Button text="Add set" style="modern" icon={<PlusIcon size={15} />} onClick={handleAddSet} />
             </section>
         </div>
     );

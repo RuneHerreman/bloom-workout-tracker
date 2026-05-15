@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef, useImperativeHandle } from "react";
 import type { WorkoutTemplate } from "../api.ts";
 import { updateTemplate } from "../api.ts";
 import type { TemplateExercise, PlannedSet } from "../../../assets/js/data/apiTypes.ts";
@@ -14,10 +14,31 @@ interface TemplateDetailProps {
     onSave: (id: string, exercises: TemplateExercise[]) => void;
 }
 
-function TemplateDetail({ template, exercises, onDelete, onSave }: TemplateDetailProps) {
+export interface TemplateDetailHandle {
+    addExercise: (exerciseId: string) => void;
+}
+
+const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(function TemplateDetail(
+    { template, exercises, onDelete, onSave },
+    ref
+) {
     const [templateExercises, setTemplateExercises] = useState<TemplateExercise[]>(() =>
         [...template.exercises].sort((a, b) => a.order - b.order)
     );
+    const [name, setName] = useState(template.name);
+
+    useImperativeHandle(ref, () => ({
+        addExercise(exerciseId: string) {
+            const type = exercises[exerciseId]?.type ?? "Strength";
+            const defaultSet: PlannedSet = type === "Cardio"
+                ? { type: "Cardio", order: 1, reps: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
+                : { type,           order: 1, reps: 10,   duration: null,       distance: null, distanceUnit: null };
+            setTemplateExercises(prev => [
+                ...prev,
+                { exerciseId, order: prev.length + 1, sets: [defaultSet] },
+            ]);
+        },
+    }));
 
     function handleSetsChange(exerciseId: string, sets: PlannedSet[]) {
         setTemplateExercises(prev =>
@@ -65,6 +86,6 @@ function TemplateDetail({ template, exercises, onDelete, onSave }: TemplateDetai
             ))}
         </div>
     );
-}
+});
 
 export default TemplateDetail;

@@ -17,7 +17,7 @@ public record PlannedDistance: ValueObject
 
     public static PlannedDistance Create(decimal value, PlannedDistanceUnit unit)
     {
-        var distance = new PlannedDistance(decimal.Round(value, 2), unit);
+        var distance = new PlannedDistance(decimal.Round(value, 3), unit);
         distance.Validate();
         return distance;
     }
