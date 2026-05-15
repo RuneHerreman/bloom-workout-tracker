@@ -84,6 +84,23 @@ a {
     background: var(--primary);
 }
 
+.button-component.grey {
+    background: var(--surface-lighter);
+    color: var(--ink);
+    box-shadow: var(--border) inset 0 0 0 0.075rem ;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.button-component.grey:hover {
+    background: var(--surface-light);
+    transition: 0.15s ease-in-out;
+}
+
 .general-main-section {
     margin: 0 auto;
     width: 65%;
