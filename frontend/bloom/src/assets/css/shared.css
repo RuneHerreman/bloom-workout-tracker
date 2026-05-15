@@ -435,7 +435,7 @@
     color: var(--ink-muted);
     border: 0.0625rem solid var(--border);
     border-radius: var(--widget-border-radius);
-    padding: 0 0.55rem;
+    padding: 0.5rem 0.75rem;
 }
 
 .gpx-stats-clickable { cursor: pointer; transition: background var(--transition), border-color var(--transition); }
@@ -685,6 +685,7 @@
 
 @media (max-width: 768px) {
     .overlay-backdrop {
+        top: 3.3rem;
         align-items: flex-end;
     }
 
@@ -693,7 +694,8 @@
         width: 100%;
         max-width: 100%;
         min-width: unset;
-        max-height: 96vh;
+        max-height: 80vh;
+        overflow: hidden;
         border-radius: var(--widget-border-radius) var(--widget-border-radius) 0 0;
         border-bottom: none;
     }
@@ -738,6 +740,8 @@
         font-weight: 500;
     }
 
+
+
     .panel-back-btn:hover {
         color: var(--primary-muted);
     }
@@ -752,7 +756,6 @@
     }
 
     .gpx-stats {
-        padding: 0.5rem 0.75rem;
         align-self: flex-start;
     }
 

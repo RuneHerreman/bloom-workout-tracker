@@ -334,7 +334,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
         <Overlay title="Route" subtitle="GPX" onClose={onClose} noPadding panelClassName="overlay-panel-wide">
             <div className="gpx-layout">
 
-                {/* Left col — sticky: map + splits */}
+                {/* Left col: map + splits */}
                 <div className="gpx-left-col">
                     <div className="gpx-map-cell">
                         <div className="gpx-map-inner">
@@ -367,7 +367,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
                     )}
                 </div>
 
-                {/* Right col — all line charts */}
+                {/* Right col: charts spanning both rows */}
                 <div className="gpx-charts-cell">
                     {chartConfigs.map(cfg => (
                         <div key={cfg.key} className="gpx-chart-wrap">
@@ -391,7 +391,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
                     ))}
                 </div>
 
-                {/* Stats bar — full width */}
+                {/* Stats footer — sticky at bottom */}
                 <div className="gpx-map-stats">
                     <div className="gpx-map-stat"><Ruler size={14} /><span>{stats.distanceKm.toFixed(2)} km</span></div>
                     {stats.elevationGainM > 0 && <div className="gpx-map-stat"><TrendingUp size={14} /><span>+{Math.round(stats.elevationGainM)} m</span></div>}
