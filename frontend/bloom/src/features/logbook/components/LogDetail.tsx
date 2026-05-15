@@ -15,7 +15,7 @@ import { Save, Trash2, Plus } from "lucide-react";
 interface LogDetailProps {
     log: LoggedWorkout;
     exercises: Record<string, Exercise>;
-    onSave: (id: string, name: string, loggedAt: string, note: string | null) => void;
+    onSave: (id: string, name: string, loggedAt: string, note: string | null, exercises: LoggedExercise[]) => void;
     onDelete: (id: string) => void;
 }
 
@@ -78,7 +78,7 @@ function LogDetail({ log, exercises, onSave, onDelete }: LogDetailProps) {
         try {
             const loggedAt = new Date(date).toISOString();
             await updateLog(log.id, name, loggedAt, logExercises, note || null);
-            onSave(log.id, name, loggedAt, note || null);
+            onSave(log.id, name, loggedAt, note || null, logExercises);
         } catch (e) {
             setError(e instanceof Error ? e.message : "Failed to save log");
         } finally {

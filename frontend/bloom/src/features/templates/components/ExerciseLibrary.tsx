@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import type { Exercise } from "../../exercises/api.ts";
 import { X } from "lucide-react";
 import Button from "../../../components/general/ButtonComponent.tsx";
+import { useRecentExercises } from "../hooks/useRecentExercises.ts";
 
 const TYPE_LABELS: Record<string, string> = { Strength: "Strength", Cardio: "Cardio", Plyometric: "Plyo" };
 
@@ -11,6 +12,7 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
     const [highlighted, setHighlighted] = useState(0);
     const searchRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
+    const { recentIds, addRecent } = useRecentExercises();
 
     useEffect(() => { searchRef.current?.focus(); }, []);
 
@@ -42,12 +44,24 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
         item?.scrollIntoView({ block: "nearest" });
     }, [highlighted]);
 
-    const hasFilters = search.trim() !== "" || activeMuscles.size > 0;
+    const isFiltering = search.trim() !== "" || activeMuscles.size > 0;
+
+    const recents = useMemo(() =>
+        recentIds.map(id => exercises.find(e => e.id === id)).filter(Boolean) as Exercise[],
+        [recentIds, exercises]
+    );
+
+    function handleSelect(exercise: Exercise) {
+        addRecent(exercise.id);
+        onSelect(exercise);
+    }
 
     const clearAll = () => {
         setSearch("");
         setActiveMuscles(new Set());
     };
+
+    const hasFilters = isFiltering;
 
     function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
         if (filtered.length === 0) return;
@@ -59,7 +73,7 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
             setHighlighted(h => Math.max(h - 1, 0));
         } else if (e.key === "Enter") {
             e.preventDefault();
-            onSelect(filtered[highlighted]);
+            handleSelect(filtered[highlighted]);
         }
     }
 
@@ -90,6 +104,28 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
                     </button>
                 ))}
             </div>
+            {!isFiltering && recents.length > 0 && (
+                <>
+                    <p className="exercise-library-section-label">Recently used</p>
+                    <ul className="exercise-library-list exercise-library-recents">
+                        {recents.map(e => (
+                            <li
+                                key={e.id}
+                                className="exercise-library-row"
+                                onClick={() => handleSelect(e)}
+                            >
+                                <span className={`type-badge ${e.type.toLowerCase()}`}>
+                                    {TYPE_LABELS[e.type] ?? e.type}
+                                </span>
+                                <div>
+                                    <p className="exercise-library-name">{e.name}</p>
+                                    <p className="exercise-library-muscles">{e.targetMuscles.join(", ")}</p>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            )}
             <hr className="exercise-library-divider" />
             <ul ref={listRef} className="exercise-library-list">
                 {filtered.length === 0 ? (
@@ -98,7 +134,7 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
                     <li
                         key={e.id}
                         className={`exercise-library-row${i === highlighted ? " highlighted" : ""}`}
-                        onClick={() => onSelect(e)}
+                        onClick={() => handleSelect(e)}
                         onMouseEnter={() => setHighlighted(i)}
                     >
                         <span className={`type-badge ${e.type.toLowerCase()}`}>

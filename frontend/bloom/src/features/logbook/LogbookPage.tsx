@@ -39,10 +39,10 @@ const LogbookPage = () => {
 
     const selectedLog = logs.find(l => l.id === selectedId) ?? null;
 
-    const handleSave = (id: string, name: string, loggedAt: string, note: string | null) => {
+    const handleSave = (id: string, name: string, loggedAt: string, note: string | null, exercises: LoggedExercise[]) => {
         setLogs(prev =>
             prev
-                .map(l => l.id === id ? { ...l, name, loggedAt, note } : l)
+                .map(l => l.id === id ? { ...l, name, loggedAt, note, exercises } : l)
                 .sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime())
         );
     };

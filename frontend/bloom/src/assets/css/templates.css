@@ -165,6 +165,16 @@
     margin-top: 0.2rem;
 }
 
+.exercise-library-section-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+}
+
+.exercise-library-recents { margin-bottom: 0.25rem; }
+
 .exercise-library-empty {
     font-size: 0.8rem;
     color: var(--ink-muted);
