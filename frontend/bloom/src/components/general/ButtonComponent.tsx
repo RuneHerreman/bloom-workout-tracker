@@ -1,4 +1,4 @@
-﻿import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 interface ButtonComponentProps {
     text: string;
@@ -7,12 +7,13 @@ interface ButtonComponentProps {
     target?: string;
     style: string;
     onClick?: () => void;
+    disabled?: boolean;
 }
 
-function Button({ text, icon, imageSrc, target, style, onClick }: ButtonComponentProps) {
-    if (onClick) {
+function Button({ text, icon, imageSrc, target, style, onClick, disabled }: ButtonComponentProps) {
+    if (onClick || disabled) {
         return (
-            <button type="button" className={`button-component ${style ?? ""}`} onClick={onClick}>
+            <button type="button" className={`button-component ${style ?? ""}`} onClick={onClick} disabled={disabled}>
                 {icon && <span aria-hidden="true">{icon}</span>}
                 {imageSrc && <img src={imageSrc} alt={text} />}
                 {text}

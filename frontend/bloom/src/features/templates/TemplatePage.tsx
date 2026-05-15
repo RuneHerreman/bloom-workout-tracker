@@ -48,7 +48,7 @@ const TemplatePage = () => {
                     onDelete={handleDelete}
                 />
                 <div className="template-detail">
-                    {selectedTemplate ? <TemplateDetail template={selectedTemplate} exercises={exercises} onDelete={handleDelete} />
+                    {selectedTemplate ? <TemplateDetail key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} />
                         : (
                             <div className="template-detail-empty">
                                 <p>Select a template to see details</p>
