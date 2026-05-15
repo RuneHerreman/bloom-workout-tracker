@@ -86,7 +86,7 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
 
     return (
         <div className="template-detail-view">
-            {error && <div className="error-message">{error}</div>}
+            {error && <div className="error-banner">{error}</div>}
             <div className="template-detail-header">
                 <input
                     className="template-title-input"

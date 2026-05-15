@@ -48,7 +48,7 @@ function LoginCredentials() {
                         onChange={(e) => setPassword(e.target.value)}>
                     </input>
                 </div>
-                <p className="error-message">{errorMessage}</p>
+                {errorMessage && <p className="error-message">{errorMessage}</p>}
                 <div id="login-checks">
                     <div>
                         <label htmlFor="remember">Remember me</label>

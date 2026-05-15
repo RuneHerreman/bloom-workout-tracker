@@ -25,6 +25,39 @@
     gap: 1rem;
 }
 
+/* ── Detail header ───────────────────────────────────────────────────────────── */
+
+.template-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.template-title-input {
+    font-family: var(--serif), serif;
+    color: var(--dark-text);
+    font-size: 3rem;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    width: 100%;
+    min-width: 0;
+    border-bottom: 0.125rem solid transparent;
+    transition: border-color var(--transition);
+}
+
+.template-title-input:hover  { border-bottom-color: var(--border); }
+.template-title-input:focus  { border-bottom-color: var(--primary-light); }
+
+.actions-row {
+    display: flex;
+    gap: 0.5rem;
+    width: 50%;
+    justify-content: flex-end;
+}
+
 /* ── Template sidebar ────────────────────────────────────────────────────────── */
 
 .template-sidebar {
@@ -99,7 +132,7 @@
     gap: 0.4rem;
     background: white;
     border: 0.0625rem solid var(--border);
-    transition: 0.15s all;
+    transition: box-shadow var(--transition), transform var(--transition);
     position: relative;
 }
 
@@ -110,7 +143,7 @@
     border: 0.0625rem solid transparent;
     border-radius: 0.5rem;
     pointer-events: none;
-    transition: 0.15s all;
+    transition: border-color var(--transition), border-width var(--transition);
 }
 
 .template-card:hover {
@@ -125,7 +158,7 @@
 .template-card:hover.strength::before   { border-left-color: color-mix(in srgb, var(--primary) 65%, transparent);       border-bottom-color: color-mix(in srgb, var(--primary) 65%, transparent); }
 .template-card:hover.cardio::before     { border-left-color: color-mix(in srgb, var(--accent) 65%, transparent);         border-bottom-color: color-mix(in srgb, var(--accent) 65%, transparent); }
 .template-card:hover.plyometric::before { border-left-color: color-mix(in srgb, var(--primary-light) 65%, transparent);  border-bottom-color: color-mix(in srgb, var(--primary-light) 65%, transparent); }
-.template-card:hover.mix::before        { border-left-color: color-mix(in srgb, var(--primary) 65%, transparent); border-bottom-color: color-mix(in srgb, var(--accent) 65%, transparent); }
+.template-card:hover.mix::before        { border-left-color: color-mix(in srgb, var(--primary) 65%, transparent);        border-bottom-color: color-mix(in srgb, var(--accent) 65%, transparent); }
 
 .template-card.active {
     transform: translateY(-1px);
@@ -141,7 +174,12 @@
 .template-card.active.strength::before   { border-color: color-mix(in srgb, var(--primary) 65%, transparent); }
 .template-card.active.cardio::before     { border-color: color-mix(in srgb, var(--accent) 65%, transparent); }
 .template-card.active.plyometric::before { border-color: color-mix(in srgb, var(--primary-light) 65%, transparent); }
-.template-card.active.mix::before        { border-top-color: color-mix(in srgb, var(--primary) 65%, transparent); border-left-color: color-mix(in srgb, var(--primary) 65%, transparent); border-bottom-color: color-mix(in srgb, var(--accent) 65%, transparent); border-right-color: color-mix(in srgb, var(--accent) 65%, transparent); }
+.template-card.active.mix::before {
+    border-top-color:    color-mix(in srgb, var(--primary) 65%, transparent);
+    border-left-color:   color-mix(in srgb, var(--primary) 65%, transparent);
+    border-bottom-color: color-mix(in srgb, var(--accent) 65%, transparent);
+    border-right-color:  color-mix(in srgb, var(--accent) 65%, transparent);
+}
 
 /* ── Card inner structure ── */
 
@@ -202,17 +240,14 @@
 
 .exercise-library-search {
     flex: 1;
-    width: 100%;
     padding: 0.5rem 0.75rem;
     border: 0.0625rem solid var(--border);
     border-radius: 0.375rem;
-    font-family: var(--sans), sans-serif;
-    font-size: 0.875rem;
     background: white;
     color: var(--ink);
     outline: none;
     box-sizing: border-box;
-    transition: border-color 0.12s;
+    transition: border-color var(--transition);
 }
 
 .exercise-library-search:focus { border-color: var(--primary-light); }
@@ -227,7 +262,7 @@
     color: var(--ink-muted);
     padding: 0.3rem;
     border-radius: 0.2rem;
-    transition: color 0.1s;
+    transition: color var(--transition);
 }
 
 .exercise-library-clear:hover { color: var(--ink); }
@@ -252,7 +287,7 @@
     color: var(--ink-muted);
     cursor: pointer;
     font-family: var(--sans), sans-serif;
-    transition: 0.1s ease-in-out;
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
 }
 
 .exercise-library-chip.active {
@@ -286,7 +321,7 @@
     padding: 0.6rem 0.5rem;
     border-radius: 0.375rem;
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background var(--transition);
 }
 
 .exercise-library-row:hover { background: var(--surface-less-light); }
@@ -335,7 +370,7 @@
     color: var(--ink-muted);
     cursor: pointer;
     font-weight: 500;
-    transition: 0.1s ease-in-out;
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
 }
 
 .template-filter-chip.strength.active   { background: rgba(0, 62, 31, 0.08);    border-color: var(--primary);       color: var(--primary); }
@@ -360,8 +395,7 @@
     color: var(--ink-muted);
 }
 
-/* ── Template Detail Card ──────────────────────────────────────────────────────── */
-
+/* ── Exercise card ───────────────────────────────────────────────────────────── */
 
 .template-exercise-card {
     border: 0.0625rem solid var(--border);
@@ -393,6 +427,7 @@
     padding: 1rem 1.25rem;
 }
 
+/* ── Set grid ────────────────────────────────────────────────────────────────── */
 
 .set-grid-header,
 .set-row {
@@ -428,8 +463,16 @@
 
 .set-grid-header > *:last-child,
 .set-row > *:last-child,
-.set-row > *:nth-last-child(2) {
+.set-row > *:has(+ .set-drag-handle) {
     border-right: none;
+}
+
+/* ── Drag handles ────────────────────────────────────────────────────────────── */
+
+.exercise-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
 .exercise-drag-handle {
@@ -441,18 +484,12 @@
     cursor: grab;
     user-select: none;
     touch-action: none;
-    transition: opacity 0.12s;
+    transition: opacity var(--transition);
     padding: 0.25rem;
 }
 
 .template-exercise-card:hover .exercise-drag-handle { opacity: 0.5; }
 .exercise-drag-handle:active { cursor: grabbing; }
-
-.exercise-card-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
 
 .exercise-delete-btn {
     display: flex;
@@ -463,7 +500,7 @@
     cursor: pointer;
     color: var(--ink-muted);
     opacity: 0;
-    transition: opacity 0.12s, color 0.12s;
+    transition: opacity var(--transition), color var(--transition);
     padding: 0.25rem;
     border-radius: 0.25rem;
 }
@@ -481,13 +518,14 @@
     font-size: 0.85rem;
     user-select: none;
     touch-action: none;
-    transition: opacity 0.12s;
+    transition: opacity var(--transition);
 }
 
 .set-row:hover .set-drag-handle { opacity: 0.65; }
 .set-drag-handle:active { cursor: grabbing; }
 
-/* ── Inputs ─────────────────── */
+/* ── Inputs ──────────────────────────────────────────────────────────────────── */
+
 .set-row input {
     text-align: center;
     border: none;
@@ -500,7 +538,7 @@
     min-width: 0;
     box-sizing: border-box;
     outline: none;
-    transition: background 0.15s ease-in-out;
+    transition: background var(--transition);
 }
 
 .set-row > input:hover,
@@ -558,42 +596,7 @@
     user-select: none;
 }
 
-.actions-row {
-    display: flex;
-    gap: 0.5rem;
-    width: 50%;
-    justify-content: flex-end;
-}
-
-
-.template-detail-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-}
-
-.template-title-input {
-    font-family: var(--serif), serif;
-    color: var(--dark-text);
-    font-size: 3rem;
-    font-weight: 500;
-    background: transparent;
-    border: none;
-    outline: none;
-    padding: 0;
-    width: 100%;
-    min-width: 0;
-    border-bottom: 0.125rem solid transparent;
-    transition: border-color 0.15s;
-}
-
-.template-title-input:hover {
-    border-bottom-color: var(--border);
-}
-
-.template-title-input:focus {
-    border-bottom-color: var(--primary-light);
-}
+/* ── Responsive ──────────────────────────────────────────────────────────────── */
 
 @media(max-width: 1000px) {
     .template-detail {
@@ -613,4 +616,3 @@
         flex-wrap: wrap;
     }
 }
-

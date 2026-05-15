@@ -50,39 +50,35 @@ main > section{
     width: 100%;
 }
 
-form input{
+form input {
     margin-top: 0.75rem;
     border: var(--border) 0.1rem solid;
     border-radius: 0.5rem;
     padding: 0.75rem;
     width: 100%;
     font-weight: 300;
-    transition: .1s ease-in-out;
     font-size: 0.8rem;
+    transition: border-color var(--transition);
 }
 
-form input:focus{
-    transition: .1s ease-in-out;
-    border: var(--primary-light) 0.1rem solid;
+form input:focus {
+    border-color: var(--primary-light);
     outline: none;
 }
 
-form button{
+form button {
     padding: .9rem;
     color: white;
     background-color: var(--primary);
     border: none;
     border-radius: 0.5rem;
-    font-size: .9rem;
     grid-column: 1/-1;
-    transition: .1s ease-in-out;
-
+    transition: background-color var(--transition);
 }
 
-form button:hover{
+form button:hover {
     cursor: pointer;
     background-color: var(--primary-muted);
-    transition: .1s ease-in-out;
 }
 
 #login-checks {

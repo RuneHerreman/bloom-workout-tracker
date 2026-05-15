@@ -2,8 +2,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 @import './shared.css';
 
-form * {
-    font-family: var(--sans), sans-serif;
+input, button, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
     box-sizing: border-box;
 }
 
@@ -54,7 +55,7 @@ a {
     color: var(--primary-muted);
     background: white;
     border: 0.12rem solid var(--primary-muted);
-    transition: 0.15s ease-in-out;
+    transition: var(--transition);
 }
 
 .button-component.modern::before {
@@ -67,7 +68,7 @@ a {
     border-radius: 0.495rem;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.15s ease-in-out;
+    transition: opacity var(--transition);
 }
 
 .button-component.modern:hover {
@@ -98,7 +99,7 @@ a {
 
 .button-component.grey:hover {
     background: var(--surface-less-light);
-    transition: 0.15s ease-in-out;
+    transition: var(--transition);
 }
 
 .general-main-section {
