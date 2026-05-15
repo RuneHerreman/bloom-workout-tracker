@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "../../assets/css/templates.css";
-import { getTemplates, deleteTemplate } from "./api.ts";
+import { getTemplates, getTemplate, createTemplate, deleteTemplate } from "./api.ts";
 import type { WorkoutTemplate, TemplateExercise } from "./api.ts";
 import { searchExercises } from "../exercises/api.ts";
 import type { Exercise } from "../exercises/api.ts";
@@ -19,6 +19,7 @@ const TemplatePage = () => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [addExerciseOpen, setAddExerciseOpen] = useState(false);
+    const [creating, setCreating] = useState(false);
     const detailRef = useRef<TemplateDetailHandle>(null);
 
     useEffect(() => {
@@ -35,6 +36,24 @@ const TemplatePage = () => {
         setTemplates(prev => prev.map(t => t.id === id ? { ...t, name, exercises } : t));
     };
 
+    const handleNewTemplate = async () => {
+        setCreating(true);
+        try {
+            const benchPress = Object.values(exercises).find(e => e.name.toLowerCase().includes("bench press"));
+            const defaultExercises: TemplateExercise[] = benchPress ? [{
+                exerciseId: benchPress.id,
+                order: 1,
+                sets: [{ type: "Strength", order: 1, reps: 10, duration: null, distance: null, distanceUnit: null }],
+            }] : [];
+            const newId = await createTemplate("Untitled template", defaultExercises);
+            const newTemplate = await getTemplate(newId);
+            setTemplates(prev => [newTemplate, ...prev]);
+            setSelectedId(newId);
+        } finally {
+            setCreating(false);
+        }
+    };
+
     const handleDelete = async (id: string) => {
         setTemplates(prev => prev.filter(t => t.id !== id));
         if (selectedId === id) setSelectedId(null);
@@ -48,7 +67,7 @@ const TemplatePage = () => {
 
     return (
         <div className="templates-page">
-            <HeaderComponent title="Templates" subtitle="Library" action={<Button text={"New template"} icon={<PlusIcon size={15} />} style={"green"} />}/>
+            <HeaderComponent title="Templates" subtitle="Library" action={<Button text={"New template"} icon={<PlusIcon size={15} />} style={"green"} onClick={handleNewTemplate} disabled={creating} />}/>
             {addExerciseOpen && (
                 <Overlay title="Exercise library" subtitle="Add exercise" onClose={() => setAddExerciseOpen(false)}>
                     <ExerciseLibrary
