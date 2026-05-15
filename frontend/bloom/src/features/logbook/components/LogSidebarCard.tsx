@@ -16,13 +16,11 @@ function LogSidebarCard({ log, colorClass, isActive, onSelect }: LogSidebarCardP
 
     return (
         <div className={`sidebar-card ${colorClass}${isActive ? " active" : ""}`} onClick={onSelect}>
+            <span className={`type-dot ${colorClass}`} data-label={TYPE_LABELS[colorClass]} />
             <p className="sidebar-card-name">{log.name}</p>
-            <div className="sidebar-card-bottom">
-                <span className={`type-badge ${colorClass}`}>{TYPE_LABELS[colorClass]}</span>
-                <span className="sidebar-card-meta">
-                    {relativeDate(log.loggedAt)} · {exerciseCount} ex · {setCount} set{setCount !== 1 ? "s" : ""}
-                </span>
-            </div>
+            <span className="sidebar-card-meta">
+                {relativeDate(log.loggedAt)} · {exerciseCount} ex · {setCount} set{setCount !== 1 ? "s" : ""}
+            </span>
         </div>
     );
 }
