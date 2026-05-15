@@ -44,6 +44,12 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
         pushChange(updated);
     }
 
+    function handleDeleteSet(itemId: string) {
+        const updated = items.filter(item => item.id !== itemId);
+        setItems(updated);
+        pushChange(updated);
+    }
+
     const exerciseType = exerciseInfo?.type ?? "Strength";
     const bodyClass = `detail-body ${exerciseType === "Cardio" ? "is-cardio" : "is-strength"}`;
 
@@ -94,6 +100,7 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
                                 index={index}
                                 type={exerciseType}
                                 onSetChange={handleSetChange}
+                                onDelete={handleDeleteSet}
                             />
                         ))}
                     </SortableContext>

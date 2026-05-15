@@ -180,12 +180,12 @@
 
 .detail-body.is-strength .set-grid-header,
 .detail-body.is-strength .set-row {
-    grid-template-columns: 3rem 1fr 2.75rem;
+    grid-template-columns: 3rem 1fr 5rem;
 }
 
 .detail-body.is-cardio .set-grid-header,
 .detail-body.is-cardio .set-row {
-    grid-template-columns: 3rem 1fr 1fr 2.75rem;
+    grid-template-columns: 3rem 1fr 1fr 5rem;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────────── */

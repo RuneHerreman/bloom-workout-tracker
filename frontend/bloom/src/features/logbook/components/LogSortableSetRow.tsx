@@ -79,8 +79,8 @@ function LogSortableSetRow({ item, index, type, onSetChange, onDelete }: LogSort
                 </>
             )}
             <span className="set-actions">
-                <span className="set-drag-handle" {...attributes} {...listeners} tabIndex={-1}><GripVertical size={14} /></span>
                 <button className="set-delete" tabIndex={-1} onClick={() => onDelete(item.id)}><X size={12} /></button>
+                <span className="set-drag-handle" {...attributes} {...listeners} tabIndex={-1}><GripVertical size={14} /></span>
             </span>
         </div>
     );

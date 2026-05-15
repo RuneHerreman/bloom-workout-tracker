@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import "../../assets/css/templates.css";
 import { getTemplates, getTemplate, createTemplate, deleteTemplate } from "./api.ts";
 import type { WorkoutTemplate, TemplateExercise } from "./api.ts";
@@ -14,9 +15,12 @@ import AddExerciseButton from "./components/AddExerciseButton.tsx";
 import ExerciseLibrary from "./components/ExerciseLibrary.tsx";
 
 const TemplatePage = () => {
+    const location = useLocation();
     const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
     const [exercises, setExercises] = useState<Record<string, Exercise>>({});
     const [selectedId, setSelectedId] = useState<string | null>(null);
+
+    useEffect(() => { setSelectedId(null); }, [location.key]);
     const [loading, setLoading] = useState(true);
     const [addExerciseOpen, setAddExerciseOpen] = useState(false);
     const [creating, setCreating] = useState(false);

@@ -28,6 +28,8 @@ const LogbookPage = () => {
     const [logs, setLogs] = useState<LoggedWorkout[]>([]);
     const [exercises, setExercises] = useState<Record<string, Exercise>>({});
     const [selectedId, setSelectedId] = useState<string | null>(null);
+
+    useEffect(() => { setSelectedId(null); }, [location.key]);
     const [loading, setLoading] = useState(true);
     const [startOpen, setStartOpen] = useState(() => !!(location.state as { openStart?: boolean } | null)?.openStart);
 

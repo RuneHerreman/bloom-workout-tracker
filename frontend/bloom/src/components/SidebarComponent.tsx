@@ -1,6 +1,5 @@
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
 import "../assets/css/sidebar.css";
 import { getMe } from "../features/auth/api.ts";
 import type { User } from "../features/auth/api.ts";
@@ -18,12 +17,7 @@ function navClass({ isActive }: { isActive: boolean }) {
     return `sidebar-item${isActive ? " active" : ""}`;
 }
 
-interface SidebarProps {
-    isOpen: boolean;
-    onClose: () => void;
-}
-
-function SidebarComponent({ isOpen, onClose }: SidebarProps) {
+function SidebarComponent() {
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
@@ -31,34 +25,19 @@ function SidebarComponent({ isOpen, onClose }: SidebarProps) {
     }, []);
 
     return (
-        <aside className={`sidebar${isOpen ? " open" : ""}`}>
-            <div className="sidebar-header">
-                <NavLink to="/dashboard" className="sidebar-logo" onClick={onClose}>
-                    <img src="/media/bloom_logo.png" alt="Bloom"/>
-                </NavLink>
-                <button className="sidebar-close" onClick={onClose} aria-label="Close menu">
-                    <X size={18} />
-                </button>
-            </div>
+        <aside className="sidebar">
+            <NavLink to="/dashboard" className="sidebar-logo">
+                <img src="/media/bloom_logo.png" alt="Bloom"/>
+            </NavLink>
 
             <span className="sidebar-section-label">Pages</span>
-            <NavLink to="/dashboard" className={navClass} onClick={onClose}>
-                <GridIcon/> Dashboard
-            </NavLink>
-            <NavLink to="/templates" className={navClass} onClick={onClose}>
-                <GridIcon/> Templates
-            </NavLink>
-            <NavLink to="/logbook" className={navClass} onClick={onClose}>
-                <GridIcon/> Log Book
-            </NavLink>
+            <NavLink to="/dashboard" className={navClass}><GridIcon/> Dashboard</NavLink>
+            <NavLink to="/templates" className={navClass}><GridIcon/> Templates</NavLink>
+            <NavLink to="/logbook" className={navClass}><GridIcon/> Log Book</NavLink>
 
             <span className="sidebar-section-label">Tools</span>
-            <NavLink to="/tools/macro-calculator" className={navClass} onClick={onClose}>
-                <GridIcon/> Macro Calculator
-            </NavLink>
-            <NavLink to="/tools/one-rep-max" className={navClass} onClick={onClose}>
-                <GridIcon/> 1RM Calculator
-            </NavLink>
+            <NavLink to="/tools/macro-calculator" className={navClass}><GridIcon/> Macro Calculator</NavLink>
+            <NavLink to="/tools/one-rep-max" className={navClass}><GridIcon/> 1RM Calculator</NavLink>
 
             <div className="sidebar-user">
                 <div className="sidebar-avatar"/>

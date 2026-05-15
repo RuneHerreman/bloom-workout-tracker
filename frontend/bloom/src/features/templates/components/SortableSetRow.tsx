@@ -1,5 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, X } from "lucide-react";
 import type { PlannedSet } from "../../../assets/js/data/apiTypes.ts";
 import DurationInput from "./DurationInput.tsx";
 
@@ -8,11 +9,12 @@ export interface RowItem {
     set: PlannedSet;
 }
 
-function SortableSetRow({ item, index, type, onSetChange }: {
+function SortableSetRow({ item, index, type, onSetChange, onDelete }: {
     item: RowItem;
     index: number;
     type: string | undefined;
     onSetChange: (id: string, set: PlannedSet) => void;
+    onDelete: (id: string) => void;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
 
@@ -60,7 +62,10 @@ function SortableSetRow({ item, index, type, onSetChange }: {
                     })}
                 />
             )}
-            <span className="set-drag-handle" {...attributes} {...listeners} tabIndex={-1}>⠿</span>
+            <span className="set-actions">
+                <button className="set-delete" tabIndex={-1} onClick={() => onDelete(item.id)}><X size={12} /></button>
+                <span className="set-drag-handle" {...attributes} {...listeners} tabIndex={-1}><GripVertical size={14} /></span>
+            </span>
         </div>
     );
 }
