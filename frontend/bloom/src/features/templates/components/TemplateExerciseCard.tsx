@@ -105,7 +105,7 @@ function SortableSetRow({ item, index, type, onSetChange }: {
                     />
                 </>
             )}
-            <span className="set-drag-handle" {...attributes} {...listeners}>⠿</span>
+            <span className="set-drag-handle" {...attributes} {...listeners} tabIndex={-1}>⠿</span>
         </div>
     );
 }

@@ -396,3 +396,23 @@
     font-size: 3rem;
     font-weight: 500;
 }
+
+@media(max-width: 1000px) {
+    .template-detail {
+        padding: 2rem;
+    }
+
+    .actions-row {
+        flex-direction: column;
+        width: fit-content;
+    }
+
+    .template-sidebar {
+        width: 14rem;
+    }
+
+    .template-filter-chips {
+        flex-wrap: wrap;
+    }
+}
+
