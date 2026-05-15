@@ -1,19 +1,22 @@
 import { useState } from "react";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import type { TemplateExercise, PlannedSet } from "../../../assets/js/data/apiTypes.ts";
 import type { Exercise } from "../../exercises/api.ts";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import SortableSetRow, { type RowItem } from "./SortableSetRow.tsx";
-import {PlusIcon} from "lucide-react";
+import { PlusIcon, GripVertical } from "lucide-react";
 
 interface TemplateExerciseCardProps {
+    id: string;
     exercise: TemplateExercise;
     exerciseInfo?: Exercise;
     onSetsChange?: (exerciseId: string, sets: PlannedSet[]) => void;
 }
 
-function TemplateExerciseCard({ exercise, exerciseInfo, onSetsChange }: TemplateExerciseCardProps) {
+function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange }: TemplateExerciseCardProps) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
     const [items, setItems] = useState<RowItem[]>(() =>
         [...exercise.sets]
             .sort((a, b) => a.order - b.order)
@@ -53,12 +56,17 @@ function TemplateExerciseCard({ exercise, exerciseInfo, onSetsChange }: Template
     }
 
     return (
-        <div className="template-exercise-card">
+        <div
+            ref={setNodeRef}
+            className="template-exercise-card"
+            style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+        >
             <header>
                 <div>
                     <h3 className="detail-exercise-name">{exerciseInfo?.name}</h3>
                     <p className="detail-exercise-info">{exerciseInfo?.type} · {exerciseInfo?.targetMuscles.join(" - ")}</p>
                 </div>
+                <span className="exercise-drag-handle" {...attributes} {...listeners} tabIndex={-1}><GripVertical size={16} /></span>
             </header>
             <section className={bodyClass}>
                 <div className="set-grid-header">

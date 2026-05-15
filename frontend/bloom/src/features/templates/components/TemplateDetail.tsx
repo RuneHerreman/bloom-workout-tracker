@@ -1,4 +1,6 @@
 import { useState, forwardRef, useImperativeHandle } from "react";
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import type { WorkoutTemplate } from "../api.ts";
 import { updateTemplate } from "../api.ts";
 import type { TemplateExercise, PlannedSet } from "../../../assets/js/data/apiTypes.ts";
@@ -46,6 +48,16 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
         );
     }
 
+    function handleExerciseDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        setTemplateExercises(prev => {
+            const oldIndex = prev.findIndex(ex => ex.exerciseId === active.id);
+            const newIndex = prev.findIndex(ex => ex.exerciseId === over.id);
+            return arrayMove(prev, oldIndex, newIndex).map((ex, i) => ({ ...ex, order: i + 1 }));
+        });
+    }
+
     const normalize = (exercises: TemplateExercise[]) =>
         [...exercises].sort((a, b) => a.order - b.order).map(ex => ({
             ...ex,
@@ -81,14 +93,19 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
                 </div>
             </div>
 
-            {templateExercises.map((exercise) => (
-                <TemplateExerciseCard
-                    key={`${template.id}-${exercise.exerciseId}`}
-                    exercise={exercise}
-                    exerciseInfo={exercises[exercise.exerciseId]}
-                    onSetsChange={handleSetsChange}
-                />
-            ))}
+            <DndContext collisionDetection={closestCenter} onDragEnd={handleExerciseDragEnd}>
+                <SortableContext items={templateExercises.map(ex => ex.exerciseId)} strategy={verticalListSortingStrategy}>
+                    {templateExercises.map((exercise) => (
+                        <TemplateExerciseCard
+                            key={`${template.id}-${exercise.exerciseId}`}
+                            id={exercise.exerciseId}
+                            exercise={exercise}
+                            exerciseInfo={exercises[exercise.exerciseId]}
+                            onSetsChange={handleSetsChange}
+                        />
+                    ))}
+                </SortableContext>
+            </DndContext>
         </div>
     );
 });

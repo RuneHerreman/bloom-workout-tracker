@@ -431,6 +431,22 @@
     border-right: none;
 }
 
+.exercise-drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-muted);
+    opacity: 0;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    transition: opacity 0.12s;
+    padding: 0.25rem;
+}
+
+.template-exercise-card:hover .exercise-drag-handle { opacity: 0.5; }
+.exercise-drag-handle:active { cursor: grabbing; }
+
 .set-drag-handle {
     display: flex;
     align-items: center;
