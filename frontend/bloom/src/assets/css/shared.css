@@ -15,12 +15,12 @@
     /*--border: rgb(10 51 31 / 0.75);*/
     /*--border: oklch(0.89 0.012 90);*/
     --grey-light: oklch(0.89 0.012 90);
-;
+
     --grey:            #CCCCCC;
 
     --surface-less-light: #f5f3ed;
     --surface-light: #fcfaf4;
-    --surface-lighter: #fffefb;
+    --surface-lighter: #ffffff;
 
     /* Text */
     --ink:             #333333;
@@ -55,7 +55,7 @@
 }
 
 .overlay-panel {
-    background: oklch(0.998 0.004 95);
+    background: var(--surface-lighter);
     border: 0.0625rem solid var(--border);
     border-radius: var(--widget-border-radius);
     display: flex;
@@ -92,7 +92,7 @@
     color: var(--ink-muted);
     padding: 0.25rem;
     border-radius: 0.25rem;
-    transition: color 0.12s, background 0.12s;
+    transition: var(--transition);
 }
 
 .overlay-close:hover {
@@ -718,8 +718,8 @@
     }
 
     .panel-detail {
+        padding: 1.75rem;
         display: none;
-        padding: 1.25rem 1rem;
     }
 
     .panel-body.has-selection .feature-sidebar {

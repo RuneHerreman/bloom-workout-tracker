@@ -44,7 +44,7 @@
 
 /* ── General widget (reusable card shell) ────────────────────────────────────── */
 .general-widget {
-    background: oklch(0.998 0.004 95);
+    background: white;
     border: 0.0625rem solid var(--border);
     border-radius: var(--widget-border-radius);
     display: flex;
@@ -458,6 +458,10 @@
 @media (max-width: 768px) {
     .dash-volume {
         min-height: 26rem;
+    }
+
+    .dashboard-body {
+        padding: 1rem;
     }
 }
 

@@ -17,7 +17,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                 <div className="mobile-header">
                     <button
                         className="burger-btn"
-                        onClick={() => setSidebarOpen(true)}
+                        onClick={() => setSidebarOpen(v => !v)}
                         aria-label="Open menu"
                     >
                         <span /><span /><span />

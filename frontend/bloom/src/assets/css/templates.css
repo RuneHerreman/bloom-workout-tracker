@@ -197,10 +197,6 @@
 /* ── Responsive ──────────────────────────────────────────────────────────────── */
 
 @media(max-width: 1000px) {
-    .panel-detail {
-        padding: 2rem;
-    }
-
     .actions-row {
         flex-direction: column;
         width: fit-content;
