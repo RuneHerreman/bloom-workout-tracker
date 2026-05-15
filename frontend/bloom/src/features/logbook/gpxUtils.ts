@@ -1,3 +1,9 @@
+export interface GpxTrackPoint {
+    lat: number;
+    lon: number;
+    ele?: number;
+}
+
 export interface GpxStats {
     distanceKm: number;
     elevationGainM: number;
@@ -58,6 +64,23 @@ export function parseGpx(xml: string): GpxStats | null {
         return { distanceKm: distanceM / 1000, elevationGainM, durationMs };
     } catch {
         return null;
+    }
+}
+
+export function parseGpxTrackPoints(xml: string): GpxTrackPoint[] {
+    try {
+        const doc = new DOMParser().parseFromString(xml, "application/xml");
+        if (doc.querySelector("parsererror")) return [];
+        return Array.from(doc.querySelectorAll("trkpt")).flatMap(pt => {
+            const lat = parseFloat(pt.getAttribute("lat") ?? "");
+            const lon = parseFloat(pt.getAttribute("lon") ?? "");
+            if (isNaN(lat) || isNaN(lon)) return [];
+            const eleText = pt.querySelector("ele")?.textContent;
+            const ele = eleText != null ? parseFloat(eleText) : undefined;
+            return [{ lat, lon, ...(ele !== undefined && !isNaN(ele) ? { ele } : {}) }];
+        });
+    } catch {
+        return [];
     }
 }
 

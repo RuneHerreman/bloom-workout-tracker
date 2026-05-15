@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -6,7 +7,8 @@ import type { LoggedExercise, LoggedSet } from "../api.ts";
 import type { Exercise } from "../../exercises/api.ts";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import LogSortableSetRow, { type LogRowItem } from "./LogSortableSetRow.tsx";
-import { parseGpx, formatDuration, type GpxStats } from "../gpxUtils.ts";
+import { parseGpx, parseGpxTrackPoints, formatDuration, type GpxStats } from "../gpxUtils.ts";
+import GpxMapOverlay from "./GpxMapOverlay.tsx";
 import { PlusIcon, GripVertical, X, MapPin } from "lucide-react";
 
 interface LogExerciseCardProps {
@@ -24,6 +26,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
     const [gpxStats, setGpxStats] = useState<GpxStats | null>(() =>
         exercise.gpxData ? parseGpx(exercise.gpxData) : null
     );
+    const [mapOpen, setMapOpen] = useState(false);
 
     const [items, setItems] = useState<LogRowItem[]>(() =>
         [...exercise.sets]
@@ -137,13 +140,23 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
                 <Button text="Add set" style="modern" icon={<PlusIcon size={15} />} onClick={handleAddSet} />
                 {isCardio && (
                     gpxStats ? (
-                        <div className="gpx-stats">
-                            <MapPin size={12} className="gpx-stats-icon" />
-                            <span>{gpxStats.distanceKm.toFixed(2)} km</span>
-                            {gpxStats.elevationGainM > 0 && <span>+{Math.round(gpxStats.elevationGainM)} m</span>}
-                            {gpxStats.durationMs > 0 && <span>{formatDuration(gpxStats.durationMs)}</span>}
-                            <button className="gpx-remove" onClick={handleRemoveGpx} aria-label="Remove GPX"><X size={11} /></button>
-                        </div>
+                        <>
+                            {mapOpen && exercise.gpxData && createPortal(
+                                <GpxMapOverlay
+                                    points={parseGpxTrackPoints(exercise.gpxData)}
+                                    stats={gpxStats}
+                                    onClose={() => setMapOpen(false)}
+                                />,
+                                document.body
+                            )}
+                            <div className="gpx-stats gpx-stats-clickable" onClick={() => setMapOpen(true)}>
+                                <MapPin size={12} className="gpx-stats-icon" />
+                                <span>{gpxStats.distanceKm.toFixed(2)} km</span>
+                                {gpxStats.elevationGainM > 0 && <span>+{Math.round(gpxStats.elevationGainM)} m</span>}
+                                {gpxStats.durationMs > 0 && <span>{formatDuration(gpxStats.durationMs)}</span>}
+                                <button className="gpx-remove" onClick={e => { e.stopPropagation(); handleRemoveGpx(); }} aria-label="Remove GPX"><X size={11} /></button>
+                            </div>
+                        </>
                     ) : (
                         <>
                             <input ref={fileInputRef} type="file" accept=".gpx" style={{ display: "none" }} onChange={handleGpxFile} />

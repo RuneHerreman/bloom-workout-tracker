@@ -424,6 +424,9 @@
     padding: 0 0.55rem;
 }
 
+.gpx-stats-clickable { cursor: pointer; transition: background var(--transition), border-color var(--transition); }
+.gpx-stats-clickable:hover { background: var(--surface-less-light); border-color: var(--primary-light); }
+
 .gpx-stats-icon { color: var(--primary-light); flex-shrink: 0; }
 
 .gpx-stats span {

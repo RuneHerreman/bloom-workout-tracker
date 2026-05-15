@@ -126,6 +126,60 @@
 
 .start-session-blank:hover { background: var(--surface-light); color: var(--ink); }
 
+/* ── GPX map overlay ─────────────────────────────────────────────────────────── */
+
+.gpx-map-panel {
+    background: white;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--widget-border-radius);
+    display: flex;
+    flex-direction: column;
+    width: 52rem;
+    max-width: 90vw;
+    max-height: 85vh;
+    box-shadow: 0 8px 32px rgb(0 0 0 / 0.12);
+    overflow: hidden;
+}
+
+.gpx-map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 0.0625rem solid var(--border);
+    flex-shrink: 0;
+}
+
+.gpx-map-title {
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+}
+
+.gpx-map-container {
+    overflow: hidden;
+}
+
+.gpx-map-stats {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.875rem 1.25rem;
+    border-top: 0.0625rem solid var(--border);
+    flex-shrink: 0;
+}
+
+.gpx-map-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--ink);
+}
+
+.gpx-map-stat svg { color: var(--primary-light); flex-shrink: 0; }
+
 /* ── Set grid columns ────────────────────────────────────────────────────────── */
 
 .log-body.is-strength .set-grid-header,
