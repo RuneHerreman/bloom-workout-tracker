@@ -14,6 +14,7 @@ interface LogSideBarProps {
 
 function LogSideBar({ logs, selectedId, loading, onSelect }: LogSideBarProps) {
     const [activeFilters, setActiveFilters] = useState<Set<LogFilterType>>(new Set());
+    const [query, setQuery] = useState("");
 
     function toggleFilter(type: LogFilterType) {
         setActiveFilters(prev => {
@@ -23,9 +24,11 @@ function LogSideBar({ logs, selectedId, loading, onSelect }: LogSideBarProps) {
         });
     }
 
-    const visible = activeFilters.size === 0
-        ? logs
-        : logs.filter(l => [...activeFilters].some(f => matchesLogFilter(l, f)));
+    const q = query.trim().toLowerCase();
+    const visible = logs.filter(l =>
+        (q === "" || l.name.toLowerCase().includes(q)) &&
+        (activeFilters.size === 0 || [...activeFilters].some(f => matchesLogFilter(l, f)))
+    );
 
     return (
         <aside className="feature-sidebar">
@@ -33,6 +36,14 @@ function LogSideBar({ logs, selectedId, loading, onSelect }: LogSideBarProps) {
                 <div className="feature-sidebar-title-row">
                     <span className="feature-sidebar-title">Your logs</span>
                     {!loading && <span className="feature-sidebar-count">{logs.length}</span>}
+                </div>
+                <div className="exercise-library-search-wrap">
+                    <input
+                        className="exercise-library-search"
+                        placeholder="Search logs…"
+                        value={query}
+                        onChange={e => setQuery(e.target.value)}
+                    />
                 </div>
                 <div className="filter-chips">
                     {FILTERS.map(f => (
