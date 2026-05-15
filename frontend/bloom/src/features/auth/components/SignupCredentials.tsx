@@ -16,7 +16,7 @@ function SignupCredentials() {
     const [height, setHeight] = useState(0);
     const [weight, setWeight] = useState(0);
     const [activeDays, setActiveDays] = useState(0);
-    const { setToken } = useAuth();
+    const { markAuthenticated } = useAuth();
     const navigate = useNavigate();
 
     const checkPasswordMatch = () => {
@@ -39,8 +39,8 @@ function SignupCredentials() {
         e.preventDefault();
         if (!checkPasswordMatch()) return;
         try {
-            const token = await register(email, password, height, weight, username, firstName, lastName, activeDays);
-            setToken(token);
+            await register(email, password, height, weight, username, firstName, lastName, activeDays);
+            markAuthenticated();
             navigate("/dashboard");
         } catch (error) {
             const apiError = error as ApiError;

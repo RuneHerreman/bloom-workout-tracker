@@ -8,14 +8,14 @@ function LoginCredentials() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
-    const { setToken } = useAuth();
+    const { markAuthenticated } = useAuth();
     const navigate = useNavigate();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const token = await login(email, password);
-            setToken(token);
+            await login(email, password);
+            markAuthenticated();
             navigate("/dashboard");
         } catch (err) {
             const apiError = err as ApiError;

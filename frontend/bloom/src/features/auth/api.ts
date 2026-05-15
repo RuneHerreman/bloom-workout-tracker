@@ -3,9 +3,8 @@ import type { User, UpdateUserInfoBody, UpdateTechnicalPointsBody } from "../../
 
 export type { User };
 
-export async function login(email: string, password: string): Promise<string> {
-    const response = await fetchFromServer<{ token: string }>("users/login", "POST", { email, password });
-    return response.token;
+export async function login(email: string, password: string): Promise<void> {
+    await fetchFromServer<void>("users/login", "POST", { email, password });
 }
 
 export async function register(
@@ -17,11 +16,14 @@ export async function register(
     firstName: string,
     lastName: string,
     activeDays: number
-): Promise<string> {
-    const response = await fetchFromServer<{ token: string }>("users/register", "POST", {
+): Promise<void> {
+    await fetchFromServer<void>("users/register", "POST", {
         email, password, height, weight, username, firstName, lastName, activeDays,
     });
-    return response.token;
+}
+
+export async function logout(): Promise<void> {
+    await fetchFromServer<void>("users/logout", "POST");
 }
 
 export async function getMe(): Promise<User> {

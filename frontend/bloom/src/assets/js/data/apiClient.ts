@@ -1,4 +1,5 @@
-export const API_BASE_URL: string = "http://localhost:8080/api/";
+export const API_BASE_URL: string =
+    import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api/";
 
 export interface ApiError {
     failure: true;
@@ -7,12 +8,11 @@ export interface ApiError {
 }
 
 function constructOptions(httpVerb: string, requestBody?: unknown): RequestInit {
-    const token = localStorage.getItem("jwt");
     const options: RequestInit = {
         method: httpVerb,
+        credentials: "include",
         headers: {
             "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
     };
 
@@ -30,6 +30,11 @@ export async function fetchFromServer<T>(
 ): Promise<T> {
     const options = constructOptions(httpVerb, requestBody);
     const response = await fetch(`${API_BASE_URL}${path}`, options);
+
+    if (response.status === 204) {
+        return undefined as T;
+    }
+
     const json = await response.json();
 
     if (!response.ok || json.failure) {
