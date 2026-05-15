@@ -19,7 +19,7 @@ function TemplateSidebarCard({ template, colorClass, isActive, onSelect }: Templ
             <div className="template-card-bottom">
                 <span className={`template-card-type-badge ${colorClass}`}>{TYPE_LABELS[colorClass]}</span>
                 <span className="template-card-meta">
-                    {exerciseCount} ex · {setCount} sets
+                    {exerciseCount} ex · {setCount} set{setCount !== 1 ? "s" : ""}
                 </span>
             </div>
         </div>

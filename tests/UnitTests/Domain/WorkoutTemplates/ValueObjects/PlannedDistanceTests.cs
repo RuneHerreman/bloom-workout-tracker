@@ -9,7 +9,7 @@ public sealed class PlannedDistanceTests
     {
         PlannedDistance distance = PlannedDistance.Create(5.123m, PlannedDistanceUnit.Km);
 
-        Assert.Equal(5.12m, distance.Value);
+        Assert.Equal(5.123m, distance.Value);
         Assert.Equal(PlannedDistanceUnit.Km, distance.Unit);
     }
 
