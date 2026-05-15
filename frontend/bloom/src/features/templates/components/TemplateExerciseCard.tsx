@@ -48,9 +48,12 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
     const bodyClass = `detail-body ${exerciseType === "Cardio" ? "is-cardio" : "is-strength"}`;
 
     function handleAddSet() {
-        const newSet: PlannedSet = exerciseType === "Cardio"
-            ? { type: "Cardio", order: items.length + 1, reps: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
-            : { type: exerciseType, order: items.length + 1, reps: 10, duration: null, distance: null, distanceUnit: null };
+        const last = items[items.length - 1]?.set;
+        const newSet: PlannedSet = last
+            ? { ...last, order: items.length + 1 }
+            : exerciseType === "Cardio"
+                ? { type: "Cardio", order: items.length + 1, reps: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
+                : { type: exerciseType, order: items.length + 1, reps: 10, duration: null, distance: null, distanceUnit: null };
         const updated = [...items, { id: crypto.randomUUID(), set: newSet }];
         setItems(updated);
         pushChange(updated);

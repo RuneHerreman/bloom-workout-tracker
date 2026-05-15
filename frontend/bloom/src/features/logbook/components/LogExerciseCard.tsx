@@ -56,9 +56,12 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete }:
     const bodyClass = `log-body ${isCardio ? "is-cardio" : "is-strength"}`;
 
     function handleAddSet() {
-        const newSet: LoggedSet = isCardio
-            ? { type: "Cardio", order: items.length + 1, reps: null, weight: null, weightUnit: null, rir: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
-            : { type: exerciseType, order: items.length + 1, reps: 10, weight: 60, weightUnit: "kg", rir: 2, duration: null, distance: null, distanceUnit: null };
+        const last = items[items.length - 1]?.set;
+        const newSet: LoggedSet = last
+            ? { ...last, order: items.length + 1 }
+            : isCardio
+                ? { type: "Cardio", order: items.length + 1, reps: null, weight: null, weightUnit: null, rir: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
+                : { type: exerciseType, order: items.length + 1, reps: 10, weight: 60, weightUnit: "kg", rir: 2, duration: null, distance: null, distanceUnit: null };
         const updated = [...items, { id: crypto.randomUUID(), set: newSet }];
         setItems(updated);
         pushChange(updated);
