@@ -85,7 +85,6 @@ const TemplatePage = () => {
                     selectedId={selectedId}
                     loading={loading}
                     onSelect={setSelectedId}
-                    onDelete={handleDelete}
                 />
                 <div className="template-detail">
                     {selectedTemplate ? (<> <TemplateDetail ref={detailRef} key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)

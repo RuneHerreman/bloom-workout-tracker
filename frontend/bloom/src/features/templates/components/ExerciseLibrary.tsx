@@ -7,7 +7,7 @@ const TYPE_LABELS: Record<string, string> = { Strength: "Strength", Cardio: "Car
 
 function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSelect: (exercise: Exercise) => void }) {
     const [search, setSearch] = useState("");
-    const [activeMusclces, setActiveMuscles] = useState<Set<string>>(new Set());
+    const [activeMuscles, setActiveMuscles] = useState<Set<string>>(new Set());
 
     const allMuscles = useMemo(() =>
         [...new Set(exercises.flatMap(e => e.targetMuscles))].sort(),
@@ -25,12 +25,12 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
         const q = search.trim().toLowerCase();
         return exercises.filter(e => {
             const matchesSearch = !q || e.name.toLowerCase().includes(q);
-            const matchesMuscle = activeMusclces.size === 0 || e.targetMuscles.some(m => activeMusclces.has(m));
+            const matchesMuscle = activeMuscles.size === 0 || e.targetMuscles.some(m => activeMuscles.has(m));
             return matchesSearch && matchesMuscle;
         });
-    }, [exercises, search, activeMusclces]);
+    }, [exercises, search, activeMuscles]);
 
-    const hasFilters = search.trim() !== "" || activeMusclces.size > 0;
+    const hasFilters = search.trim() !== "" || activeMuscles.size > 0;
 
     const clearAll = () => {
         setSearch("");
@@ -55,7 +55,7 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
                 {allMuscles.map(m => (
                     <button
                         key={m}
-                        className={`exercise-library-chip${activeMusclces.has(m) ? " active" : ""}`}
+                        className={`exercise-library-chip${activeMuscles.has(m) ? " active" : ""}`}
                         onClick={() => toggleMuscle(m)}
                     >
                         {m}

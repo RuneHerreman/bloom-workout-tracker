@@ -6,9 +6,8 @@ function DurationInput({ value, onChange }: { value: string | null; onChange: (v
     function handleChange(part: "h" | "m" | "s", raw: string) {
         const n = raw === "" ? 0 : Math.max(0, Number(raw));
         const clamped = part === "h" ? Math.min(n, 99) : Math.min(n, 59);
-        const next = part === "h" ? formatDuration(clamped, m, s)
-                   : part === "m" ? formatDuration(h, clamped, s)
-                   :                formatDuration(h, m, clamped);
+        const updated = { h, m, s, [part]: clamped };
+        const next = formatDuration(updated.h, updated.m, updated.s);
         onChange(next === "00:00:00" ? null : next);
     }
 

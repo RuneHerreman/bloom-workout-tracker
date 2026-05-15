@@ -38,19 +38,19 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
         pushChange(reordered);
     }
 
-    function handleSetChange(id: string, updatedSet: PlannedSet) {
-        const updated = items.map(item => item.id === id ? { ...item, set: updatedSet } : item);
+    function handleSetChange(itemId: string, updatedSet: PlannedSet) {
+        const updated = items.map(item => item.id === itemId ? { ...item, set: updatedSet } : item);
         setItems(updated);
         pushChange(updated);
     }
 
-    const isCardio = exerciseInfo?.type === "Cardio";
-    const bodyClass = `detail-body ${isCardio ? "is-cardio" : "is-strength"}`;
+    const exerciseType = exerciseInfo?.type ?? "Strength";
+    const bodyClass = `detail-body ${exerciseType === "Cardio" ? "is-cardio" : "is-strength"}`;
 
     function handleAddSet() {
-        const newSet: PlannedSet = isCardio
+        const newSet: PlannedSet = exerciseType === "Cardio"
             ? { type: "Cardio", order: items.length + 1, reps: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
-            : { type: exerciseInfo?.type ?? "Strength", order: items.length + 1, reps: 10, duration: null, distance: null, distanceUnit: null };
+            : { type: exerciseType, order: items.length + 1, reps: 10, duration: null, distance: null, distanceUnit: null };
         const updated = [...items, { id: crypto.randomUUID(), set: newSet }];
         setItems(updated);
         pushChange(updated);
@@ -75,7 +75,7 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
             <section className={bodyClass}>
                 <div className="set-grid-header">
                     <p>Set</p>
-                    {isCardio ? (
+                    {exerciseType === "Cardio" ? (
                         <><p>Distance</p><p>Duration</p></>
                     ) : (
                         <p>Reps</p>
@@ -89,7 +89,7 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
                                 key={item.id}
                                 item={item}
                                 index={index}
-                                type={exerciseInfo?.type}
+                                type={exerciseType}
                                 onSetChange={handleSetChange}
                             />
                         ))}

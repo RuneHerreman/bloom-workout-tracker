@@ -1,10 +1,11 @@
 import { useState, forwardRef, useImperativeHandle } from "react";
-import { DndContext, closestCenter, DragOverlay, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { DndContext, closestCenter, DragOverlay } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { WorkoutTemplate } from "../api.ts";
 import { updateTemplate } from "../api.ts";
 import type { TemplateExercise, PlannedSet } from "../../../assets/js/data/apiTypes.ts";
 import type { Exercise } from "../../exercises/api.ts";
+import { useExerciseDnd } from "../hooks/useExerciseDnd.ts";
 import TemplateExerciseCard from "./TemplateExerciseCard.tsx";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import { Save, Trash2 } from "lucide-react";
@@ -28,6 +29,13 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
         [...template.exercises].sort((a, b) => a.order - b.order)
     );
     const [name, setName] = useState(template.name);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const { activeExercise, onDragStart, onDragEnd, onDragCancel } = useExerciseDnd(
+        templateExercises,
+        reordered => setTemplateExercises(reordered)
+    );
 
     useImperativeHandle(ref, () => ({
         addExercise(exerciseId: string) {
@@ -54,30 +62,14 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
         );
     }
 
-    function handleExerciseDragEnd(event: DragEndEvent) {
-        const { active, over } = event;
-        if (!over || active.id === over.id) return;
-        setTemplateExercises(prev => {
-            const oldIndex = prev.findIndex(ex => ex.exerciseId === active.id);
-            const newIndex = prev.findIndex(ex => ex.exerciseId === over.id);
-            return arrayMove(prev, oldIndex, newIndex).map((ex, i) => ({ ...ex, order: i + 1 }));
-        });
-    }
-
-    const normalize = (exercises: TemplateExercise[]) =>
-        [...exercises].sort((a, b) => a.order - b.order).map(ex => ({
+    const normalize = (exs: TemplateExercise[]) =>
+        [...exs].sort((a, b) => a.order - b.order).map(ex => ({
             ...ex,
             sets: [...ex.sets].sort((a, b) => a.order - b.order),
         }));
 
     const hasChanges = name !== template.name ||
         JSON.stringify(normalize(templateExercises)) !== JSON.stringify(normalize(template.exercises));
-
-    const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
-    const activeExercise = templateExercises.find(ex => ex.exerciseId === activeExerciseId) ?? null;
-
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     async function handleSave() {
         setSaving(true);
@@ -107,12 +99,7 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
                 </div>
             </div>
 
-            <DndContext
-                collisionDetection={closestCenter}
-                onDragStart={(e: DragStartEvent) => setActiveExerciseId(e.active.id as string)}
-                onDragEnd={event => { handleExerciseDragEnd(event); setActiveExerciseId(null); }}
-                onDragCancel={() => setActiveExerciseId(null)}
-            >
+            <DndContext collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={onDragCancel}>
                 <SortableContext items={templateExercises.map(ex => ex.exerciseId)} strategy={verticalListSortingStrategy}>
                     {templateExercises.map((exercise) => (
                         <TemplateExerciseCard

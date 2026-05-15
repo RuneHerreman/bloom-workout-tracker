@@ -10,7 +10,6 @@ interface TemplateSideBarProps {
     selectedId: string | null;
     loading: boolean;
     onSelect: (id: string) => void;
-    onDelete: (id: string) => void;
 }
 
 function TemplateSideBar({ templates, selectedId, loading, onSelect }: TemplateSideBarProps) {
