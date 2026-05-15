@@ -97,7 +97,7 @@ a {
 }
 
 .button-component.grey:hover {
-    background: var(--surface-light);
+    background: var(--surface-less-light);
     transition: 0.15s ease-in-out;
 }
 

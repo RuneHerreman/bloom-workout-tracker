@@ -74,12 +74,16 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
         JSON.stringify(normalize(templateExercises)) !== JSON.stringify(normalize(template.exercises));
 
     const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     async function handleSave() {
         setSaving(true);
+        setError(null);
         try {
             await updateTemplate(template.id, name, templateExercises);
             onSave(template.id, name, templateExercises);
+        } catch (e) {
+            setError(e instanceof Error ? e.message : "Failed to save template");
         } finally {
             setSaving(false);
         }
@@ -87,6 +91,7 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
 
     return (
         <div className="template-detail-view">
+            {error && <div className="error-message">{error}</div>}
             <div className="template-detail-header">
                 <input
                     className="template-title-input"
