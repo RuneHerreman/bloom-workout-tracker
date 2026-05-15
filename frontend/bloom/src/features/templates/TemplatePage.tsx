@@ -66,7 +66,7 @@ const TemplatePage = () => {
     };
 
     return (
-        <div className="templates-page">
+        <div className="panel-page">
             <HeaderComponent title="Templates" subtitle="Library" action={<Button text={"New template"} icon={<PlusIcon size={15} />} style={"green"} onClick={handleNewTemplate} disabled={creating} />}/>
             {addExerciseOpen && (
                 <Overlay title="Exercise library" subtitle="Add exercise" onClose={() => setAddExerciseOpen(false)}>
@@ -79,17 +79,17 @@ const TemplatePage = () => {
                     />
                 </Overlay>
             )}
-            <div className="templates-body">
+            <div className="panel-body">
                 <TemplateSideBar
                     templates={templates}
                     selectedId={selectedId}
                     loading={loading}
                     onSelect={setSelectedId}
                 />
-                <div className="template-detail">
+                <div className="panel-detail">
                     {selectedTemplate ? (<> <TemplateDetail ref={detailRef} key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)
                         : (
-                            <div className="template-detail-empty">
+                            <div className="panel-empty">
                                 <p>Select a template to see details</p>
                             </div>
                         )

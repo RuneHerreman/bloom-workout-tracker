@@ -68,7 +68,7 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
                     <p className="exercise-library-empty">No exercises found</p>
                 ) : filtered.map(e => (
                     <li key={e.id} className="exercise-library-row" onClick={() => onSelect(e)}>
-                        <span className={`template-card-type-badge ${e.type.toLowerCase()}`}>
+                        <span className={`type-badge ${e.type.toLowerCase()}`}>
                             {TYPE_LABELS[e.type] ?? e.type}
                         </span>
                         <div>

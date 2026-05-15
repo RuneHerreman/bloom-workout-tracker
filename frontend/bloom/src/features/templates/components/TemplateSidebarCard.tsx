@@ -14,11 +14,11 @@ function TemplateSidebarCard({ template, colorClass, isActive, onSelect }: Templ
     const setCount = template.exercises.reduce((n, ex) => n + ex.sets.length, 0);
 
     return (
-        <div className={`template-card ${colorClass}${isActive ? " active" : ""}`} onClick={onSelect}>
-            <p className="template-card-name">{template.name}</p>
-            <div className="template-card-bottom">
-                <span className={`template-card-type-badge ${colorClass}`}>{TYPE_LABELS[colorClass]}</span>
-                <span className="template-card-meta">
+        <div className={`sidebar-card ${colorClass}${isActive ? " active" : ""}`} onClick={onSelect}>
+            <p className="sidebar-card-name">{template.name}</p>
+            <div className="sidebar-card-bottom">
+                <span className={`type-badge ${colorClass}`}>{TYPE_LABELS[colorClass]}</span>
+                <span className="sidebar-card-meta">
                     {exerciseCount} ex · {setCount} set{setCount !== 1 ? "s" : ""}
                 </span>
             </div>
