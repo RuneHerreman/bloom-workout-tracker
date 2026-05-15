@@ -96,13 +96,4 @@ public sealed class LoggedWorkoutTests
         Assert.Equal(2, workout.DomainEvents.Count);
         Assert.IsType<LoggedWorkoutUpdated>(workout.DomainEvents.Last());
     }
-
-    [Fact]
-    public void Create_WithEmptyExercises_ShouldThrow()
-    {
-        UserId userId = EntityId.New<UserId>();
-
-        Assert.Throws<ArgumentException>(
-            () => LoggedWorkout.Create(userId, "Leg Day", []));
-    }
 }

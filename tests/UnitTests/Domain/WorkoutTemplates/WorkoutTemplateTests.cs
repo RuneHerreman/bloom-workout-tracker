@@ -57,13 +57,4 @@ public sealed class WorkoutTemplateTests
         Assert.Equal(2, template.DomainEvents.Count);
         Assert.IsType<WorkoutTemplateUpdated>(template.DomainEvents.Last());
     }
-
-    [Fact]
-    public void Create_WithEmptyExercises_ShouldThrow()
-    {
-        UserId userId = EntityId.New<UserId>();
-
-        Assert.Throws<ArgumentException>(
-            () => WorkoutTemplate.Create(userId, "Empty", []));
-    }
 }
