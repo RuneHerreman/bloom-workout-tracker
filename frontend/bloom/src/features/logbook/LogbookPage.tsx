@@ -11,7 +11,7 @@ import Button from "../../components/general/ButtonComponent.tsx";
 import LogSideBar from "./components/LogSideBar.tsx";
 import LogDetail from "./components/LogDetail.tsx";
 import StartSessionOverlay from "./components/StartSessionOverlay.tsx";
-import { Plus } from "lucide-react";
+import { Plus, ChevronLeft } from "lucide-react";
 
 function plannedToLogged(s: PlannedSet, order: number): LoggedSet {
     if (s.type === "Cardio") {
@@ -96,7 +96,7 @@ const LogbookPage = () => {
                 subtitle="History"
                 action={<Button text="Log Workout" style="green" icon={<Plus size={14} />} onClick={() => setStartOpen(true)} />}
             />
-            <div className="panel-body">
+            <div className={`panel-body${selectedId ? " has-selection" : ""}`}>
                 <LogSideBar
                     logs={logs}
                     selectedId={selectedId}
@@ -104,6 +104,9 @@ const LogbookPage = () => {
                     onSelect={setSelectedId}
                 />
                 <div className="panel-detail">
+                    <button className="panel-back-btn" onClick={() => setSelectedId(null)}>
+                        <ChevronLeft size={16} /> Logbook
+                    </button>
                     {selectedLog ? (
                         <LogDetail
                             key={selectedLog.id}

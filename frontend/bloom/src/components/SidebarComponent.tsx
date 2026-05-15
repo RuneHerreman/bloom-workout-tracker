@@ -33,9 +33,9 @@ function SidebarComponent({ isOpen, onClose }: SidebarProps) {
     return (
         <aside className={`sidebar${isOpen ? " open" : ""}`}>
             <div className="sidebar-header">
-                <div className="sidebar-logo">
+                <NavLink to="/dashboard" className="sidebar-logo" onClick={onClose}>
                     <img src="/media/bloom_logo.png" alt="Bloom"/>
-                </div>
+                </NavLink>
                 <button className="sidebar-close" onClick={onClose} aria-label="Close menu">
                     <X size={18} />
                 </button>

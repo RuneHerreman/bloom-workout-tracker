@@ -287,3 +287,20 @@
 .log-body.is-cardio .set-row {
     grid-template-columns: 3rem 1fr 1fr 2.75rem;
 }
+
+@media (max-width: 768px) {
+    .log-detail-header {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .log-detail-title-group {
+        width: 100%;
+    }
+
+    .actions-row {
+        flex-direction: row;
+        width: 100%;
+        justify-content: flex-start;
+    }
+}

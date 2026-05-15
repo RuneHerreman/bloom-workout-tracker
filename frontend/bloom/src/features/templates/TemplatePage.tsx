@@ -9,7 +9,7 @@ import TemplateDetail, { type TemplateDetailHandle } from "./components/Template
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
 import Button from "../../components/general/ButtonComponent.tsx";
 import Overlay from "../../components/general/OverlayComponent.tsx";
-import {PlusIcon} from "lucide-react";
+import { PlusIcon, ChevronLeft } from "lucide-react";
 import AddExerciseButton from "./components/AddExerciseButton.tsx";
 import ExerciseLibrary from "./components/ExerciseLibrary.tsx";
 
@@ -79,7 +79,7 @@ const TemplatePage = () => {
                     />
                 </Overlay>
             )}
-            <div className="panel-body">
+            <div className={`panel-body${selectedId ? " has-selection" : ""}`}>
                 <TemplateSideBar
                     templates={templates}
                     selectedId={selectedId}
@@ -87,6 +87,9 @@ const TemplatePage = () => {
                     onSelect={setSelectedId}
                 />
                 <div className="panel-detail">
+                    <button className="panel-back-btn" onClick={() => setSelectedId(null)}>
+                        <ChevronLeft size={16} /> Templates
+                    </button>
                     {selectedTemplate ? (<> <TemplateDetail ref={detailRef} key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)
                         : (
                             <div className="panel-empty">

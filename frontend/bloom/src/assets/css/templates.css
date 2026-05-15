@@ -214,3 +214,24 @@
         flex-wrap: wrap;
     }
 }
+
+@media (max-width: 768px) {
+    .feature-sidebar {
+        width: 100%;
+    }
+
+    .template-detail-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .template-title-input {
+        font-size: 1.75rem;
+    }
+
+    .actions-row {
+        flex-direction: row;
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
