@@ -6,16 +6,17 @@ import type { TemplateExercise, PlannedSet } from "../../../assets/js/data/apiTy
 import type { Exercise } from "../../exercises/api.ts";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import SortableSetRow, { type RowItem } from "./SortableSetRow.tsx";
-import { PlusIcon, GripVertical } from "lucide-react";
+import { PlusIcon, GripVertical, X } from "lucide-react";
 
 interface TemplateExerciseCardProps {
     id: string;
     exercise: TemplateExercise;
     exerciseInfo?: Exercise;
     onSetsChange?: (exerciseId: string, sets: PlannedSet[]) => void;
+    onDelete?: (exerciseId: string) => void;
 }
 
-function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange }: TemplateExerciseCardProps) {
+function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete }: TemplateExerciseCardProps) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
     const [items, setItems] = useState<RowItem[]>(() =>
         [...exercise.sets]
@@ -66,7 +67,10 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange }: Temp
                     <h3 className="detail-exercise-name">{exerciseInfo?.name}</h3>
                     <p className="detail-exercise-info">{exerciseInfo?.type} · {exerciseInfo?.targetMuscles.join(" - ")}</p>
                 </div>
-                <span className="exercise-drag-handle" {...attributes} {...listeners} tabIndex={-1}><GripVertical size={16} /></span>
+                <div className="exercise-card-actions">
+                    <span className="exercise-drag-handle" {...attributes} {...listeners} tabIndex={-1}><GripVertical size={16} /></span>
+                    <button className="exercise-delete-btn" tabIndex={-1} onClick={() => onDelete?.(exercise.exerciseId)}><X size={14} /></button>
+                </div>
             </header>
             <section className={bodyClass}>
                 <div className="set-grid-header">

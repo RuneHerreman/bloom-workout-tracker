@@ -447,6 +447,29 @@
 .template-exercise-card:hover .exercise-drag-handle { opacity: 0.5; }
 .exercise-drag-handle:active { cursor: grabbing; }
 
+.exercise-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.exercise-delete-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-muted);
+    opacity: 0;
+    transition: opacity 0.12s, color 0.12s;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+}
+
+.template-exercise-card:hover .exercise-delete-btn { opacity: 0.5; }
+.exercise-card-actions .exercise-delete-btn:hover { opacity: 1; color: var(--danger); }
+
 .set-drag-handle {
     display: flex;
     align-items: center;

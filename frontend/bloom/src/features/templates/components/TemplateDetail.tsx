@@ -42,6 +42,12 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
         },
     }));
 
+    function handleDeleteExercise(exerciseId: string) {
+        setTemplateExercises(prev =>
+            prev.filter(ex => ex.exerciseId !== exerciseId).map((ex, i) => ({ ...ex, order: i + 1 }))
+        );
+    }
+
     function handleSetsChange(exerciseId: string, sets: PlannedSet[]) {
         setTemplateExercises(prev =>
             prev.map(ex => ex.exerciseId === exerciseId ? { ...ex, sets } : ex)
@@ -102,6 +108,7 @@ const TemplateDetail = forwardRef<TemplateDetailHandle, TemplateDetailProps>(fun
                             exercise={exercise}
                             exerciseInfo={exercises[exercise.exerciseId]}
                             onSetsChange={handleSetsChange}
+                            onDelete={handleDeleteExercise}
                         />
                     ))}
                 </SortableContext>
