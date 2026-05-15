@@ -1,9 +1,12 @@
-﻿using System.Text;
+using System.Text;
+using System.Threading.RateLimiting;
 using Bloom.Infrastructure.Auth;
+using Bloom.Infrastructure.ExceptionHandlers;
 using Bloom.Infrastructure.Persistence;
 using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 using Bloom.Infrastructure.WebApi;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
@@ -21,11 +24,9 @@ public static class Module
     {
         services.AddHealthChecks();
         services.AddProblemDetails();
-        
-        // Repositories
+        services.AddExceptionHandler<BloomExceptionHandler>();
+
         services.AddHttpContextAccessor();
-        
-        // Controllers and OpenAPI
         services.AddControllers();
 
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
@@ -45,8 +46,19 @@ public static class Module
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(jwtOptions.Key))
                 };
+
+                // Read token from the HttpOnly cookie so JS cannot access it
+                options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        if (context.Request.Cookies.TryGetValue(jwtOptions.CookieName, out var token))
+                            context.Token = token;
+                        return Task.CompletedTask;
+                    }
+                };
             });
-        
+
         services.AddCors(options =>
         {
             options.AddPolicy("AllowLocalhost", policy =>
@@ -58,6 +70,20 @@ public static class Module
                     .AllowCredentials();
             });
         });
+
+        services.AddRateLimiter(options =>
+        {
+            options.AddSlidingWindowLimiter("auth", policy =>
+            {
+                policy.PermitLimit = 10;
+                policy.Window = TimeSpan.FromMinutes(1);
+                policy.SegmentsPerWindow = 6;
+                policy.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                policy.QueueLimit = 0;
+            });
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        });
+
         services.AddOpenApi(options =>
         {
             options.AddDocumentTransformer((document, _, _) =>
@@ -88,7 +114,6 @@ public static class Module
                     return Task.CompletedTask;
                 }
 
-                // Override any pre-existing empty security entries so auth is required in Scalar.
                 operation.Security =
                 [
                     new OpenApiSecurityRequirement
@@ -102,18 +127,16 @@ public static class Module
         });
         services.AddAuthorization();
         services.AddValidation();
-        
+
         return services;
     }
 
     public static async Task<WebApplication> UseWebApiModule(this WebApplication app)
     {
-        // Auto-create tables
         using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<DomainDbContext>();
-        await context.Database.EnsureCreatedAsync();
+        await context.Database.MigrateAsync();
 
-        // Seed data
         await app.SeedData();
 
         if (app.Environment.IsDevelopment())
@@ -129,12 +152,23 @@ public static class Module
             });
         }
 
+        app.UseExceptionHandler();
+
+        app.Use(async (ctx, next) =>
+        {
+            ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
+            ctx.Response.Headers["X-Frame-Options"] = "DENY";
+            ctx.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+            await next();
+        });
+
         app.UseCors("AllowLocalhost");
         app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseRateLimiter();
         app.MapRoutes();
-        
+
         return app;
     }
 }
