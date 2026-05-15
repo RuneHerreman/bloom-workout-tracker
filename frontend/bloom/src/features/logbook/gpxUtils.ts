@@ -1,11 +1,14 @@
 export interface GpxTrackPoint {
     lat: number;
     lon: number;
+    distanceKm: number;
     ele?: number;
     hr?: number;
     cad?: number;
     speedKph?: number;
-    distanceKm: number;
+    power?: number;
+    atemp?: number;
+    grade?: number;
 }
 
 export interface GpxStats {
@@ -33,58 +36,49 @@ export function parseGpx(xml: string): GpxStats | null {
         const points = Array.from(doc.querySelectorAll("trkpt"));
         if (points.length < 2) return null;
 
-        let distanceM = 0;
-        let elevationGainM = 0;
-        let prevLat: number | null = null;
-        let prevLon: number | null = null;
-        let prevEle: number | null = null;
+        let distanceM = 0, elevationGainM = 0;
+        let prevLat: number | null = null, prevLon: number | null = null, prevEle: number | null = null;
 
         for (const pt of points) {
             const lat = parseFloat(pt.getAttribute("lat") ?? "");
             const lon = parseFloat(pt.getAttribute("lon") ?? "");
-            const eleText = pt.querySelector("ele")?.textContent;
-            const ele = eleText != null ? parseFloat(eleText) : NaN;
-
-            if (prevLat !== null && prevLon !== null && !isNaN(lat) && !isNaN(lon)) {
+            const ele = parseFloat(pt.querySelector("ele")?.textContent ?? "");
+            if (prevLat !== null && prevLon !== null && !isNaN(lat) && !isNaN(lon))
                 distanceM += haversineM(prevLat, prevLon, lat, lon);
-            }
-            if (prevEle !== null && !isNaN(ele)) {
-                const diff = ele - prevEle;
-                if (diff > 0) elevationGainM += diff;
-            }
-
+            if (prevEle !== null && !isNaN(ele) && ele - prevEle > 0)
+                elevationGainM += ele - prevEle;
             if (!isNaN(lat)) prevLat = lat;
             if (!isNaN(lon)) prevLon = lon;
             if (!isNaN(ele)) prevEle = ele;
         }
 
         const firstTime = points[0].querySelector("time")?.textContent;
-        const lastTime = points[points.length - 1].querySelector("time")?.textContent;
-        const durationMs =
-            firstTime && lastTime
-                ? new Date(lastTime).getTime() - new Date(firstTime).getTime()
-                : 0;
+        const lastTime  = points[points.length - 1].querySelector("time")?.textContent;
+        const durationMs = firstTime && lastTime
+            ? new Date(lastTime).getTime() - new Date(firstTime).getTime() : 0;
 
         return { distanceKm: distanceM / 1000, elevationGainM, durationMs };
-    } catch {
-        return null;
+    } catch { return null; }
+}
+
+function getExt(pt: Element, ...names: string[]): number | undefined {
+    for (const name of names) {
+        const el = pt.getElementsByTagNameNS("*", name)[0];
+        if (el) {
+            const v = parseFloat(el.textContent ?? "");
+            if (!isNaN(v)) return v;
+        }
     }
+    return undefined;
 }
 
-function getExtField(pt: Element, name: string): number | undefined {
-    const el = pt.getElementsByTagNameNS("*", name)[0];
-    if (!el) return undefined;
-    const v = parseFloat(el.textContent ?? "");
-    return isNaN(v) ? undefined : v;
-}
-
-function smoothSpeed(points: GpxTrackPoint[], window = 5): void {
-    const speeds = points.map(p => p.speedKph);
+function smooth(points: GpxTrackPoint[], key: keyof GpxTrackPoint, window: number): void {
+    const vals = points.map(p => p[key] as number | undefined);
     for (let i = 0; i < points.length; i++) {
-        const lo = Math.max(0, i - window);
-        const hi = Math.min(points.length - 1, i + window);
-        const vals = speeds.slice(lo, hi + 1).filter((v): v is number => v !== undefined);
-        if (vals.length > 0) points[i].speedKph = vals.reduce((a, b) => a + b, 0) / vals.length;
+        const lo = Math.max(0, i - window), hi = Math.min(points.length - 1, i + window);
+        const slice = vals.slice(lo, hi + 1).filter((v): v is number => v !== undefined);
+        if (slice.length > 0)
+            (points[i] as Record<string, unknown>)[key] = slice.reduce((a, b) => a + b, 0) / slice.length;
     }
 }
 
@@ -95,7 +89,7 @@ export function parseGpxTrackPoints(xml: string): GpxTrackPoint[] {
         const rawPts = Array.from(doc.querySelectorAll("trkpt"));
         const points: GpxTrackPoint[] = [];
         let cumDist = 0;
-        let prev: { lat: number; lon: number; timeMs: number | null } | null = null;
+        let prev: { lat: number; lon: number; ele: number | undefined; timeMs: number | null } | null = null;
 
         for (const pt of rawPts) {
             const lat = parseFloat(pt.getAttribute("lat") ?? "");
@@ -103,16 +97,12 @@ export function parseGpxTrackPoints(xml: string): GpxTrackPoint[] {
             if (isNaN(lat) || isNaN(lon)) continue;
 
             const timeText = pt.querySelector("time")?.textContent;
-            const timeMs = timeText ? new Date(timeText).getTime() : null;
+            const timeMs   = timeText ? new Date(timeText).getTime() : null;
+            const eleRaw   = pt.querySelector("ele")?.textContent;
+            const ele      = eleRaw != null ? parseFloat(eleRaw) : undefined;
 
             let segDistKm = 0;
-            if (prev) {
-                segDistKm = haversineM(prev.lat, prev.lon, lat, lon) / 1000;
-                cumDist += segDistKm;
-            }
-
-            const eleText = pt.querySelector("ele")?.textContent;
-            const ele = eleText != null ? parseFloat(eleText) : undefined;
+            if (prev) { segDistKm = haversineM(prev.lat, prev.lon, lat, lon) / 1000; cumDist += segDistKm; }
 
             let speedKph: number | undefined;
             if (prev?.timeMs != null && timeMs != null) {
@@ -120,30 +110,41 @@ export function parseGpxTrackPoints(xml: string): GpxTrackPoint[] {
                 if (dtH > 0) speedKph = segDistKm / dtH;
             }
 
+            let grade: number | undefined;
+            if (prev?.ele !== undefined && ele !== undefined && !isNaN(ele) && segDistKm > 0)
+                grade = ((ele - prev.ele) / (segDistKm * 1000)) * 100;
+
             points.push({
-                lat, lon,
-                distanceKm: cumDist,
+                lat, lon, distanceKm: cumDist,
                 ...(ele !== undefined && !isNaN(ele) ? { ele } : {}),
-                ...(getExtField(pt, "hr")  !== undefined ? { hr:  getExtField(pt, "hr")  } : {}),
-                ...(getExtField(pt, "cad") !== undefined ? { cad: getExtField(pt, "cad") } : {}),
-                ...(speedKph !== undefined ? { speedKph } : {}),
+                ...(speedKph !== undefined          ? { speedKph } : {}),
+                ...(grade    !== undefined          ? { grade }    : {}),
+                ...(getExt(pt, "hr")               !== undefined ? { hr:    getExt(pt, "hr") }               : {}),
+                ...(getExt(pt, "cad")              !== undefined ? { cad:   getExt(pt, "cad") }              : {}),
+                ...(getExt(pt, "atemp")            !== undefined ? { atemp: getExt(pt, "atemp") }            : {}),
+                ...(getExt(pt, "watt", "power", "PowerInWatts") !== undefined
+                    ? { power: getExt(pt, "watt", "power", "PowerInWatts") } : {}),
             });
-            prev = { lat, lon, timeMs };
+            prev = { lat, lon, ele: ele !== undefined && !isNaN(ele) ? ele : prev?.ele, timeMs };
         }
 
-        smoothSpeed(points);
+        smooth(points, "speedKph", 5);
+        smooth(points, "grade",    15);
         return points;
-    } catch {
-        return [];
-    }
+    } catch { return []; }
 }
 
 export function formatDuration(ms: number): string {
-    const totalSec = Math.round(ms / 1000);
-    const h = Math.floor(totalSec / 3600);
-    const m = Math.floor((totalSec % 3600) / 60);
-    const s = totalSec % 60;
+    const s = Math.round(ms / 1000);
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
     if (h > 0) return `${h}h ${m}m`;
-    if (m > 0) return `${m}m ${s}s`;
-    return `${s}s`;
+    if (m > 0) return `${m}m ${sec}s`;
+    return `${sec}s`;
+}
+
+export function formatPace(minPerKm: number): string {
+    if (!isFinite(minPerKm) || minPerKm <= 0 || minPerKm > 60) return "--";
+    const min = Math.floor(minPerKm);
+    const sec = Math.round((minPerKm - min) * 60);
+    return `${min}:${sec.toString().padStart(2, "0")}`;
 }
