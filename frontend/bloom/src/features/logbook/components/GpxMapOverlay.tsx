@@ -7,7 +7,7 @@ import {
     PointElement, LineElement, Filler, Tooltip,
     BarController, BarElement,
 } from "chart.js";
-import type { ActiveElement, ChartEvent } from "chart.js";
+import type { ActiveElement, ChartEvent, TooltipItem } from "chart.js";
 import type { GpxStats, GpxTrackPoint } from "../gpxUtils.ts";
 import { formatDuration, formatPace, computeKmSplits } from "../gpxUtils.ts";
 import { MapPin, TrendingUp, Clock, Ruler } from "lucide-react";
@@ -222,8 +222,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
                 padding: 10,
                 callbacks: {
                     title: (items: { label: string }[]) => `km ${items[0]?.label}`,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    label: (item: any) => {
+                    label: (item: TooltipItem<"bar">) => {
                         const split = splits[item.dataIndex];
                         const parts = [` ${formatPace(item.raw as number)} /km  ${formatDuration(split.durationMs)}`];
                         if (split.avgHr) parts.push(` ♥ ${split.avgHr} bpm`);
