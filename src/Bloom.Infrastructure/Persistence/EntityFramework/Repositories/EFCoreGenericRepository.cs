@@ -20,9 +20,10 @@ public abstract class EfCoreGenericRepository<TAggregateRoot, TId>(
             .AnyAsync(aggregateRoot => aggregateRoot.Id.Equals(id));
     }
 
-    public virtual Task<Optional<TAggregateRoot>> ById(TId id)
+    public virtual async Task<Optional<TAggregateRoot>> ById(TId id)
     {
-        return Task.FromResult(Optional.Of(_context.Set<TAggregateRoot>().Find(id)));
+        var entity = await _context.Set<TAggregateRoot>().FindAsync(id);
+        return Optional.Of(entity);
     }
 
     public virtual Task Save(TAggregateRoot aggregateRoot)

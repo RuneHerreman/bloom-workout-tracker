@@ -15,7 +15,7 @@ public class UserRepository(DomainDbContext context) : EfCoreGenericRepository<U
 
     public async Task<Optional<User>> ByEmail(Email email)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email);
         return Optional.Of(user);
     }
 }
