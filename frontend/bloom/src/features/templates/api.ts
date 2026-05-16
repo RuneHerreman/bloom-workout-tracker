@@ -70,9 +70,14 @@ export function createPlyometricPlannedSet(order: number, reps: number): Planned
 
 // ── API functions ─────────────────────────────────────────────────────────────
 
-export async function getTemplates(name?: string): Promise<WorkoutTemplate[]> {
-    const params = name ? `?Name=${encodeURIComponent(name)}` : "";
-    return fetchFromServer<WorkoutTemplate[]>(`templates${params}`, "GET");
+let _templatesCache: Promise<WorkoutTemplate[]> | null = null;
+
+export function getTemplates(): Promise<WorkoutTemplate[]> {
+    if (!_templatesCache) {
+        _templatesCache = fetchFromServer<WorkoutTemplate[]>("templates", "GET")
+            .catch(e => { _templatesCache = null; throw e; });
+    }
+    return _templatesCache;
 }
 
 export async function getTemplate(templateId: string): Promise<WorkoutTemplate> {
@@ -81,14 +86,17 @@ export async function getTemplate(templateId: string): Promise<WorkoutTemplate> 
 
 export async function createTemplate(name: string, exercises: TemplateExercise[]): Promise<string> {
     const response = await fetchFromServer<{ workoutTemplateId: string }>("templates", "POST", { name, exercises });
+    _templatesCache = null;
     return response.workoutTemplateId;
 }
 
 export async function updateTemplate(templateId: string, name: string, exercises: TemplateExercise[]): Promise<string> {
     const response = await fetchFromServer<{ workoutTemplateId: string }>(`templates/${templateId}`, "PUT", { name, exercises });
+    _templatesCache = null;
     return response.workoutTemplateId;
 }
 
 export async function deleteTemplate(templateId: string): Promise<void> {
     await fetchFromServer<unknown>(`templates/${templateId}`, "DELETE");
+    _templatesCache = null;
 }

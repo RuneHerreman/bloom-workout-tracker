@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DndContext, closestCenter, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { LoggedWorkout, LoggedExercise, LoggedSet } from "../api.ts";
@@ -17,9 +17,10 @@ interface LogDetailProps {
     exercises: Record<string, Exercise>;
     onSave: (id: string, name: string, loggedAt: string, note: string | null, exercises: LoggedExercise[]) => void;
     onDelete: (id: string) => void;
+    onDirtyChange?: (isDirty: boolean, save: () => Promise<void>) => void;
 }
 
-function LogDetail({ log, exercises, onSave, onDelete }: LogDetailProps) {
+function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange }: LogDetailProps) {
     const initialDate = toDateInputValue(log.loggedAt);
 
     const [logExercises, setLogExercises] = useState<LoggedExercise[]>(() =>
@@ -48,6 +49,12 @@ function LogDetail({ log, exercises, onSave, onDelete }: LogDetailProps) {
         || date !== initialDate
         || note !== (log.note ?? "")
         || JSON.stringify(normalize(logExercises)) !== JSON.stringify(normalize(log.exercises));
+
+    const handleSaveRef = useRef(handleSave);
+    handleSaveRef.current = handleSave;
+    useEffect(() => {
+        onDirtyChange?.(hasChanges, () => handleSaveRef.current());
+    }, [hasChanges]); // eslint-disable-line react-hooks/exhaustive-deps
 
     function handleSetsChange(exerciseId: string, sets: LoggedSet[]) {
         setLogExercises(prev =>

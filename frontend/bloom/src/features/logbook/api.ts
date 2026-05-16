@@ -67,8 +67,14 @@ export function createPlyometricSet(
 
 // ── API functions ─────────────────────────────────────────────────────────────
 
-export async function getLogs(): Promise<LoggedWorkout[]> {
-    return fetchFromServer<LoggedWorkout[]>("logs", "GET");
+let _logsCache: Promise<LoggedWorkout[]> | null = null;
+
+export function getLogs(): Promise<LoggedWorkout[]> {
+    if (!_logsCache) {
+        _logsCache = fetchFromServer<LoggedWorkout[]>("logs", "GET")
+            .catch(e => { _logsCache = null; throw e; });
+    }
+    return _logsCache;
 }
 
 export async function getLog(logId: string): Promise<LoggedWorkout> {
@@ -87,6 +93,7 @@ export async function createLog(
         ...(note != null ? { note } : {}),
         ...(loggedAt ? { loggedAt } : {}),
     });
+    _logsCache = null;
     return response.loggedWorkoutId;
 }
 
@@ -101,11 +108,13 @@ export async function updateLog(
         name, loggedAt, exercises,
         ...(note != null ? { note } : {}),
     });
+    _logsCache = null;
     return response.loggedWorkoutId;
 }
 
 export async function deleteLog(logId: string): Promise<void> {
     await fetchFromServer<unknown>(`logs/${logId}`, "DELETE");
+    _logsCache = null;
 }
 
 export async function getPRs(filters?: ExerciseFilters): Promise<ExercisePrResponse[]> {

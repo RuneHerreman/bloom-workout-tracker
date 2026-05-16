@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DndContext, closestCenter, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { WorkoutTemplate } from "../api.ts";
@@ -17,9 +17,10 @@ interface TemplateDetailProps {
     onSave: (id: string, name: string, exercises: TemplateExercise[]) => void;
     pendingExerciseId?: string | null;
     onExerciseAdded?: () => void;
+    onDirtyChange?: (isDirty: boolean, save: () => Promise<void>) => void;
 }
 
-function TemplateDetail({ template, exercises, onDelete, onSave, pendingExerciseId, onExerciseAdded }: TemplateDetailProps) {
+function TemplateDetail({ template, exercises, onDelete, onSave, pendingExerciseId, onExerciseAdded, onDirtyChange }: TemplateDetailProps) {
     const [templateExercises, setTemplateExercises] = useState<TemplateExercise[]>(() =>
         [...template.exercises].sort((a, b) => a.order - b.order)
     );
@@ -67,6 +68,12 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
 
     const hasChanges = name !== template.name ||
         JSON.stringify(normalize(templateExercises)) !== JSON.stringify(normalize(template.exercises));
+
+    const handleSaveRef = useRef(handleSave);
+    handleSaveRef.current = handleSave;
+    useEffect(() => {
+        onDirtyChange?.(hasChanges, () => handleSaveRef.current());
+    }, [hasChanges]); // eslint-disable-line react-hooks/exhaustive-deps
 
     async function handleSave() {
         setSaving(true);
