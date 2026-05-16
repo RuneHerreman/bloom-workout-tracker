@@ -6,6 +6,7 @@ import type { FocusSegment } from "./components/TrainingFocusWidget";
 import type { LogEntryData } from "./components/LogWidget";
 export interface DashboardStats {
     workoutsThisYear: number;
+    workoutsThisMonth: number;
     workoutChange?: number;
     volumeThisMonth: string;
     volumeChange?: number;
@@ -19,13 +20,14 @@ export function calculateDashboardStats(workouts: LoggedWorkout[]): DashboardSta
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
 
-    const { workoutsThisYear, workoutChange } = calculateWorkoutCounts(workouts, currentYear);
+    const { workoutsThisYear, workoutsThisMonth, workoutChange } = calculateWorkoutCounts(workouts, currentYear, currentMonth);
     const { volumeThisMonth, volumeChange } = calculateVolume(workouts, currentYear, currentMonth);
     const { currentStreak, bestStreak } = calculateStreaks(workouts, now);
     const totalPRs = calculateMonthlyPRs(workouts, currentYear, currentMonth);
 
     return {
         workoutsThisYear,
+        workoutsThisMonth,
         workoutChange,
         volumeThisMonth,
         volumeChange,
@@ -152,15 +154,26 @@ function calculateMonthlyPRs(workouts: LoggedWorkout[], currentYear: number, cur
     return prsThisMonthCount;
 }
 
-function calculateWorkoutCounts(workouts: LoggedWorkout[], currentYear: number) {
+function calculateWorkoutCounts(workouts: LoggedWorkout[], currentYear: number, currentMonth: number) {
     const thisYearCount = workouts.filter(w => new Date(w.loggedAt).getFullYear() === currentYear).length;
-    const lastYearCount = workouts.filter(w => new Date(w.loggedAt).getFullYear() === currentYear - 1).length;
 
-    const workoutChange = lastYearCount >= 5
-        ? Math.round(((thisYearCount - lastYearCount) / lastYearCount) * 100)
+    const thisMonthCount = workouts.filter(w => {
+        const d = new Date(w.loggedAt);
+        return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+    }).length;
+
+    const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthCount = workouts.filter(w => {
+        const d = new Date(w.loggedAt);
+        return d.getFullYear() === prevMonthYear && d.getMonth() === prevMonth;
+    }).length;
+
+    const workoutChange = lastMonthCount > 0
+        ? Math.round(((thisMonthCount - lastMonthCount) / lastMonthCount) * 100)
         : undefined;
 
-    return { workoutsThisYear: thisYearCount, workoutChange };
+    return { workoutsThisYear: thisYearCount, workoutsThisMonth: thisMonthCount, workoutChange };
 }
 
 

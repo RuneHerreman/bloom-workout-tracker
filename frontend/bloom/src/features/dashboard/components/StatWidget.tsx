@@ -17,12 +17,21 @@ function StatWidget({ label, value, changePercent, subtext, unit }: StatWidgetPr
             content={<>
                 <span className="stat-label">
                     {label}
-                    {changePercent !== undefined && (
+                    {changePercent !== undefined && !subtext && (
                         <span className={`stat-change ${isPositive ? "positive" : "negative"}`}>
                             {isPositive ? "↗" : "↘"} {Math.abs(changePercent)}%
                         </span>
                     )}
-                    {subtext && <p className="stat-subtext">{subtext}</p>}
+                    {subtext && (
+                        <p className="stat-subtext">
+                            {subtext}
+                            {changePercent !== undefined && (
+                                <span className={`stat-change ${isPositive ? "positive" : "negative"}`}>
+                                    {isPositive ? "↗" : "↘"} {Math.abs(changePercent)}%
+                                </span>
+                            )}
+                        </p>
+                    )}
                 </span>
 
                 <div className="stat-value">{value}<span className="stat-unit">{unit}</span></div>

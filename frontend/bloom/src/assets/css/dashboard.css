@@ -111,6 +111,7 @@
 
 .stat-change.positive { color: var(--primary); }
 .stat-change.negative { color: var(--danger); }
+.stat-subtext .stat-change { margin-left: 0.5rem; }
 
 .stat-label{
     text-transform: uppercase;
