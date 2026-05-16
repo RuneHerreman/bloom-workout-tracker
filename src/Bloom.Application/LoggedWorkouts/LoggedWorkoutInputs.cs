@@ -50,14 +50,14 @@ internal static class LoggedExerciseInputExtensions
                 input.Reps ?? throw new ArgumentException("Reps required for Strength set"),
                 input.Weight ?? throw new ArgumentException("Weight required for Strength set"),
                 Enum.Parse<WeightUnit>(input.WeightUnit ?? throw new ArgumentException("WeightUnit required for Strength set"), ignoreCase: true),
-                input.Rir ?? throw new ArgumentException("RIR required for Strength set")
+                input.Rir
             ),
             ExerciseType.Plyometric => LoggedSet.CreatePlyometric(
                 input.Order,
                 input.Reps ?? throw new ArgumentException("Reps required for Plyometric set"),
                 input.Weight ?? throw new ArgumentException("Weight required for Plyometric set"),
                 Enum.Parse<WeightUnit>(input.WeightUnit ?? throw new ArgumentException("WeightUnit required for Plyometric set"), ignoreCase: true),
-                input.Rir ?? throw new ArgumentException("RIR required for Plyometric set")
+                input.Rir
             ),
             _ => throw new ArgumentOutOfRangeException(nameof(input.Type), input.Type, "Unsupported exercise type")
         };

@@ -44,10 +44,10 @@ public class LoggedSet : Entity<LoggedSetId>
         return set;
     }
 
-    public static LoggedSet CreateStrength(int order, int reps, decimal weight, WeightUnit unit, int rir)
+    public static LoggedSet CreateStrength(int order, int reps, decimal weight, WeightUnit unit, int? rir)
         => CreateStrengthLike(ExerciseType.Strength, order, reps, weight, unit, rir);
 
-    public static LoggedSet CreatePlyometric(int order, int reps, decimal weight, WeightUnit unit, int rir)
+    public static LoggedSet CreatePlyometric(int order, int reps, decimal weight, WeightUnit unit, int? rir)
         => CreateStrengthLike(ExerciseType.Plyometric, order, reps, weight, unit, rir);
 
     private static LoggedSet CreateStrengthLike(
@@ -56,7 +56,7 @@ public class LoggedSet : Entity<LoggedSetId>
         int reps,
         decimal weight,
         WeightUnit unit,
-        int rir)
+        int? rir)
     {
         if (type is not (ExerciseType.Strength or ExerciseType.Plyometric))
             throw new ArgumentOutOfRangeException(nameof(type), type, "Type must be Strength or Plyometric.");
@@ -65,7 +65,7 @@ public class LoggedSet : Entity<LoggedSetId>
         {
             Reps = ValueObjects.Reps.Create(reps),
             Weight = ValueObjects.Weight.Create(weight, unit),
-            Rir = ValueObjects.RIR.Create(rir),
+            Rir = rir.HasValue ? ValueObjects.RIR.Create(rir.Value) : null,
 
             Duration = null,
             Distance = null
@@ -94,7 +94,6 @@ public class LoggedSet : Entity<LoggedSetId>
             case ExerciseType.Plyometric:
                 Asserts.EnsureNotEmpty(Reps);
                 Asserts.EnsureNotEmpty(Weight);
-                Asserts.EnsureNotEmpty(Rir);
 
                 Asserts.EnsureTrue(Duration is null);
                 Asserts.EnsureTrue(Distance is null);
