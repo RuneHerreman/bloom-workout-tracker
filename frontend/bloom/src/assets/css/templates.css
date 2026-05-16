@@ -14,31 +14,6 @@
     align-items: baseline;
 }
 
-.template-title-input {
-    font-family: var(--serif), serif;
-    color: var(--dark-text);
-    font-size: 3rem;
-    font-weight: 500;
-    background: transparent;
-    border: none;
-    outline: none;
-    padding: 0;
-    width: 100%;
-    min-width: 0;
-    border-bottom: 0.125rem solid transparent;
-    transition: border-color var(--transition);
-}
-
-.template-title-input:hover { border-bottom-color: var(--border); }
-.template-title-input:focus { border-bottom-color: var(--primary-light); }
-
-.actions-row {
-    display: flex;
-    gap: 0.5rem;
-    width: 50%;
-    justify-content: flex-end;
-}
-
 /* ── Exercise library ────────────────────────────────────────────────────────── */
 
 .exercise-library {
@@ -156,11 +131,6 @@
 /* ── Responsive ──────────────────────────────────────────────────────────────── */
 
 @media (max-width: 1024px) {
-    .actions-row {
-        flex-direction: column;
-        width: fit-content;
-    }
-
     .feature-sidebar {
         width: 14rem;
     }
@@ -182,11 +152,5 @@
 
     .template-title-input {
         font-size: 1.75rem;
-    }
-
-    .actions-row {
-        flex-direction: row;
-        width: 100%;
-        justify-content: flex-start;
     }
 }

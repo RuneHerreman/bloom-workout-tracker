@@ -722,6 +722,24 @@
     user-select: none;
 }
 
+.template-title-input {
+    font-family: var(--serif), serif;
+    color: var(--dark-text);
+    font-size: 3rem;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    min-width: 0;
+    border-bottom: 0.125rem solid transparent;
+    transition: border-color var(--transition);
+}
+
+.template-title-input:hover { border-bottom-color: var(--border); }
+.template-title-input:focus { border-bottom-color: var(--primary-light); }
+
+
 /* ── Weight cell ─────────────────────────────────────────────────────────────── */
 
 .weight-cell {
@@ -741,7 +759,20 @@
     transform: translateY(-50%);
 }
 
+.actions-row {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    width: fit-content;
+}
+
 @media (max-width: 768px) {
+    .actions-row {
+        flex-direction: row;
+        width: 100%;
+        justify-content: flex-start;
+    }
+
     .overlay-backdrop {
         align-items: flex-end;
     }
