@@ -17,12 +17,13 @@ public sealed record UpdateTechnicalPointsBody([MaxLength(50000)] string? Techni
 public static class UpdateTechnicalPointsController
 {
     public static async Task<NoContent> Invoke(
-        [AsParameters] UpdateTechnicalPointsRequest request
+        [AsParameters] UpdateTechnicalPointsRequest request,
+        CancellationToken ct
     )
     {
         await request.UseCase.Execute(new UpdateTechnicalPointsInput(
             request.Body.TechnicalPoints
-        ));
+        ), ct);
 
         return TypedResults.NoContent();
     }

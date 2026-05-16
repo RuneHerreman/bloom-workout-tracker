@@ -13,10 +13,10 @@ public class FindUserWorkoutTemplates(
     IFindWorkoutTemplatesQuery query
 ) : IUseCase<FindUserWorkoutTemplatesInput, FindUserWorkoutTemplatesOutput>
 {
-    public async Task<FindUserWorkoutTemplatesOutput> Execute(FindUserWorkoutTemplatesInput input)
+    public async Task<FindUserWorkoutTemplatesOutput> Execute(FindUserWorkoutTemplatesInput input, CancellationToken ct = default)
     {
         var templates = await query.Fetch(
-            WorkoutTemplateDataFilters.ByProperty(currentUser.UserId.Value, input.Name)
+            WorkoutTemplateDataFilters.ByProperty(currentUser.UserId.Value, input.Name), ct
         );
 
         return new FindUserWorkoutTemplatesOutput(templates);

@@ -13,10 +13,10 @@ public class FindUserLoggedWorkouts(
     IFindLoggedWorkoutsQuery query
 ) : IUseCase<FindUserLoggedWorkoutsInput, FindUserLoggedWorkoutsOutput>
 {
-    public async Task<FindUserLoggedWorkoutsOutput> Execute(FindUserLoggedWorkoutsInput input)
+    public async Task<FindUserLoggedWorkoutsOutput> Execute(FindUserLoggedWorkoutsInput input, CancellationToken ct = default)
     {
         var logs = await query.Fetch(
-            LoggedWorkoutDataFilters.ByProperty(currentUser.UserId.Value)
+            LoggedWorkoutDataFilters.ByProperty(currentUser.UserId.Value), ct
         );
 
         return new FindUserLoggedWorkoutsOutput(logs);

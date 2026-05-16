@@ -13,10 +13,11 @@ public sealed record DeleteUserRequest(
 public static class DeleteUserController
 {
     public static async Task<Results<NoContent, BadRequest>> Invoke(
-        [AsParameters] DeleteUserRequest request
+        [AsParameters] DeleteUserRequest request,
+        CancellationToken ct
     )
     {
-        await request.UseCase.Execute(new DeleteUserInput());
+        await request.UseCase.Execute(new DeleteUserInput(), ct);
 
         return TypedResults.NoContent();
     }

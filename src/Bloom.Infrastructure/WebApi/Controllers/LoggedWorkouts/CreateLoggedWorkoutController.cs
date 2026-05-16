@@ -27,7 +27,8 @@ public sealed record CreateLoggedWorkoutResponse(Guid LoggedWorkoutId);
 public static class CreateLoggedWorkoutController
 {
     public static async Task<Results<Ok<CreateLoggedWorkoutResponse>, BadRequest>> Invoke(
-        [AsParameters] CreateLoggedWorkoutRequest request
+        [AsParameters] CreateLoggedWorkoutRequest request,
+        CancellationToken ct
     )
     {
         var output = await request.UseCase.Execute(new CreateLoggedWorkoutInput(
@@ -35,7 +36,7 @@ public static class CreateLoggedWorkoutController
             request.Body.Exercises.Select(e => e.ToInput()).ToList(),
             request.Body.Note,
             request.Body.LoggedAt
-        ));
+        ), ct);
 
         return TypedResults.Ok(new CreateLoggedWorkoutResponse(output.LoggedWorkoutId));
     }

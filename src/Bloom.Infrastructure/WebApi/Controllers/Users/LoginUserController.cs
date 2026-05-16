@@ -24,13 +24,14 @@ public sealed record LoginUserBody(
 public static class LoginUserController
 {
     public static async Task<NoContent> Invoke(
-        [AsParameters] LoginUserRequest request
+        [AsParameters] LoginUserRequest request,
+        CancellationToken ct
     )
     {
         var output = await request.UseCase.Execute(new LoginUserInput(
             request.Body.Email,
             request.Body.Password
-        ));
+        ), ct);
 
         var opts = request.JwtOptions.Value;
         request.HttpContext.Response.Cookies.Append(opts.CookieName, output.Token, new CookieOptions

@@ -15,10 +15,10 @@ public class FindExerciseById(
     ISearchExerciseCatalogQuery searchExerciseCatalogQuery
 ): IUseCase<FindExerciseByIdInput, FindExerciseByIdOutput>
 {
-    public async Task<FindExerciseByIdOutput> Execute(FindExerciseByIdInput input)
+    public async Task<FindExerciseByIdOutput> Execute(FindExerciseByIdInput input, CancellationToken ct = default)
     {
         var exercises = await searchExerciseCatalogQuery.Fetch(
-        ExerciseDataFilters.ById(EntityId.New<ExerciseId>(input.ExerciseId))
+            ExerciseDataFilters.ById(EntityId.New<ExerciseId>(input.ExerciseId)), ct
         );
         
         var result = exercises.FirstOrDefault() 

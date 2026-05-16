@@ -14,12 +14,13 @@ public sealed record DeleteWorkoutTemplateRequest(
 public static class DeleteWorkoutTemplateController
 {
     public static async Task<Results<NoContent, BadRequest>> Invoke(
-        [AsParameters] DeleteWorkoutTemplateRequest request
+        [AsParameters] DeleteWorkoutTemplateRequest request,
+        CancellationToken ct
     )
     {
         await request.UseCase.Execute(new DeleteWorkoutTemplateInput(
             request.TemplateId
-        ));
+        ), ct);
 
         return TypedResults.NoContent();
     }

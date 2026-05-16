@@ -15,12 +15,13 @@ public sealed record GetUserWorkoutTemplatesRequest(
 public static class GetUserWorkoutTemplatesController
 {
     public static async Task<Results<Ok<List<WorkoutTemplate>>, BadRequest>> Invoke(
-        [AsParameters] GetUserWorkoutTemplatesRequest request
+        [AsParameters] GetUserWorkoutTemplatesRequest request,
+        CancellationToken ct
     )
     {
         var output = await request.UseCase.Execute(new FindUserWorkoutTemplatesInput(
             request.Name
-        ));
+        ), ct);
 
         return TypedResults.Ok(
             output.Templates

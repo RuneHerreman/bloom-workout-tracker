@@ -14,7 +14,7 @@ public class DeleteLoggedWorkout(
     ILogger<DeleteLoggedWorkout> logger
 ) : IUseCase<DeleteLoggedWorkoutInput>
 {
-    public async Task Execute(DeleteLoggedWorkoutInput input)
+    public async Task Execute(DeleteLoggedWorkoutInput input, CancellationToken ct = default)
     {
         var userId = currentUser.UserId;
         logger.LogInformation("Deleting LoggedWorkout | Id: {Id} - User: {UserId}", input.LoggedWorkoutId, userId);
@@ -29,7 +29,7 @@ public class DeleteLoggedWorkout(
             throw new LoggedWorkoutAccessDeniedException($"User {userId} does not own LoggedWorkout {input.LoggedWorkoutId}");
 
         await logRepo.Remove(log.Value);
-        await uow.Do();
+        await uow.Do(ct);
 
         logger.LogInformation("LoggedWorkout deleted | Id: {Id} - User: {UserId}", input.LoggedWorkoutId, userId);
     }

@@ -15,7 +15,7 @@ public class UpdateTechnicalPoints(
     ILogger<UpdateTechnicalPoints> logger
 ) : IUseCase<UpdateTechnicalPointsInput, UpdateTechnicalPointsOutput>
 {
-    public async Task<UpdateTechnicalPointsOutput> Execute(UpdateTechnicalPointsInput input)
+    public async Task<UpdateTechnicalPointsOutput> Execute(UpdateTechnicalPointsInput input, CancellationToken ct = default)
     {
         var userId = currentUser.UserId;
         logger.LogInformation("Updating technical points | Id: {UserId}", userId);
@@ -29,7 +29,7 @@ public class UpdateTechnicalPoints(
         user.Value.UpdateTechnicalPoints(input.TechnicalPoints);
 
         await userRepo.Save(user.Value);
-        await uow.Do();
+        await uow.Do(ct);
 
         logger.LogInformation("Technical points updated | Id: {UserId}", user.Value.Id);
 

@@ -4,28 +4,32 @@ namespace Bloom.Application.Contracts.Ports;
 
 public interface ISearchExerciseCatalogQuery
 {
-    public Task<IReadOnlyList<ExerciseData>> Fetch(
-        Expression<Func<ExerciseData, bool>> filter
+    Task<IReadOnlyList<ExerciseData>> Fetch(
+        Expression<Func<ExerciseData, bool>> filter,
+        CancellationToken ct = default
     );
 }
 
 public interface IFindWorkoutTemplatesQuery
 {
     Task<IReadOnlyList<WorkoutTemplateData>> Fetch(
-        Expression<Func<WorkoutTemplateData, bool>> filter
+        Expression<Func<WorkoutTemplateData, bool>> filter,
+        CancellationToken ct = default
     );
 }
 
 public interface IFindLoggedWorkoutsQuery
 {
     Task<IReadOnlyList<LoggedWorkoutData>> Fetch(
-        Expression<Func<LoggedWorkoutData, bool>> filter
+        Expression<Func<LoggedWorkoutData, bool>> filter,
+        CancellationToken ct = default
     );
 }
 
 public interface IFindUsersQuery
 {
     Task<IReadOnlyList<UserData>> Fetch(
-        Expression<Func<UserData, bool>> filter
+        Expression<Func<UserData, bool>> filter,
+        CancellationToken ct = default
     );
 }

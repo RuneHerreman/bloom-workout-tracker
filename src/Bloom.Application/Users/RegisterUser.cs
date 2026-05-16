@@ -26,7 +26,7 @@ public class RegisterUser(
     ILogger<RegisterUser> logger
 ) : IUseCase<RegisterUserInput, RegisterUserOutput>
 {
-    public async Task<RegisterUserOutput> Execute(RegisterUserInput input)
+    public async Task<RegisterUserOutput> Execute(RegisterUserInput input, CancellationToken ct = default)
     {
         logger.LogInformation("Registering user | Email: {Email}", input.Email);
 
@@ -50,7 +50,7 @@ public class RegisterUser(
         );
 
         await userRepo.Save(user);
-        await uow.Do();
+        await uow.Do(ct);
 
         var token = tokenIssuer.Issue(user.Id, user.Email, user.Username);
 

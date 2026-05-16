@@ -12,9 +12,9 @@ public sealed class EfCoreUnitOfWork(
 {
     private readonly Dictionary<string, object> _repositoriesWithRepoKey = [];
     
-    public Task Do()
+    public Task Do(CancellationToken ct = default)
     {
-        return dbContext.SaveChangesAsync();
+        return dbContext.SaveChangesAsync(ct);
     }
 
     public Task Save<TRepository>(IAggregateRoot aggregateRoot) 

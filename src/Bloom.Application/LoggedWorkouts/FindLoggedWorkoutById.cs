@@ -16,10 +16,10 @@ public class FindLoggedWorkoutById(
     IFindLoggedWorkoutsQuery query
 ) : IUseCase<FindLoggedWorkoutByIdInput, FindLoggedWorkoutByIdOutput>
 {
-    public async Task<FindLoggedWorkoutByIdOutput> Execute(FindLoggedWorkoutByIdInput input)
+    public async Task<FindLoggedWorkoutByIdOutput> Execute(FindLoggedWorkoutByIdInput input, CancellationToken ct = default)
     {
         var logs = await query.Fetch(
-            LoggedWorkoutDataFilters.ById(EntityId.New<LoggedWorkoutId>(input.LoggedWorkoutId))
+            LoggedWorkoutDataFilters.ById(EntityId.New<LoggedWorkoutId>(input.LoggedWorkoutId)), ct
         );
 
         var result = logs.FirstOrDefault()

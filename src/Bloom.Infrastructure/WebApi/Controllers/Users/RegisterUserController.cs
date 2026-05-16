@@ -30,7 +30,8 @@ public sealed record RegisterUserBody(
 public static class RegisterUserController
 {
     public static async Task<NoContent> Invoke(
-        [AsParameters] RegisterUserRequest request
+        [AsParameters] RegisterUserRequest request,
+        CancellationToken ct
     )
     {
         var output = await request.UseCase.Execute(new RegisterUserInput(
@@ -42,7 +43,7 @@ public static class RegisterUserController
             request.Body.Weight,
             request.Body.Height,
             request.Body.ActiveDays
-        ));
+        ), ct);
 
         var opts = request.JwtOptions.Value;
         request.HttpContext.Response.Cookies.Append(opts.CookieName, output.Token, new CookieOptions

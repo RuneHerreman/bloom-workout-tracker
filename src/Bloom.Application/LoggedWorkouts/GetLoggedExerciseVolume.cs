@@ -33,9 +33,9 @@ public class GetLoggedExerciseVolume(
     ISearchExerciseCatalogQuery exercisesQuery
 ) : IUseCase<GetLoggedExerciseVolumeInput, GetLoggedExerciseVolumeOutput>
 {
-    public async Task<GetLoggedExerciseVolumeOutput> Execute(GetLoggedExerciseVolumeInput input)
+    public async Task<GetLoggedExerciseVolumeOutput> Execute(GetLoggedExerciseVolumeInput input, CancellationToken ct = default)
     {
-        var logs = await logsQuery.Fetch(LoggedWorkoutDataFilters.ByProperty(currentUser.UserId.Value));
+        var logs = await logsQuery.Fetch(LoggedWorkoutDataFilters.ByProperty(currentUser.UserId.Value), ct);
 
         int fromOrdinal = input is { FromYear: not null, FromMonth: not null }
             ? input.FromYear.Value * 12 + input.FromMonth.Value
@@ -73,7 +73,7 @@ public class GetLoggedExerciseVolume(
                 name: input.Name,
                 muscleGroups: MapMuscleGroups(input.TargetMuscleGroups),
                 types: MapExerciseTypes(input.ExerciseTypes)
-            )
+            ), ct
         );
 
         var result = exercises

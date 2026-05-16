@@ -14,10 +14,11 @@ public sealed record GetCurrentUserRequest(
 public static class GetCurrentUserController
 {
     public static async Task<Results<Ok<User>, BadRequest>> Invoke(
-        [AsParameters] GetCurrentUserRequest request
+        [AsParameters] GetCurrentUserRequest request,
+        CancellationToken ct
     )
     {
-        var output = await request.UseCase.Execute(new GetCurrentUserInput());
+        var output = await request.UseCase.Execute(new GetCurrentUserInput(), ct);
         return TypedResults.Ok(output.User.ToResponse());
     }
 }

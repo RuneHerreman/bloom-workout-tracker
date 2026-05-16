@@ -13,7 +13,7 @@ public class DeleteUser(
     ILogger<DeleteUser> logger
 ) : IUseCase<DeleteUserInput>
 {
-    public async Task Execute(DeleteUserInput input)
+    public async Task Execute(DeleteUserInput input, CancellationToken ct = default)
     {
         var userId = currentUser.UserId;
         logger.LogInformation("Deleting User | Id: {UserId}", userId);
@@ -25,7 +25,7 @@ public class DeleteUser(
             throw new UserNotFoundException($"User not found | Id: {userId.Value}");
 
         await userRepo.Remove(user.Value);
-        await uow.Do();
+        await uow.Do(ct);
 
         logger.LogInformation("User deleted | Id: {UserId}", userId);
     }

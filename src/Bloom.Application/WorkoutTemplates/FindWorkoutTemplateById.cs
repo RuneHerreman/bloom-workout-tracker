@@ -16,10 +16,10 @@ public class FindWorkoutTemplateById(
     IFindWorkoutTemplatesQuery query
 ) : IUseCase<FindWorkoutTemplateByIdInput, FindWorkoutTemplateByIdOutput>
 {
-    public async Task<FindWorkoutTemplateByIdOutput> Execute(FindWorkoutTemplateByIdInput input)
+    public async Task<FindWorkoutTemplateByIdOutput> Execute(FindWorkoutTemplateByIdInput input, CancellationToken ct = default)
     {
         var templates = await query.Fetch(
-            WorkoutTemplateDataFilters.ById(EntityId.New<WorkoutTemplateId>(input.TemplateId))
+            WorkoutTemplateDataFilters.ById(EntityId.New<WorkoutTemplateId>(input.TemplateId)), ct
         );
 
         var result = templates.FirstOrDefault()

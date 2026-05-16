@@ -17,7 +17,7 @@ public class ChangeUserPassword(
     ILogger<ChangeUserPassword> logger
 ) : IUseCase<ChangeUserPasswordInput>
 {
-    public async Task Execute(ChangeUserPasswordInput input)
+    public async Task Execute(ChangeUserPasswordInput input, CancellationToken ct = default)
     {
         var userId = currentUser.UserId;
         logger.LogInformation("Changing password | UserId: {UserId}", userId);
@@ -35,7 +35,7 @@ public class ChangeUserPassword(
         user.Value.ChangePassword(newHashedPassword);
 
         await userRepo.Save(user.Value);
-        await uow.Do();
+        await uow.Do(ct);
 
         logger.LogInformation("Password changed | UserId: {UserId}", userId);
     }

@@ -25,14 +25,15 @@ public sealed record ExercisePrResponse(
 public static class GetLoggedExercisePrsController
 {
     public static async Task<Results<Ok<List<ExercisePrResponse>>, BadRequest>> Invoke(
-        [AsParameters] GetLoggedExercisePrsRequest request
+        [AsParameters] GetLoggedExercisePrsRequest request,
+        CancellationToken ct
     )
     {
         var output = await request.UseCase.Execute(new GetLoggedExercisePrsInput(
             request.Name,
             request.TargetMuscleGroups,
             request.ExerciseTypes
-        ));
+        ), ct);
 
         return TypedResults.Ok(
             output.Prs

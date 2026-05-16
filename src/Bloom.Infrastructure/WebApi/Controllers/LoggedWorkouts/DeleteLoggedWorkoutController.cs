@@ -14,12 +14,13 @@ public sealed record DeleteLoggedWorkoutRequest(
 public static class DeleteLoggedWorkoutController
 {
     public static async Task<Results<NoContent, BadRequest>> Invoke(
-        [AsParameters] DeleteLoggedWorkoutRequest request
+        [AsParameters] DeleteLoggedWorkoutRequest request,
+        CancellationToken ct
     )
     {
         await request.UseCase.Execute(new DeleteLoggedWorkoutInput(
             request.LoggedWorkoutId
-        ));
+        ), ct);
 
         return TypedResults.NoContent();
     }

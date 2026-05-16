@@ -19,7 +19,7 @@ public class CreateWorkoutTemplate(
     ILogger<CreateWorkoutTemplate> logger
 ) : IUseCase<CreateWorkoutTemplateInput, CreateWorkoutTemplateOutput>
 {
-    public async Task<CreateWorkoutTemplateOutput> Execute(CreateWorkoutTemplateInput input)
+    public async Task<CreateWorkoutTemplateOutput> Execute(CreateWorkoutTemplateInput input, CancellationToken ct = default)
     {
         var userId = currentUser.UserId;
         logger.LogInformation("Creating WorkoutTemplate | User: {UserId}", userId);
@@ -39,7 +39,7 @@ public class CreateWorkoutTemplate(
         );
 
         await templateRepo.Save(template);
-        await uow.Do();
+        await uow.Do(ct);
 
         logger.LogInformation("WorkoutTemplate created | Id: {Id} - User: {UserId}", template.Id, userId);
 

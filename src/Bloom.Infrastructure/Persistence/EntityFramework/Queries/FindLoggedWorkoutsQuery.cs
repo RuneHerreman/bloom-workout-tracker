@@ -9,12 +9,13 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Queries;
 public class FindLoggedWorkoutsQuery(QueryDbContext context) : IFindLoggedWorkoutsQuery
 {
     public async Task<IReadOnlyList<LoggedWorkoutData>> Fetch(
-        Expression<Func<LoggedWorkoutData, bool>> filter
+        Expression<Func<LoggedWorkoutData, bool>> filter,
+        CancellationToken ct = default
     )
     {
         return await context.LoggedWorkouts
             .Where(filter)
             .OrderByDescending(l => l.LoggedAt)
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 }

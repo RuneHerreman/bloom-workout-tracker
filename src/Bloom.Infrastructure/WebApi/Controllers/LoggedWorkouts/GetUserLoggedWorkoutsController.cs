@@ -14,10 +14,11 @@ public sealed record GetUserLoggedWorkoutsRequest(
 public static class GetUserLoggedWorkoutsController
 {
     public static async Task<Results<Ok<List<LoggedWorkout>>, BadRequest>> Invoke(
-        [AsParameters] GetUserLoggedWorkoutsRequest request
+        [AsParameters] GetUserLoggedWorkoutsRequest request,
+        CancellationToken ct
     )
     {
-        var output = await request.UseCase.Execute(new FindUserLoggedWorkoutsInput());
+        var output = await request.UseCase.Execute(new FindUserLoggedWorkoutsInput(), ct);
 
         return TypedResults.Ok(
             output.Logs

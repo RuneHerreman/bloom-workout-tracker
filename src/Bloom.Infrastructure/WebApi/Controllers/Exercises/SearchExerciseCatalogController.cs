@@ -18,14 +18,15 @@ public sealed record SearchExerciseCatalogRequest(
 public static class SearchExerciseCatalogController
 {
     public static async Task<Results<Ok<List<Exercise>>, BadRequest>> Invoke(
-        [AsParameters]  SearchExerciseCatalogRequest request
+        [AsParameters] SearchExerciseCatalogRequest request,
+        CancellationToken ct
     )
     {
         var output = await request.UseCase.Execute(new SearchExerciseCatalogInput(
             request.Name,
             request.TargetMuscleGroups,
             request.ExerciseTypes
-        ));
+        ), ct);
         
         return TypedResults.Ok(
             output.Exercises

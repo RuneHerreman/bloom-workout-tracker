@@ -30,7 +30,8 @@ public sealed record UpdateLoggedWorkoutResponse(Guid LoggedWorkoutId);
 public static class UpdateLoggedWorkoutController
 {
     public static async Task<Results<Ok<UpdateLoggedWorkoutResponse>, BadRequest>> Invoke(
-        [AsParameters] UpdateLoggedWorkoutRequest request
+        [AsParameters] UpdateLoggedWorkoutRequest request,
+        CancellationToken ct
     )
     {
         var output = await request.UseCase.Execute(new UpdateLoggedWorkoutInput(
@@ -39,7 +40,7 @@ public static class UpdateLoggedWorkoutController
             request.Body.LoggedAt,
             request.Body.Exercises.Select(e => e.ToInput()).ToList(),
             request.Body.Note
-        ));
+        ), ct);
 
         return TypedResults.Ok(new UpdateLoggedWorkoutResponse(output.LoggedWorkoutId));
     }

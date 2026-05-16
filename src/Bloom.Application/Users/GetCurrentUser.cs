@@ -14,9 +14,9 @@ public class GetCurrentUser(
     IFindUsersQuery query
 ) : IUseCase<GetCurrentUserInput, GetCurrentUserOutput>
 {
-    public async Task<GetCurrentUserOutput> Execute(GetCurrentUserInput input)
+    public async Task<GetCurrentUserOutput> Execute(GetCurrentUserInput input, CancellationToken ct = default)
     {
-        var users = await query.Fetch(UserDataFilters.ById(currentUser.UserId));
+        var users = await query.Fetch(UserDataFilters.ById(currentUser.UserId), ct);
 
         var user = users.FirstOrDefault()
             ?? throw new UserNotFoundException($"User not found | Id: {currentUser.UserId.Value}");

@@ -27,7 +27,8 @@ public sealed record UpdateUserInfoResponse(Guid UserId);
 public static class UpdateUserInfoController
 {
     public static async Task<Results<Ok<UpdateUserInfoResponse>, BadRequest>> Invoke(
-        [AsParameters] UpdateUserInfoRequest request
+        [AsParameters] UpdateUserInfoRequest request,
+        CancellationToken ct
     )
     {
         var output = await request.UseCase.Execute(new UpdateUserInfoInput(
@@ -38,7 +39,7 @@ public static class UpdateUserInfoController
             request.Body.Weight,
             request.Body.Height,
             request.Body.ActiveDays
-        ));
+        ), ct);
 
         return TypedResults.Ok(new UpdateUserInfoResponse(output.UserId));
     }

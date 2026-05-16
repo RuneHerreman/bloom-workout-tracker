@@ -15,10 +15,11 @@ public sealed record FindWorkoutTemplateByIdRequest(
 public static class FindWorkoutTemplateByIdController
 {
     public static async Task<Results<Ok<WorkoutTemplate>, BadRequest>> Invoke(
-        [AsParameters] FindWorkoutTemplateByIdRequest request
+        [AsParameters] FindWorkoutTemplateByIdRequest request,
+        CancellationToken ct
     )
     {
-        var output = await request.UseCase.Execute(new FindWorkoutTemplateByIdInput(request.TemplateId));
+        var output = await request.UseCase.Execute(new FindWorkoutTemplateByIdInput(request.TemplateId), ct);
 
         return TypedResults.Ok(output.Template.ToResponse());
     }

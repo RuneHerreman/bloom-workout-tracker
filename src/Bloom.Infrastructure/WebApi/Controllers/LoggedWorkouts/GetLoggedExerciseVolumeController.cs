@@ -31,7 +31,8 @@ public sealed record ExerciseVolumeResponse(
 public static class GetLoggedExerciseVolumeController
 {
     public static async Task<Results<Ok<List<ExerciseVolumeResponse>>, BadRequest>> Invoke(
-        [AsParameters] GetLoggedExerciseVolumeRequest request
+        [AsParameters] GetLoggedExerciseVolumeRequest request,
+        CancellationToken ct
     )
     {
         var output = await request.UseCase.Execute(new GetLoggedExerciseVolumeInput(
@@ -42,7 +43,7 @@ public static class GetLoggedExerciseVolumeController
             request.FromMonth,
             request.ToYear,
             request.ToMonth
-        ));
+        ), ct);
 
         return TypedResults.Ok(
             output.Exercises

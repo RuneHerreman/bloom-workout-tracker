@@ -15,11 +15,12 @@ public sealed record FindExerciseByIdRequest(
 public static class FindExerciseByIdController
 {
     public static async Task<Results<Ok<Exercise>, BadRequest>> Invoke(
-        [AsParameters] FindExerciseByIdRequest request
+        [AsParameters] FindExerciseByIdRequest request,
+        CancellationToken ct
     )
     {
-        var exercise = await request.UseCase.Execute(new FindExerciseByIdInput(request.ExerciseId));
-           
+        var exercise = await request.UseCase.Execute(new FindExerciseByIdInput(request.ExerciseId), ct);
+
         return TypedResults.Ok(exercise.Exercise.ToResponse());
     }
 }

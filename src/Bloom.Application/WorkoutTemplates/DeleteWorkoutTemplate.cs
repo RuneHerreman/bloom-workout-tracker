@@ -14,7 +14,7 @@ public class DeleteWorkoutTemplate(
     ILogger<DeleteWorkoutTemplate> logger
 ) : IUseCase<DeleteWorkoutTemplateInput>
 {
-    public async Task Execute(DeleteWorkoutTemplateInput input)
+    public async Task Execute(DeleteWorkoutTemplateInput input, CancellationToken ct = default)
     {
         var userId = currentUser.UserId;
         logger.LogInformation("Deleting WorkoutTemplate | Id: {Id} - User: {UserId}", input.TemplateId, userId);
@@ -29,7 +29,7 @@ public class DeleteWorkoutTemplate(
             throw new WorkoutTemplateAccessDeniedException($"User {userId} does not own template {input.TemplateId}");
 
         await templateRepo.Remove(template.Value);
-        await uow.Do();
+        await uow.Do(ct);
 
         logger.LogInformation("WorkoutTemplate deleted | Id: {Id} - User: {UserId}", input.TemplateId, userId);
     }

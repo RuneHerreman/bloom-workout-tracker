@@ -28,9 +28,9 @@ public class GetLoggedExercisePrs(
     ISearchExerciseCatalogQuery exercisesQuery
 ) : IUseCase<GetLoggedExercisePrsInput, GetLoggedExercisePrsOutput>
 {
-    public async Task<GetLoggedExercisePrsOutput> Execute(GetLoggedExercisePrsInput input)
+    public async Task<GetLoggedExercisePrsOutput> Execute(GetLoggedExercisePrsInput input, CancellationToken ct = default)
     {
-        var logs = await logsQuery.Fetch(LoggedWorkoutDataFilters.ByProperty(currentUser.UserId.Value));
+        var logs = await logsQuery.Fetch(LoggedWorkoutDataFilters.ByProperty(currentUser.UserId.Value), ct);
 
         var prByExercise = logs
             .SelectMany(l => l.LoggedExercises)
@@ -48,7 +48,7 @@ public class GetLoggedExercisePrs(
                 name: input.Name,
                 muscleGroups: MapMuscleGroups(input.TargetMuscleGroups),
                 types: MapExerciseTypes(input.ExerciseTypes)
-            )
+            ), ct
         );
 
         var prs = exercises

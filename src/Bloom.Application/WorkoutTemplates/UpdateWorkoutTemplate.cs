@@ -20,7 +20,7 @@ public class UpdateWorkoutTemplate(
     ILogger<UpdateWorkoutTemplate> logger
 ) : IUseCase<UpdateWorkoutTemplateInput, UpdateWorkoutTemplateOutput>
 {
-    public async Task<UpdateWorkoutTemplateOutput> Execute(UpdateWorkoutTemplateInput input)
+    public async Task<UpdateWorkoutTemplateOutput> Execute(UpdateWorkoutTemplateInput input, CancellationToken ct = default)
     {
         var userId = currentUser.UserId;
         logger.LogInformation("Updating WorkoutTemplate | Id: {Id} - User: {UserId}", input.TemplateId, userId);
@@ -38,7 +38,7 @@ public class UpdateWorkoutTemplate(
         template.Value.Update(input.Name, exercises);
 
         await templateRepo.Save(template.Value);
-        await uow.Do();
+        await uow.Do(ct);
 
         logger.LogInformation("WorkoutTemplate updated | Id: {Id} - User: {UserId}", template.Value.Id, userId);
 

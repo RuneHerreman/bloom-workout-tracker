@@ -8,11 +8,14 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Queries;
 
 public class SearchExerciseCatalogQuery(QueryDbContext context): ISearchExerciseCatalogQuery
 {
-    public async Task<IReadOnlyList<ExerciseData>> Fetch(Expression<Func<ExerciseData, bool>> filter)
+    public async Task<IReadOnlyList<ExerciseData>> Fetch(
+        Expression<Func<ExerciseData, bool>> filter,
+        CancellationToken ct = default
+    )
     {
         return await context.Exercises
             .Where(filter)
             .OrderBy(e => e.Name)
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 }

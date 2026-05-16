@@ -24,7 +24,7 @@ public class UpdateUserInfo(
     ILogger<UpdateUserInfo> logger
 ) : IUseCase<UpdateUserInfoInput, UpdateUserInfoOutput>
 {
-    public async Task<UpdateUserInfoOutput> Execute(UpdateUserInfoInput input)
+    public async Task<UpdateUserInfoOutput> Execute(UpdateUserInfoInput input, CancellationToken ct = default)
     {
         var userId = currentUser.UserId;
         logger.LogInformation("Updating User | Id: {UserId}", userId);
@@ -50,7 +50,7 @@ public class UpdateUserInfo(
         );
 
         await userRepo.Save(user.Value);
-        await uow.Do();
+        await uow.Do(ct);
 
         logger.LogInformation("User updated | Id: {UserId}", user.Value.Id);
 

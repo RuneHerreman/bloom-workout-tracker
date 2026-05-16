@@ -20,13 +20,14 @@ public sealed record ChangeUserPasswordBody(
 public static class ChangeUserPasswordController
 {
     public static async Task<Results<NoContent, BadRequest>> Invoke(
-        [AsParameters] ChangeUserPasswordRequest request
+        [AsParameters] ChangeUserPasswordRequest request,
+        CancellationToken ct
     )
     {
         await request.UseCase.Execute(new ChangeUserPasswordInput(
             request.Body.OldPassword,
             request.Body.NewPassword
-        ));
+        ), ct);
 
         return TypedResults.NoContent();
     }

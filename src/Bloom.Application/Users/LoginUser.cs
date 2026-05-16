@@ -20,7 +20,7 @@ public class LoginUser(
     ILogger<LoginUser> logger
 ) : IUseCase<LoginUserInput, LoginUserOutput>
 {
-    public async Task<LoginUserOutput> Execute(LoginUserInput input)
+    public async Task<LoginUserOutput> Execute(LoginUserInput input, CancellationToken ct = default)
     {
         logger.LogInformation("Login attempt | Email: {Email}", input.Email);
 

@@ -17,14 +17,14 @@ public class SearchExerciseCatalog(
     ISearchExerciseCatalogQuery searchExerciseCatalogQuery  
 ): IUseCase<SearchExerciseCatalogInput, SearchExerciseCatalogOutput>
 {
-    public async Task<SearchExerciseCatalogOutput> Execute(SearchExerciseCatalogInput input)
+    public async Task<SearchExerciseCatalogOutput> Execute(SearchExerciseCatalogInput input, CancellationToken ct = default)
     {
         var exercises = await searchExerciseCatalogQuery.Fetch(
             ExerciseDataFilters.ByProperty(
                 name: input.Name,
                 muscleGroups: MapTargetMuscleGroups(input.TargetMuscleGroups),
                 types: MapExerciseTypes(input.ExerciseTypes)
-            )
+            ), ct
         );
         
         return new SearchExerciseCatalogOutput(exercises);

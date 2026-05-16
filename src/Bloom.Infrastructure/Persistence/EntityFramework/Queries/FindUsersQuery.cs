@@ -8,10 +8,13 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Queries;
 
 public class FindUsersQuery(QueryDbContext context) : IFindUsersQuery
 {
-    public async Task<IReadOnlyList<UserData>> Fetch(Expression<Func<UserData, bool>> filter)
+    public async Task<IReadOnlyList<UserData>> Fetch(
+        Expression<Func<UserData, bool>> filter,
+        CancellationToken ct = default
+    )
     {
         return await context.Users
             .Where(filter)
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 }

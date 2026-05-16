@@ -15,10 +15,11 @@ public sealed record FindLoggedWorkoutByIdRequest(
 public static class FindLoggedWorkoutByIdController
 {
     public static async Task<Results<Ok<LoggedWorkout>, BadRequest>> Invoke(
-        [AsParameters] FindLoggedWorkoutByIdRequest request
+        [AsParameters] FindLoggedWorkoutByIdRequest request,
+        CancellationToken ct
     )
     {
-        var output = await request.UseCase.Execute(new FindLoggedWorkoutByIdInput(request.LoggedWorkoutId));
+        var output = await request.UseCase.Execute(new FindLoggedWorkoutByIdInput(request.LoggedWorkoutId), ct);
 
         return TypedResults.Ok(output.Log.ToResponse());
     }

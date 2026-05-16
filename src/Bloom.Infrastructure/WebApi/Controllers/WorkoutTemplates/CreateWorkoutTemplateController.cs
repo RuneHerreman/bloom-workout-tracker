@@ -26,13 +26,14 @@ public sealed record CreateWorkoutTemplateResponse(Guid WorkoutTemplateId);
 public static class CreateWorkoutTemplateController
 {
     public static async Task<Results<Ok<CreateWorkoutTemplateResponse>, BadRequest>> Invoke(
-        [AsParameters] CreateWorkoutTemplateRequest request
+        [AsParameters] CreateWorkoutTemplateRequest request,
+        CancellationToken ct
     )
     {
         var output = await request.UseCase.Execute(new CreateWorkoutTemplateInput(
             request.Body.Name,
             request.Body.Exercises.Select(e => e.ToInput()).ToList()
-        ));
+        ), ct);
 
         return TypedResults.Ok(new CreateWorkoutTemplateResponse(output.WorkoutTemplateId));
     }

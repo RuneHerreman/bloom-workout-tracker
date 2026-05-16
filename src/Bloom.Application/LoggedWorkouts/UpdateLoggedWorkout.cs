@@ -22,7 +22,7 @@ public class UpdateLoggedWorkout(
     ILogger<UpdateLoggedWorkout> logger
 ) : IUseCase<UpdateLoggedWorkoutInput, UpdateLoggedWorkoutOutput>
 {
-    public async Task<UpdateLoggedWorkoutOutput> Execute(UpdateLoggedWorkoutInput input)
+    public async Task<UpdateLoggedWorkoutOutput> Execute(UpdateLoggedWorkoutInput input, CancellationToken ct = default)
     {
         var userId = currentUser.UserId;
         logger.LogInformation("Updating LoggedWorkout | Id: {Id} - User: {UserId}", input.LoggedWorkoutId, userId);
@@ -40,7 +40,7 @@ public class UpdateLoggedWorkout(
         log.Value.Update(input.Name, input.Note, input.LoggedAt, exercises);
 
         await logRepo.Save(log.Value);
-        await uow.Do();
+        await uow.Do(ct);
 
         logger.LogInformation("LoggedWorkout updated | Id: {Id} - User: {UserId}", log.Value.Id, userId);
 

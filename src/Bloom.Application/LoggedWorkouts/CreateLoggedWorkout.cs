@@ -21,7 +21,7 @@ public class CreateLoggedWorkout(
     ILogger<CreateLoggedWorkout> logger
 ) : IUseCase<CreateLoggedWorkoutInput, CreateLoggedWorkoutOutput>
 {
-    public async Task<CreateLoggedWorkoutOutput> Execute(CreateLoggedWorkoutInput input)
+    public async Task<CreateLoggedWorkoutOutput> Execute(CreateLoggedWorkoutInput input, CancellationToken ct = default)
     {
         var userId = currentUser.UserId;
         logger.LogInformation("Creating LoggedWorkout | User: {UserId}", userId);
@@ -43,7 +43,7 @@ public class CreateLoggedWorkout(
         );
 
         await logRepo.Save(log);
-        await uow.Do();
+        await uow.Do(ct);
 
         logger.LogInformation("LoggedWorkout created | Id: {LogId} - User: {UserId}", log.Id, userId);
 
