@@ -43,7 +43,7 @@ public static class Routes
         userGroup.MapPost("/logout", LogoutUserController.Invoke)
             .WithName(nameof(LogoutUserController))
             .WithDescription("Clear the auth cookie and end the session.")
-            .AllowAnonymous();
+            .RequireAuthorization();
 
         userGroup.MapGet("/me", GetCurrentUserController.Invoke)
             .WithName(nameof(GetCurrentUserController))

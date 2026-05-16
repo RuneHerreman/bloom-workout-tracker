@@ -45,7 +45,8 @@ public static class Module
                     ValidIssuer = jwtOptions.Issuer,
                     ValidAudience = jwtOptions.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtOptions.Key))
+                        Encoding.UTF8.GetBytes(jwtOptions.Key)),
+                    ValidAlgorithms = [SecurityAlgorithms.HmacSha256]
                 };
 
                 // Read token from the HttpOnly cookie so JS cannot access it
