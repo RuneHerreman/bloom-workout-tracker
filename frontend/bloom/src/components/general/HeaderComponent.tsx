@@ -22,9 +22,9 @@ function HeaderComponent({ title, subtitle, action, shortcuts }: HeaderComponent
             </div>
             <div className="page-header-right">
                 {shortcuts && (
-                    <div className="shortcuts-info">
+                    <div className="shortcuts-info tooltip-anchor">
                         <Info size={15} />
-                        <div className="shortcuts-tooltip">
+                        <div className="tooltip">
                             {shortcuts.map(s => (
                                 <div key={s.keys} className="shortcut-row">
                                     <kbd>{s.keys}</kbd>

@@ -513,20 +513,13 @@
     gap: 0.75rem;
 }
 
-.shortcuts-info {
+/* ── Generic tooltip ─────────────────────────────────────────────────────────── */
+
+.tooltip-anchor {
     position: relative;
-    display: flex;
-    align-items: center;
-    color: var(--ink-muted);
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: var(--radius-sm);
-    transition: color var(--transition);
 }
 
-.shortcuts-info:hover { color: var(--ink); }
-
-.shortcuts-tooltip {
+.tooltip {
     position: absolute;
     top: calc(100% + 0.5rem);
     right: 0;
@@ -545,7 +538,21 @@
     box-shadow: 0 4px 12px rgb(0 0 0 / 0.08);
 }
 
-.shortcuts-info:hover .shortcuts-tooltip { opacity: 1; }
+.tooltip-anchor:hover .tooltip { opacity: 1; }
+
+/* ── Shortcuts info icon ─────────────────────────────────────────────────────── */
+
+.shortcuts-info {
+    display: flex;
+    align-items: center;
+    color: var(--ink-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    transition: color var(--transition);
+}
+
+.shortcuts-info:hover { color: var(--ink); }
 
 .shortcut-row {
     display: flex;
@@ -930,6 +937,7 @@
 
 @media (max-width: 768px) {
     .shortcuts-info { display: none; }
+    .tooltip-anchor { display: none; }
 
     .overlay-backdrop {
         align-items: flex-end;
