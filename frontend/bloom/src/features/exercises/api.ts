@@ -15,13 +15,28 @@ export interface ExerciseFilters {
     exerciseTypes?: ExerciseType[];
 }
 
-export async function searchExercises(filters?: ExerciseFilters): Promise<Exercise[]> {
+let _allExercises: Promise<Exercise[]> | null = null;
+
+export function searchExercises(filters?: ExerciseFilters): Promise<Exercise[]> {
+    const hasFilters = filters && (
+        filters.name ||
+        (filters.targetMuscleGroups?.length ?? 0) > 0 ||
+        (filters.exerciseTypes?.length ?? 0) > 0
+    );
+
+    if (!hasFilters) {
+        if (!_allExercises) {
+            _allExercises = fetchFromServer<Exercise[]>("exercises", "GET")
+                .catch(e => { _allExercises = null; throw e; });
+        }
+        return _allExercises;
+    }
+
     const p = new URLSearchParams();
     if (filters?.name) p.set("Name", filters.name);
     filters?.targetMuscleGroups?.forEach(m => p.append("TargetMuscleGroups", m));
     filters?.exerciseTypes?.forEach(t => p.append("ExerciseTypes", t));
-    const query = p.toString() ? `?${p.toString()}` : "";
-    return fetchFromServer<Exercise[]>(`exercises${query}`, "GET");
+    return fetchFromServer<Exercise[]>(`exercises?${p.toString()}`, "GET");
 }
 
 export async function getExercise(exerciseId: string): Promise<Exercise> {

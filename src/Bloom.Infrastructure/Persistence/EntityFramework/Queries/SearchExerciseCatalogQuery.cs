@@ -14,6 +14,7 @@ public class SearchExerciseCatalogQuery(QueryDbContext context): ISearchExercise
     )
     {
         return await context.Exercises
+            .AsNoTracking()
             .Where(filter)
             .OrderBy(e => e.Name)
             .ToListAsync(ct);
