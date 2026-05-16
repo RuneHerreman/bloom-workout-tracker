@@ -60,7 +60,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 0.0625rem solid var(--border);
     font-size: 0.8rem;
 }
 
@@ -237,16 +237,6 @@
     align-self: flex-start;
 }
 
-.focus-chip {
-    padding: 0.2rem 0.65rem;
-    line-height: 1.5;
-}
-
-.focus-chip.active {
-    background: rgba(45, 128, 85, 0.08);
-    border-color: var(--primary-light);
-    color: var(--primary-light);
-}
 
 .focus-empty {
     font-size: 0.8rem;

@@ -89,9 +89,9 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
     }
 
     return (
-        <div className="template-detail-view">
+        <div className="detail-view">
             {error && <div className="error-banner">{error}</div>}
-            <div className="template-detail-header">
+            <div className="detail-header">
                 <input
                     className="template-title-input"
                     value={name}

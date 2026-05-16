@@ -102,7 +102,7 @@ function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange }: LogDetai
     }
 
     return (
-        <div className="log-detail-view">
+        <div className="detail-view">
             {addExerciseOpen && (
                 <Overlay title="Exercise library" subtitle="Add exercise" onClose={() => setAddExerciseOpen(false)}>
                     <ExerciseLibrary
@@ -114,7 +114,7 @@ function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange }: LogDetai
 
             {error && <div className="error-banner">{error}</div>}
 
-            <div className="log-detail-header">
+            <div className="detail-header">
                 <div className="log-detail-title-group">
                     <input
                         className="template-title-input"

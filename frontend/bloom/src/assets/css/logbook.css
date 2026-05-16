@@ -1,19 +1,3 @@
-/* ── Log detail view ─────────────────────────────────────────────────────────── */
-
-.log-detail-view {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-/* ── Log detail header ───────────────────────────────────────────────────────── */
-
-.log-detail-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
 .log-detail-title-group {
     display: flex;
     flex-direction: column;
@@ -174,14 +158,17 @@
     padding: 0.75rem 0.5rem;
 }
 
-.gpx-chart-title {
+.gpx-chart-title,
+.gpx-section-title {
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--ink-muted);
-    margin-bottom: 0.4rem;
 }
+
+.gpx-chart-title  { margin-bottom: 0.4rem; }
+.gpx-section-title { margin-bottom: 0.5rem; }
 
 .gpx-chart-area {
     height: 9rem;
@@ -191,15 +178,6 @@
 }
 
 /* ── GPX splits bar ──────────────────────────────────────────────────────────── */
-
-.gpx-section-title {
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--ink-muted);
-    margin-bottom: 0.5rem;
-}
 
 .gpx-splits-meta {
     font-size: 0.72rem;
