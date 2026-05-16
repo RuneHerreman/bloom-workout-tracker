@@ -2,6 +2,13 @@
 
 > Self-hosted workout tracker. Plan, log, and analyse your training — strength and cardio.
 
+[![App](https://img.shields.io/badge/App-localhost%3A3000-3E544B?style=flat-square)](http://localhost:3000)
+[![API docs](https://img.shields.io/badge/API%20docs-Scalar-3E544B?style=flat-square)](http://localhost:8080/scalar)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white)](https://react.dev)
+[![.NET](https://img.shields.io/badge/.NET-10-512BD4?style=flat-square&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com)
+
 ![Dashboard overview](docs/dashboard.png)
 
 ---
