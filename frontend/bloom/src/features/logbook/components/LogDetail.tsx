@@ -31,6 +31,7 @@ function LogDetail({ log, exercises, onSave, onDelete }: LogDetailProps) {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [addExerciseOpen, setAddExerciseOpen] = useState(false);
+    const [lastAddedId, setLastAddedId] = useState<string | null>(null);
 
     const { activeExercise, onDragStart, onDragEnd, onDragCancel } = useExerciseDnd(
         logExercises,
@@ -75,6 +76,7 @@ function LogDetail({ log, exercises, onSave, onDelete }: LogDetailProps) {
             ...prev,
             { exerciseId, order: prev.length + 1, sets: [defaultSet], gpxData: null },
         ]);
+        setLastAddedId(exerciseId);
         setAddExerciseOpen(false);
     }
 
@@ -143,6 +145,7 @@ function LogDetail({ log, exercises, onSave, onDelete }: LogDetailProps) {
                             onSetsChange={handleSetsChange}
                             onDelete={handleDeleteExercise}
                             onGpxChange={handleGpxChange}
+                            autoFocus={ex.exerciseId === lastAddedId}
                         />
                     ))}
                 </SortableContext>

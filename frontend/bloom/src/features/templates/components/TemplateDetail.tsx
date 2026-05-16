@@ -26,6 +26,7 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
     const [name, setName] = useState(template.name);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [lastAddedId, setLastAddedId] = useState<string | null>(null);
 
     const { activeExercise, onDragStart, onDragEnd, onDragCancel } = useExerciseDnd(
         templateExercises,
@@ -42,6 +43,7 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
             ...prev,
             { exerciseId: pendingExerciseId, order: prev.length + 1, sets: [defaultSet] },
         ]);
+        setLastAddedId(pendingExerciseId);
         onExerciseAdded?.();
     }, [pendingExerciseId]);
 
@@ -104,6 +106,7 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
                             exerciseInfo={exercises[exercise.exerciseId] ?? null}
                             onSetsChange={handleSetsChange}
                             onDelete={handleDeleteExercise}
+                            autoFocus={exercise.exerciseId === lastAddedId}
                         />
                     ))}
                 </SortableContext>

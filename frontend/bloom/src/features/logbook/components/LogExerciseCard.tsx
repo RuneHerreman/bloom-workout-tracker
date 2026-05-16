@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
@@ -18,11 +18,21 @@ interface LogExerciseCardProps {
     onSetsChange: (exerciseId: string, sets: LoggedSet[]) => void;
     onDelete: (exerciseId: string) => void;
     onGpxChange?: (exerciseId: string, gpxData: string | null) => void;
+    autoFocus?: boolean;
 }
 
-function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, onGpxChange }: LogExerciseCardProps) {
+function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, onGpxChange, autoFocus }: LogExerciseCardProps) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+    const cardRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (!autoFocus) return;
+        const firstInput = cardRef.current?.querySelector<HTMLInputElement>('section input');
+        firstInput?.focus();
+        firstInput?.select();
+        cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, []);
     const [gpxStats, setGpxStats] = useState<GpxStats | null>(() =>
         exercise.gpxData ? parseGpx(exercise.gpxData) : null
     );
@@ -97,7 +107,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
 
     return (
         <div
-            ref={setNodeRef}
+            ref={node => { setNodeRef(node); (cardRef as React.MutableRefObject<HTMLDivElement | null>).current = node; }}
             className="exercise-card"
             style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
         >

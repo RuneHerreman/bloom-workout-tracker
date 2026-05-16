@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -14,10 +14,20 @@ interface TemplateExerciseCardProps {
     exerciseInfo?: Exercise;
     onSetsChange?: (exerciseId: string, sets: PlannedSet[]) => void;
     onDelete?: (exerciseId: string) => void;
+    autoFocus?: boolean;
 }
 
-function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete }: TemplateExerciseCardProps) {
+function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, autoFocus }: TemplateExerciseCardProps) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!autoFocus) return;
+        const firstInput = cardRef.current?.querySelector<HTMLInputElement>('section input');
+        firstInput?.focus();
+        firstInput?.select();
+        cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, []);
     const [items, setItems] = useState<RowItem[]>(() =>
         [...exercise.sets]
             .sort((a, b) => a.order - b.order)
@@ -67,7 +77,7 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
 
     return (
         <div
-            ref={setNodeRef}
+            ref={node => { setNodeRef(node); (cardRef as React.MutableRefObject<HTMLDivElement | null>).current = node; }}
             className="exercise-card"
             style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
         >
