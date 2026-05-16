@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
@@ -5,11 +6,12 @@ import AppLayout from "./components/AppLayout.tsx";
 import HomePage from "./features/home/HomePage.tsx";
 import LoginPage from "./features/auth/LoginPage.tsx";
 import SignUpPage from "./features/auth/SignUpPage.tsx";
-import DashboardPage from "./features/dashboard/DashboardPage.tsx";
-import TemplatePage from "./features/templates/TemplatePage.tsx";
-import LogbookPage from "./features/logbook/LogbookPage.tsx";
-import MacroPage from "./features/tool-pages/macros/MacroPage.tsx";
-import OneRepMaxPage from "./features/tool-pages/1-RM/1RmPage.tsx";
+
+const DashboardPage  = lazy(() => import("./features/dashboard/DashboardPage.tsx"));
+const TemplatePage   = lazy(() => import("./features/templates/TemplatePage.tsx"));
+const LogbookPage    = lazy(() => import("./features/logbook/LogbookPage.tsx"));
+const MacroPage      = lazy(() => import("./features/tool-pages/macros/MacroPage.tsx"));
+const OneRepMaxPage  = lazy(() => import("./features/tool-pages/1-RM/1RmPage.tsx"));
 
 function App() {
     return (
@@ -19,19 +21,19 @@ function App() {
                 <Route path="/login" element={<LoginPage/>}/>
                 <Route path="/signup" element={<SignUpPage/>}/>
                 <Route path="/dashboard" element={
-                    <ProtectedRoute><AppLayout><DashboardPage/></AppLayout></ProtectedRoute>
+                    <ProtectedRoute><AppLayout><Suspense><DashboardPage/></Suspense></AppLayout></ProtectedRoute>
                 }/>
                 <Route path="/templates" element={
-                    <ProtectedRoute><AppLayout><TemplatePage/></AppLayout></ProtectedRoute>
+                    <ProtectedRoute><AppLayout><Suspense><TemplatePage/></Suspense></AppLayout></ProtectedRoute>
                 }/>
                 <Route path="/logbook" element={
-                    <ProtectedRoute><AppLayout><LogbookPage/></AppLayout></ProtectedRoute>
+                    <ProtectedRoute><AppLayout><Suspense><LogbookPage/></Suspense></AppLayout></ProtectedRoute>
                 }/>
                 <Route path="/tools/one-rep-max" element={
-                    <ProtectedRoute><AppLayout><OneRepMaxPage/></AppLayout></ProtectedRoute>
+                    <ProtectedRoute><AppLayout><Suspense><OneRepMaxPage/></Suspense></AppLayout></ProtectedRoute>
                 }/>
                 <Route path="/tools/macro-calculator" element={
-                    <ProtectedRoute><AppLayout><MacroPage/></AppLayout></ProtectedRoute>
+                    <ProtectedRoute><AppLayout><Suspense><MacroPage/></Suspense></AppLayout></ProtectedRoute>
                 }/>
             </Routes>
         </AuthProvider>
