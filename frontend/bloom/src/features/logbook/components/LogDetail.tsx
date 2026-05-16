@@ -33,6 +33,9 @@ function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange }: LogDetai
     const [error, setError] = useState<string | null>(null);
     const [addExerciseOpen, setAddExerciseOpen] = useState(false);
     const [lastAddedId, setLastAddedId] = useState<string | null>(null);
+    const [showSticky, setShowSticky] = useState(false);
+    const [panelTop, setPanelTop] = useState(0);
+    const actionsRef = useRef<HTMLDivElement>(null);
 
     const { activeExercise, onDragStart, onDragEnd, onDragCancel } = useExerciseDnd(
         logExercises,
@@ -55,6 +58,20 @@ function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange }: LogDetai
     useEffect(() => {
         onDirtyChange?.(hasChanges, () => handleSaveRef.current());
     }, [hasChanges]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        const el = actionsRef.current;
+        if (!el) return;
+        const panel = el.closest('.panel-detail') as HTMLElement | null;
+        const top = Math.round(panel?.getBoundingClientRect().top ?? 0);
+        setPanelTop(top);
+        const observer = new IntersectionObserver(
+            ([entry]) => setShowSticky(!entry.isIntersecting),
+            { rootMargin: `-${top}px 0px 0px 0px`, threshold: 0 }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
 
     function handleSetsChange(exerciseId: string, sets: LoggedSet[]) {
         setLogExercises(prev =>
@@ -114,6 +131,11 @@ function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange }: LogDetai
 
             {error && <div className="error-banner">{error}</div>}
 
+            {showSticky && hasChanges && (
+                <div className="sticky-save-bar" style={{ top: panelTop }}>
+                    <Button text="Save Changes" style="green" icon={<Save size={14} />} disabled={saving} onClick={handleSave} />
+                </div>
+            )}
             <div className="detail-header">
                 <div className="log-detail-title-group">
                     <input
@@ -128,7 +150,7 @@ function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange }: LogDetai
                         onChange={e => setDate(e.target.value)}
                     />
                 </div>
-                <div className="actions-row">
+                <div className="actions-row" ref={actionsRef}>
                     <Button text="Save Changes" style="green" icon={<Save size={14} />} disabled={!hasChanges || saving} onClick={handleSave} />
                     <Button text="Delete Log" style="red" icon={<Trash2 size={14} />} onClick={() => onDelete(log.id)} />
                 </div>

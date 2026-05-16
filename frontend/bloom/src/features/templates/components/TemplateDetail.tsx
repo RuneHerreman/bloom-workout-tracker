@@ -28,6 +28,9 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [lastAddedId, setLastAddedId] = useState<string | null>(null);
+    const [showSticky, setShowSticky] = useState(false);
+    const [panelTop, setPanelTop] = useState(0);
+    const actionsRef = useRef<HTMLDivElement>(null);
 
     const { activeExercise, onDragStart, onDragEnd, onDragCancel } = useExerciseDnd(
         templateExercises,
@@ -75,6 +78,20 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
         onDirtyChange?.(hasChanges, () => handleSaveRef.current());
     }, [hasChanges]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    useEffect(() => {
+        const el = actionsRef.current;
+        if (!el) return;
+        const panel = el.closest('.panel-detail') as HTMLElement | null;
+        const top = Math.round(panel?.getBoundingClientRect().top ?? 0)  - 1 ;
+        setPanelTop(top);
+        const observer = new IntersectionObserver(
+            ([entry]) => setShowSticky(!entry.isIntersecting),
+            { rootMargin: `-${top}px 0px 0px 0px`, threshold: 0 }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
     async function handleSave() {
         setSaving(true);
         setError(null);
@@ -91,14 +108,19 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
     return (
         <div className="detail-view">
             {error && <div className="error-banner">{error}</div>}
+            {showSticky && hasChanges && (
+                <div className="sticky-save-bar" style={{ top: panelTop }}>
+                    <Button text="Save Changes" style="white" icon={<Save size={14} />} disabled={saving} onClick={handleSave} />
+                </div>
+            )}
             <div className="detail-header">
                 <input
                     className="template-title-input"
                     value={name}
                     onChange={e => setName(e.target.value)}
                 />
-                <div className="actions-row">
-                    <Button text="Save Changes" style="green" icon={<Save size={14} />} disabled={!hasChanges || saving} onClick={handleSave} />
+                <div className="actions-row" ref={actionsRef}>
+                    <Button text="Save Changes" style="white" icon={<Save size={14} />} disabled={!hasChanges || saving} onClick={handleSave} />
                     <Button text="Delete Template" style="red" icon={<Trash2 size={14} />} onClick={() => onDelete(template.id)} />
                 </div>
             </div>

@@ -128,8 +128,10 @@
 
 .detail-header {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
+    justify-content: space-between;
+    gap: 2rem;
+    min-width: 0;
 }
 
 /* ── Panel page layout ───────────────────────────────────────────────────────── */
@@ -833,9 +835,19 @@
 .actions-row {
     display: flex;
     gap: 0.5rem;
-    justify-content: flex-end;
-    width: 20rem;
     flex-shrink: 0;
+    align-self: start;
+}
+
+.sticky-save-bar {
+    position: fixed;
+    right: 0;
+    z-index: 100;
+    padding: 0.5rem;
+    background: var(--surface-light);
+    border-bottom: 0.0625rem solid var(--border);
+    border-left: 0.0625rem solid var(--border);
+    border-bottom-left-radius: var(--widget-border-radius);
 }
 
 @media (max-width: 1300px) {

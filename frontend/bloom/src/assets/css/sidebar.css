@@ -54,15 +54,15 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    padding: 1rem;
+    padding: 1.25rem;
     gap: 0.4rem;
 }
 
 /* ── Header (logo + close) ──────────────────────────────────────────────────── */
 
 .sidebar-logo {
-    padding: 0 0.5rem;
     margin-bottom: 4rem;
+    padding-top: 1rem;
 }
 
 .sidebar-logo img {
