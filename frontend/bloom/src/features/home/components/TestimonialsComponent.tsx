@@ -45,9 +45,9 @@ function TestimonialsComponent() {
             <h2>Don't take our word for it...</h2>
             <p>Hear from some of our long-time users</p>
             <div id="testimonial-container">
-                {testimonials.map((testimonial, index) => (
+                {testimonials.map((testimonial) => (
                     <TestimonialCardComponent
-                        key={index}
+                        key={testimonial.name}
                         name={testimonial.name}
                         experience={testimonial.experience}
                         rating={testimonial.rating}

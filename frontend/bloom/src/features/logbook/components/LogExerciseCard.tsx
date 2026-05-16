@@ -31,7 +31,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
     const [items, setItems] = useState<LogRowItem[]>(() =>
         [...exercise.sets]
             .sort((a, b) => a.order - b.order)
-            .map(set => ({ id: crypto.randomUUID(), set }))
+            .map(set => ({ id: `set-${set.order}-${set.type}`, set }))
     );
 
     function pushChange(updated: LogRowItem[]) {

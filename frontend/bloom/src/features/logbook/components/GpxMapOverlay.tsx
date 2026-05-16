@@ -345,7 +345,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
                                 <Polyline positions={positions} pathOptions={{ color: "#2D8055", weight: 3, opacity: 0.85 }} />
                                 {positions.length > 0 && <Marker position={positions[0]} icon={START_ICON} />}
                                 {positions.length > 1 && <Marker position={positions[positions.length - 1]} icon={END_ICON} />}
-                                {arrowMarkers.map((a, i) => <Marker key={i} position={a.pos} icon={arrowIcon(a.deg)} />)}
+                                {arrowMarkers.map((a) => <Marker key={`${a.pos[0]}-${a.pos[1]}`} position={a.pos} icon={arrowIcon(a.deg)} />)}
                                 {hoverMapPoint && (
                                     <CircleMarker center={[hoverMapPoint.lat, hoverMapPoint.lon]} radius={7}
                                         pathOptions={{ color: "#fff", fillColor: "#2D8055", fillOpacity: 1, weight: 2.5 }} />

@@ -21,7 +21,7 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
     const [items, setItems] = useState<RowItem[]>(() =>
         [...exercise.sets]
             .sort((a, b) => a.order - b.order)
-            .map(set => ({ id: crypto.randomUUID(), set }))
+            .map(set => ({ id: `set-${set.order}-${set.type}`, set }))
     );
 
     function pushChange(updated: RowItem[]) {
