@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import "../../assets/css/logbook.css";
 import { getLogs, createLog, deleteLog } from "./api.ts";
@@ -41,7 +41,7 @@ const LogbookPage = () => {
         });
     }, []);
 
-    const selectedLog = logs.find(l => l.id === selectedId) ?? null;
+    const selectedLog = useMemo(() => logs.find(l => l.id === selectedId) ?? null, [logs, selectedId]);
 
     const handleSave = (id: string, name: string, loggedAt: string, note: string | null, exercises: LoggedExercise[]) => {
         setLogs(prev =>

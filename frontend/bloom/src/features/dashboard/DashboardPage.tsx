@@ -65,6 +65,7 @@ function reducer(state: DashboardState, action: DashboardAction): DashboardState
         case "SET_USER": return { ...state, user: action.user };
         case "LOADED":   return { ...state, ...action.payload, loading: false, error: null };
         case "ERROR":    return { ...state, loading: false, error: action.error };
+        default:         return state;
     }
 }
 

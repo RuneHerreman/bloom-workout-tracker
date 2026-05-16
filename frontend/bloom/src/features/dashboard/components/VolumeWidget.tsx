@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import GeneralWidget from "./GeneralWidget.tsx";
 import {
     Chart as ChartJS,
@@ -41,7 +42,7 @@ const PALETTE = [
 ];
 
 function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
-    const chartData = {
+    const chartData = useMemo(() => ({
         labels: monthLabels,
         datasets: series.map((s, i) => {
             const color = PALETTE[i % PALETTE.length];
@@ -64,9 +65,9 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
                 hoverBorderWidth: 4
             };
         })
-    };
+    }), [series, monthLabels]);
 
-    const options = {
+    const options = useMemo(() => ({
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -122,7 +123,7 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
                 }
             }
         }
-    };
+    }), []);
 
     return (
         <GeneralWidget

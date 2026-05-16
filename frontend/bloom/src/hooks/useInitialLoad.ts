@@ -10,10 +10,14 @@ export function useInitialLoad<T>(fetcher: () => Promise<T>): {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        const ac = new AbortController();
+
         fetcher()
-            .then(setData)
-            .catch(e => setError(e instanceof Error ? e.message : "Something went wrong"))
-            .finally(() => setLoading(false));
+            .then(data => { if (!ac.signal.aborted) setData(data); })
+            .catch(e => { if (!ac.signal.aborted) setError(e instanceof Error ? e.message : "Something went wrong"); })
+            .finally(() => { if (!ac.signal.aborted) setLoading(false); });
+
+        return () => ac.abort();
     }, []);
 
     return { data, loading, error };

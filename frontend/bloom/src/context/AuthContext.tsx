@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import type { ReactNode } from "react";
 import { getMe, logout as logoutApi } from "../features/auth/api.ts";
 
@@ -15,16 +15,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    const markAuthenticated = () => setIsAuthenticated(true);
+    const markAuthenticated = useCallback(() => setIsAuthenticated(true), []);
 
-    const logout = async () => {
+    const logout = useCallback(async () => {
         try {
             await logoutApi();
         } catch {
             // server unreachable — proceed anyway, cookie will expire naturally
         }
         setIsAuthenticated(false);
-    };
+    }, []);
 
     useEffect(() => {
         let isMounted = true;
@@ -45,8 +45,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => { isMounted = false; };
     }, []);
 
+    const value = useMemo(
+        () => ({ isAuthenticated, isLoading, markAuthenticated, logout }),
+        [isAuthenticated, isLoading, markAuthenticated, logout]
+    );
+
     return (
-        <AuthContext.Provider value={{ isAuthenticated, isLoading, markAuthenticated, logout }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );

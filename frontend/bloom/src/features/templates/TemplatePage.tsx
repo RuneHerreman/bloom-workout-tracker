@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import "../../assets/css/templates.css";
 import { getTemplates, getTemplate, createTemplate, deleteTemplate } from "./api.ts";
@@ -34,7 +34,7 @@ const TemplatePage = () => {
         });
     }, []);
 
-    const selectedTemplate = templates.find(t => t.id === selectedId) ?? null;
+    const selectedTemplate = useMemo(() => templates.find(t => t.id === selectedId) ?? null, [templates, selectedId]);
 
     const handleSave = (id: string, name: string, exercises: TemplateExercise[]) => {
         setTemplates(prev => prev.map(t => t.id === id ? { ...t, name, exercises } : t));
