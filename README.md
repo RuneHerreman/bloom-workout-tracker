@@ -83,21 +83,35 @@ docker compose up --build -d
 
 ## Local development
 
+### Prerequisites
+
+- [Docker](https://www.docker.com/) with Compose
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [Node.js](https://nodejs.org/) (LTS)
+
 **Backend**
 
 ```bash
 # Start only the database
 docker compose up bloom-db -d
 
+# Override the DB host for local development (bloom-db is the Docker-internal hostname)
 # Run the API
 cd src/Bloom.Main
 dotnet run
 ```
 
+> The `appsettings.Development.json` connection string uses `Host=bloom-db`. Override it for local runs:
+> ```bash
+> dotnet run --Database:ConnectionString="Host=localhost;Port=5432;Database=bloom;Username=bloom_user;Password=change_me_strong_password"
+> ```
+> Use the credentials from your `.env` file.
+
 **Frontend**
 
 ```bash
 cd frontend/bloom
+cp .env.example .env   # sets VITE_API_BASE_URL=http://localhost:8080/api/
 npm install
 npm run dev
 ```
