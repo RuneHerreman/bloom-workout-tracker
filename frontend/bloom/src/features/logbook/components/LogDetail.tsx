@@ -19,9 +19,10 @@ interface LogDetailProps {
     onSave: (id: string, name: string, loggedAt: string, note: string | null, exercises: LoggedExercise[]) => void;
     onDelete: (id: string) => void;
     onDirtyChange?: (isDirty: boolean, save: () => Promise<void>) => void;
+    autoFocusTitle?: boolean;
 }
 
-function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange }: LogDetailProps) {
+function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange, autoFocusTitle }: LogDetailProps) {
     const initialDate = toDateInputValue(log.loggedAt);
 
     const [logExercises, setLogExercises] = useState<LoggedExercise[]>(() =>
@@ -37,6 +38,13 @@ function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange }: LogDetai
     const [showSticky, setShowSticky] = useState(false);
     const [panelTop, setPanelTop] = useState(0);
     const actionsRef = useRef<HTMLDivElement>(null);
+    const titleInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (!autoFocusTitle) return;
+        titleInputRef.current?.focus();
+        titleInputRef.current?.select();
+    }, []);
 
     const { activeExercise, onDragStart, onDragEnd, onDragCancel } = useExerciseDnd(
         logExercises,
@@ -152,6 +160,7 @@ function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange }: LogDetai
             <div className="detail-header">
                 <div className="log-detail-title-group">
                     <input
+                        ref={titleInputRef}
                         className="template-title-input"
                         value={name}
                         onChange={e => setName(e.target.value)}

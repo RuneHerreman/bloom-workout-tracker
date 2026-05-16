@@ -40,6 +40,7 @@ const LogbookPage = () => {
     useEffect(() => { setSelectedId(null); }, [location.key]);
     const [loading, setLoading] = useState(true);
     const [startOpen, setStartOpen] = useState(() => !!(location.state as { openStart?: boolean } | null)?.openStart);
+    const [newlyCreatedId, setNewlyCreatedId] = useState<string | null>(null);
 
     useEffect(() => {
         getLogs().then(fetchedLogs => {
@@ -76,6 +77,7 @@ const LogbookPage = () => {
         const fresh = await getLogs();
         setLogs(fresh.sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime()));
         setSelectedId(id);
+        setNewlyCreatedId(id);
     }
 
     async function handleStartBlank() {
@@ -84,6 +86,7 @@ const LogbookPage = () => {
         const fresh = await getLogs();
         setLogs(fresh.sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime()));
         setSelectedId(id);
+        setNewlyCreatedId(id);
     }
 
     const handleDelete = async (id: string) => {
@@ -207,6 +210,7 @@ const LogbookPage = () => {
                             onSave={handleSave}
                             onDelete={handleDelete}
                             onDirtyChange={handleDirtyChange}
+                            autoFocusTitle={selectedLog.id === newlyCreatedId}
                         />
                     ) : (
                         <div className="panel-empty">

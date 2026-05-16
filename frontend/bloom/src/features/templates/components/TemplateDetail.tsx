@@ -19,9 +19,10 @@ interface TemplateDetailProps {
     pendingExerciseId?: string | null;
     onExerciseAdded?: () => void;
     onDirtyChange?: (isDirty: boolean, save: () => Promise<void>) => void;
+    autoFocusTitle?: boolean;
 }
 
-function TemplateDetail({ template, exercises, onDelete, onSave, pendingExerciseId, onExerciseAdded, onDirtyChange }: TemplateDetailProps) {
+function TemplateDetail({ template, exercises, onDelete, onSave, pendingExerciseId, onExerciseAdded, onDirtyChange, autoFocusTitle }: TemplateDetailProps) {
     const [templateExercises, setTemplateExercises] = useState<TemplateExercise[]>(() =>
         [...template.exercises].sort((a, b) => a.order - b.order)
     );
@@ -32,6 +33,13 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
     const [showSticky, setShowSticky] = useState(false);
     const [panelTop, setPanelTop] = useState(0);
     const actionsRef = useRef<HTMLDivElement>(null);
+    const titleInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (!autoFocusTitle) return;
+        titleInputRef.current?.focus();
+        titleInputRef.current?.select();
+    }, []);
 
     const { activeExercise, onDragStart, onDragEnd, onDragCancel } = useExerciseDnd(
         templateExercises,
@@ -127,6 +135,7 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
             )}
             <div className="detail-header">
                 <input
+                    ref={titleInputRef}
                     className="template-title-input"
                     value={name}
                     onChange={e => setName(e.target.value)}

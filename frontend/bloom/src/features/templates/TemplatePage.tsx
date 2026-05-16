@@ -33,6 +33,7 @@ const TemplatePage = () => {
     const [addExerciseOpen, setAddExerciseOpen] = useState(false);
     const [creating, setCreating] = useState(false);
     const [pendingExerciseId, setPendingExerciseId] = useState<string | null>(null);
+    const [newlyCreatedId, setNewlyCreatedId] = useState<string | null>(null);
 
     useEffect(() => {
         getTemplates().then(tpls => {
@@ -64,6 +65,7 @@ const TemplatePage = () => {
             const newTemplate = await getTemplate(newId);
             setTemplates(prev => [newTemplate, ...prev]);
             setSelectedId(newId);
+            setNewlyCreatedId(newId);
         } finally {
             setCreating(false);
         }
@@ -181,7 +183,7 @@ const TemplatePage = () => {
                     <button className="panel-back-btn" onClick={handleBack}>
                         <ChevronLeft size={16} /> Templates
                     </button>
-                    {selectedTemplate ? (<> <TemplateDetail key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} pendingExerciseId={pendingExerciseId} onExerciseAdded={() => setPendingExerciseId(null)} onDirtyChange={handleDirtyChange} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)
+                    {selectedTemplate ? (<> <TemplateDetail key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} pendingExerciseId={pendingExerciseId} onExerciseAdded={() => setPendingExerciseId(null)} onDirtyChange={handleDirtyChange} autoFocusTitle={selectedTemplate.id === newlyCreatedId} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)
                         : (
                             <div className="panel-empty">
                                 <p>Select a template to see details</p>
