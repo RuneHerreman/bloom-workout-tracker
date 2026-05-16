@@ -929,6 +929,8 @@
 }
 
 @media (max-width: 768px) {
+    .shortcuts-info { display: none; }
+
     .overlay-backdrop {
         align-items: flex-end;
     }
