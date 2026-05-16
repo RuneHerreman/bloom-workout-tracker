@@ -6,6 +6,7 @@ import { updateTemplate } from "../api.ts";
 import type { TemplateExercise, PlannedSet } from "../../../assets/js/data/apiTypes.ts";
 import type { Exercise } from "../../exercises/api.ts";
 import { useExerciseDnd } from "../hooks/useExerciseDnd.ts";
+import { useShortcut } from "../../../hooks/useShortcut.ts";
 import TemplateExerciseCard from "./TemplateExerciseCard.tsx";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import { Save, Trash2 } from "lucide-react";
@@ -91,6 +92,17 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
         observer.observe(el);
         return () => observer.disconnect();
     }, []);
+
+    useShortcut("s", handleSave, true);
+    useShortcut("Enter", () => {
+        const focused = document.activeElement;
+        if (focused?.tagName === "TEXTAREA") return;
+        const card = focused?.closest("[data-exercise-id]");
+        const id = card?.getAttribute("data-exercise-id") ?? templateExercises.at(-1)?.exerciseId;
+        if (!id) return;
+        const btn = document.querySelector<HTMLButtonElement>(`[data-exercise-id="${id}"] .exercise-footer button`);
+        btn?.click();
+    }, true);
 
     async function handleSave() {
         setSaving(true);

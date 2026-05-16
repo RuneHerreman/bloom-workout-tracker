@@ -14,6 +14,7 @@ import LogDetail from "./components/LogDetail.tsx";
 import StartSessionOverlay from "./components/StartSessionOverlay.tsx";
 import UnsavedChangesDialog from "../../components/general/UnsavedChangesDialog.tsx";
 import { Plus, ChevronLeft } from "lucide-react";
+import { useShortcut } from "../../hooks/useShortcut.ts";
 
 function plannedToLogged(s: PlannedSet, order: number): LoggedSet {
     if (s.type === "Cardio") {
@@ -155,6 +156,8 @@ const LogbookPage = () => {
 
     const showDialog = pendingAction !== null || blocker.state === "blocked";
 
+    useShortcut("k", () => { if (!startOpen) setStartOpen(true); }, true);
+
     return (
         <div className="panel-page">
             {showDialog && dirtyInfo && (
@@ -178,6 +181,12 @@ const LogbookPage = () => {
                 title="Logbook"
                 subtitle="History"
                 action={<Button text="Log Workout" style="green" icon={<Plus size={14} />} onClick={() => setStartOpen(true)} />}
+                shortcuts={[
+                    { keys: "Ctrl+K", label: "New log" },
+                    { keys: "Ctrl+E", label: "Add exercise" },
+                    { keys: "Ctrl+S", label: "Save" },
+                    { keys: "Ctrl+↵", label: "Add set to focused exercise" },
+                ]}
             />
             <div className={`panel-body${selectedId ? " has-selection" : ""}`}>
                 <LogSideBar

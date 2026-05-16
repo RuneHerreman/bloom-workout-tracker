@@ -505,6 +505,70 @@
     font-size: 0.8rem;
 }
 
+/* ── Page header right slot ──────────────────────────────────────────────────── */
+
+.page-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.shortcuts-info {
+    position: relative;
+    display: flex;
+    align-items: center;
+    color: var(--ink-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    transition: color var(--transition);
+}
+
+.shortcuts-info:hover { color: var(--ink); }
+
+.shortcuts-tooltip {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    background: white;
+    border: 0.0625rem solid #e3e3e3;
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition);
+    z-index: 50;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.08);
+}
+
+.shortcuts-info:hover .shortcuts-tooltip { opacity: 1; }
+
+.shortcut-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+}
+
+.shortcut-row kbd {
+    font-family: var(--sans), sans-serif;
+    font-size: 0.68rem;
+    color: #333;
+    background: #f0f0ee;
+    border: 0.0625rem solid #e3e3e3;
+    border-radius: 0.2rem;
+    padding: 0.15rem 0.4rem;
+    letter-spacing: 0.02em;
+}
+
+.shortcut-row span {
+    color: #666;
+}
+
 /* ── Exercise card ───────────────────────────────────────────────────────────── */
 
 .exercise-card {

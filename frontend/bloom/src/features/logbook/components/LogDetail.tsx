@@ -6,6 +6,7 @@ import { updateLog } from "../api.ts";
 import type { Exercise } from "../../exercises/api.ts";
 import { toDateInputValue } from "../logbookUtils.ts";
 import { useExerciseDnd } from "../../templates/hooks/useExerciseDnd.ts";
+import { useShortcut } from "../../../hooks/useShortcut.ts";
 import LogExerciseCard from "./LogExerciseCard.tsx";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import Overlay from "../../../components/general/OverlayComponent.tsx";
@@ -103,6 +104,18 @@ function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange }: LogDetai
         setLastAddedId(exerciseId);
         setAddExerciseOpen(false);
     }
+
+    useShortcut("s", handleSave, true);
+    useShortcut("e", () => setAddExerciseOpen(true), true);
+    useShortcut("Enter", () => {
+        const focused = document.activeElement;
+        if (focused?.tagName === "TEXTAREA") return;
+        const card = focused?.closest("[data-exercise-id]");
+        const id = card?.getAttribute("data-exercise-id") ?? logExercises.at(-1)?.exerciseId;
+        if (!id) return;
+        const btn = document.querySelector<HTMLButtonElement>(`[data-exercise-id="${id}"] .exercise-footer button`);
+        btn?.click();
+    }, true);
 
     async function handleSave() {
         setSaving(true);

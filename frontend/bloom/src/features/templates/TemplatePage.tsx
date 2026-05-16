@@ -14,6 +14,7 @@ import UnsavedChangesDialog from "../../components/general/UnsavedChangesDialog.
 import { PlusIcon, ChevronLeft } from "lucide-react";
 import AddExerciseButton from "./components/AddExerciseButton.tsx";
 import ExerciseLibrary from "./components/ExerciseLibrary.tsx";
+import { useShortcut } from "../../hooks/useShortcut.ts";
 
 const TemplatePage = () => {
     const location = useLocation();
@@ -133,6 +134,9 @@ const TemplatePage = () => {
 
     const showDialog = pendingAction !== null || blocker.state === "blocked";
 
+    useShortcut("k", () => { if (!creating) handleNewTemplate(); }, true);
+    useShortcut("e", () => { if (selectedId && !addExerciseOpen) setAddExerciseOpen(true); }, true);
+
     return (
         <div className="panel-page">
             {showDialog && dirtyInfo && (
@@ -144,7 +148,17 @@ const TemplatePage = () => {
                     onCancel={handleDialogCancel}
                 />
             )}
-            <HeaderComponent title="Templates" subtitle="Library" action={<Button text={"New template"} icon={<PlusIcon size={15} />} style={"green"} onClick={handleNewTemplate} disabled={creating} />}/>
+            <HeaderComponent
+                title="Templates"
+                subtitle="Library"
+                action={<Button text={"New template"} icon={<PlusIcon size={15} />} style={"green"} onClick={handleNewTemplate} disabled={creating} />}
+                shortcuts={[
+                    { keys: "Ctrl+K", label: "New template" },
+                    { keys: "Ctrl+E", label: "Add exercise" },
+                    { keys: "Ctrl+S", label: "Save" },
+                    { keys: "Ctrl+↵", label: "Add set to focused exercise" },
+                ]}
+            />
             {addExerciseOpen && (
                 <Overlay title="Exercise library" subtitle="Add exercise" onClose={() => setAddExerciseOpen(false)}>
                     <ExerciseLibrary
