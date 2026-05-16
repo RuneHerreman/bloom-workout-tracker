@@ -79,11 +79,11 @@ public sealed class LoggedWorkoutInputsTests : ApplicationTestBase
     }
 
     [Fact]
-    public async Task ToLoggedSet_Strength_MissingRir_ShouldThrow()
+    public async Task ToLoggedSet_Strength_NullRir_ShouldSucceed()
     {
         var input = WithSet(new LoggedSetInput("Strength", 0, null, null, null, 5, 50m, "Kg", null));
 
-        await Assert.ThrowsAsync<ArgumentException>(() => _useCase.Execute(input));
+        await _useCase.Execute(input); // RIR is nullable — null is valid
     }
 
     [Fact]
@@ -111,11 +111,11 @@ public sealed class LoggedWorkoutInputsTests : ApplicationTestBase
     }
 
     [Fact]
-    public async Task ToLoggedSet_Plyometric_MissingRir_ShouldThrow()
+    public async Task ToLoggedSet_Plyometric_NullRir_ShouldSucceed()
     {
         var input = WithSet(new LoggedSetInput("Plyometric", 0, null, null, null, 5, 50m, "Kg", null));
 
-        await Assert.ThrowsAsync<ArgumentException>(() => _useCase.Execute(input));
+        await _useCase.Execute(input); // RIR is nullable — null is valid
     }
 
     [Fact]
