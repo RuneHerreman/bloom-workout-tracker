@@ -13,6 +13,7 @@ public static class Modules
     )
     {
         return services
+            .AddMemoryCache()
             .AddApplicationModule(configuration)
             .AddAuthModule(configuration)
             .AddEFCoreModule(configuration)

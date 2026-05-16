@@ -3,6 +3,8 @@ using Bloom.Application.Exercises;
 using Bloom.Application.LoggedWorkouts;
 using Bloom.Application.Users;
 using Bloom.Application.WorkoutTemplates;
+using Bloom.Infrastructure.Caching;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Bloom.Main.Modules.Application;
 
@@ -41,7 +43,12 @@ public static class ApplicationModule
         services.AddScoped<IUseCase<GetCurrentUserInput, GetCurrentUserOutput>, GetCurrentUser>();
         //      EXERCISES
         services.AddScoped<IUseCase<FindExerciseByIdInput, FindExerciseByIdOutput>, FindExerciseById>();
-        services.AddScoped<IUseCase<SearchExerciseCatalogInput, SearchExerciseCatalogOutput>, SearchExerciseCatalog>();
+        services.AddScoped<SearchExerciseCatalog>();
+        services.AddScoped<IUseCase<SearchExerciseCatalogInput, SearchExerciseCatalogOutput>>(sp =>
+            new CachedSearchExerciseCatalogUseCase(
+                sp.GetRequiredService<SearchExerciseCatalog>(),
+                sp.GetRequiredService<IMemoryCache>()
+            ));
         //      TEMPLATES
         services.AddScoped<IUseCase<FindUserWorkoutTemplatesInput, FindUserWorkoutTemplatesOutput>, FindUserWorkoutTemplates>();
         services.AddScoped<IUseCase<FindWorkoutTemplateByIdInput, FindWorkoutTemplateByIdOutput>, FindWorkoutTemplateById>();
