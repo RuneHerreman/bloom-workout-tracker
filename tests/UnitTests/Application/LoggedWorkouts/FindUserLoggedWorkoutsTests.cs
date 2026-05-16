@@ -35,7 +35,7 @@ public sealed class MockFindLoggedWorkoutsQuery(IEnumerable<LoggedWorkoutData> d
 {
     private readonly List<LoggedWorkoutData> _data = data.ToList();
 
-    public Task<IReadOnlyList<LoggedWorkoutData>> Fetch(Expression<Func<LoggedWorkoutData, bool>> filter)
+    public Task<IReadOnlyList<LoggedWorkoutData>> Fetch(Expression<Func<LoggedWorkoutData, bool>> filter, CancellationToken ct = default)
     {
         IReadOnlyList<LoggedWorkoutData> filtered = _data.AsQueryable().Where(filter).ToList();
         return Task.FromResult(filtered);

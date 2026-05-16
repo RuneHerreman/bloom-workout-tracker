@@ -55,7 +55,7 @@ public sealed class MockFindUsersQuery(IEnumerable<UserData> data) : IFindUsersQ
 {
     private readonly List<UserData> _data = data.ToList();
 
-    public Task<IReadOnlyList<UserData>> Fetch(Expression<Func<UserData, bool>> filter)
+    public Task<IReadOnlyList<UserData>> Fetch(Expression<Func<UserData, bool>> filter, CancellationToken ct = default)
     {
         IReadOnlyList<UserData> filtered = _data.AsQueryable().Where(filter).ToList();
         return Task.FromResult(filtered);

@@ -9,7 +9,7 @@ public sealed class InMemoryUnitOfWork(IDomainEventPublisher domainEventPublishe
     private readonly List<IAggregateRoot> _aggregates = [];
     private readonly Dictionary<string, object> _repositoriesWithRepoKey = [];
 
-    public async Task Do()
+    public async Task Do(CancellationToken ct = default)
     {
         IReadOnlyList<IDomainEvent> domainEvents =
         [

@@ -51,7 +51,7 @@ public sealed class MockFindWorkoutTemplatesQuery(IEnumerable<WorkoutTemplateDat
 {
     private readonly List<WorkoutTemplateData> _data = data.ToList();
 
-    public Task<IReadOnlyList<WorkoutTemplateData>> Fetch(Expression<Func<WorkoutTemplateData, bool>> filter)
+    public Task<IReadOnlyList<WorkoutTemplateData>> Fetch(Expression<Func<WorkoutTemplateData, bool>> filter, CancellationToken ct = default)
     {
         IReadOnlyList<WorkoutTemplateData> filtered = _data.AsQueryable().Where(filter).ToList();
         return Task.FromResult(filtered);
