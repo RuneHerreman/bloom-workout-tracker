@@ -27,10 +27,12 @@ const TemplatePage = () => {
     const [pendingExerciseId, setPendingExerciseId] = useState<string | null>(null);
 
     useEffect(() => {
-        Promise.all([getTemplates(), searchExercises()]).then(([tpls, exs]) => {
+        getTemplates().then(tpls => {
             setTemplates(tpls);
-            setExercises(Object.fromEntries(exs.map(e => [e.id, e])));
             setLoading(false);
+        });
+        searchExercises().then(exs => {
+            setExercises(Object.fromEntries(exs.map(e => [e.id, e])));
         });
     }, []);
 

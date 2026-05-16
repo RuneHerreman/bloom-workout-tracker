@@ -168,6 +168,7 @@ public static class Module
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseRateLimiter();
+        app.MapHealthChecks("/health");
         app.MapRoutes();
 
         return app;

@@ -34,10 +34,12 @@ const LogbookPage = () => {
     const [startOpen, setStartOpen] = useState(() => !!(location.state as { openStart?: boolean } | null)?.openStart);
 
     useEffect(() => {
-        Promise.all([getLogs(), searchExercises()]).then(([fetchedLogs, exs]) => {
+        getLogs().then(fetchedLogs => {
             setLogs(fetchedLogs.sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime()));
-            setExercises(Object.fromEntries(exs.map(e => [e.id, e])));
             setLoading(false);
+        });
+        searchExercises().then(exs => {
+            setExercises(Object.fromEntries(exs.map(e => [e.id, e])));
         });
     }, []);
 
