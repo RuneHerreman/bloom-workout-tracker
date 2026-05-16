@@ -15,6 +15,8 @@ export interface ExerciseFilters {
     exerciseTypes?: ExerciseType[];
 }
 
+let _allExercises: Promise<Exercise[]> | null = null;
+
 export function searchExercises(filters?: ExerciseFilters): Promise<Exercise[]> {
     const hasFilters = filters && (
         filters.name ||
@@ -23,7 +25,11 @@ export function searchExercises(filters?: ExerciseFilters): Promise<Exercise[]> 
     );
 
     if (!hasFilters) {
-        return fetchFromServer<Exercise[]>("exercises", "GET");
+        if (!_allExercises) {
+            _allExercises = fetchFromServer<Exercise[]>("exercises", "GET")
+                .catch(e => { _allExercises = null; throw e; });
+        }
+        return _allExercises;
     }
 
     const p = new URLSearchParams();
