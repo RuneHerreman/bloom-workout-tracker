@@ -2,7 +2,7 @@
 
 > Self-hosted workout tracker. Plan, log, and analyse your training — strength and cardio.
 
-![Dashboard overview](https://placehold.co/1200x620/3E544B/e8ede9?text=Dashboard)
+![Dashboard overview](docs/dashboard.png)
 
 ---
 
@@ -22,10 +22,12 @@
 
 | | |
 |---|---|
-| ![Logbook](https://placehold.co/580x360/3E544B/e8ede9?text=Logbook) | ![Log+detail](https://placehold.co/580x360/3E544B/e8ede9?text=Log+Detail) |
+| ![Logbook](docs/log-book.png) | ![Log detail](docs/add-log.png) |
 | Logbook — session history | Log detail — sets and notes |
-| ![Templates](https://placehold.co/580x360/3E544B/e8ede9?text=Templates) | ![GPX+map](https://placehold.co/580x360/3E544B/e8ede9?text=GPX+Map+Overlay) |
-| Template builder | GPX route overlay for cardio |
+| ![Templates](docs/templates.png) | ![Add exercises](docs/add-exercises.png) |
+| Template builder | Exercise library |
+| ![GPX map](docs/gpx-overlay.png) | |
+| GPX route overlay for cardio | |
 
 ---
 
