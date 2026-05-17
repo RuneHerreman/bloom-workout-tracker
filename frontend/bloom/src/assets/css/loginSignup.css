@@ -120,6 +120,32 @@
     font-weight: 600;
 }
 
+.password-input-wrapper {
+    position: relative;
+    margin-top: 0.75rem;
+}
+
+.password-input-wrapper input {
+    margin-top: 0 !important;
+    padding-right: 2.5rem;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none !important;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: var(--primary) !important;
+    display: flex;
+    align-items: center;
+    border-radius: 0;
+    box-shadow: none;
+}
+
 .error-message {
     color: var(--danger);
     font-size: 0.75rem;

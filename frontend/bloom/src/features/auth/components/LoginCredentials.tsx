@@ -3,6 +3,7 @@ import { useState } from "react";
 import { login } from "../api.ts";
 import { useAuth } from "../../../context/AuthContext.tsx";
 import type { ApiError } from "../../../assets/js/data/apiClient.ts";
+import PasswordInput from "./PasswordInput.tsx";
 
 function LoginCredentials() {
     const [email, setEmail] = useState("");
@@ -40,13 +41,12 @@ function LoginCredentials() {
                 </div>
                 <div>
                     <label htmlFor="password"></label>
-                    <input
-                        type="password"
+                    <PasswordInput
                         id="password"
                         placeholder="Password"
                         required
-                        onChange={(e) => setPassword(e.target.value)}>
-                    </input>
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
                 </div>
                 {errorMessage && <p className="error-message">{errorMessage}</p>}
                 <div id="login-checks">

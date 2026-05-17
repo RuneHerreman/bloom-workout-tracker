@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { register } from "../api.ts";
 import { useAuth } from "../../../context/AuthContext.tsx";
 import type { ApiError } from "../../../assets/js/data/apiClient.ts";
+import PasswordInput from "./PasswordInput.tsx";
 
 function SignupCredentials() {
     const [step, setStep] = useState(1);
@@ -75,25 +76,23 @@ function SignupCredentials() {
                         </div>
                         <div>
                             <label htmlFor="password"></label>
-                            <input
-                                type="password"
+                            <PasswordInput
                                 id="password"
                                 placeholder="Password"
                                 value={password}
                                 required
-                                onChange={(e) => setPassword(e.target.value)}>
-                            </input>
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
                         </div>
                         <div>
                             <label htmlFor="password-check"></label>
-                            <input
-                                type="password"
+                            <PasswordInput
                                 id="password-check"
                                 placeholder="Repeat password"
                                 value={passwordAgain}
                                 required
-                                onChange={(e) => setPasswordAgain(e.target.value)}>
-                            </input>
+                                onChange={(e) => setPasswordAgain(e.target.value)}
+                            />
                         </div>
                         {errorMessage && (
                             <p className="error-message">{errorMessage}</p>
