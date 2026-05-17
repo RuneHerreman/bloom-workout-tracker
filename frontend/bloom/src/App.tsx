@@ -13,6 +13,7 @@ const LogbookPage    = lazy(() => import("./features/logbook/LogbookPage.tsx"));
 const MacroPage      = lazy(() => import("./features/tool-pages/macros/MacroPage.tsx"));
 const OneRepMaxPage  = lazy(() => import("./features/tool-pages/1-RM/1RmPage.tsx"));
 const ProfilePage    = lazy(() => import("./features/profile/ProfilePage.tsx"));
+const InsightsPage   = lazy(() => import("./features/insights/InsightsPage.tsx"));
 
 function ProtectedLayout() {
     return (
@@ -40,6 +41,7 @@ function App() {
                     <Route path="/tools/one-rep-max" element={<OneRepMaxPage/>}/>
                     <Route path="/tools/macro-calculator" element={<MacroPage/>}/>
                     <Route path="/profile" element={<ProfilePage/>}/>
+                    <Route path="/insights" element={<InsightsPage/>}/>
                 </Route>
             </Routes>
         </AuthProvider>

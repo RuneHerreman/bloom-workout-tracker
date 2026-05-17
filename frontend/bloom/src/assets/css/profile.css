@@ -29,11 +29,6 @@
     border-bottom: 0.0625rem solid var(--border);
 }
 
-.profile-section:last-child {
-    border-bottom: none;
-    padding-bottom: 3rem;
-}
-
 .profile-section-title {
     font-family: var(--serif), serif;
     font-size: 1.35rem;

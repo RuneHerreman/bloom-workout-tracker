@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Menu, X, LayoutDashboard, BookOpen, LayoutTemplate, Dumbbell, Calculator, Moon, Sun, LogOut } from "lucide-react";
+import { Menu, X, LayoutDashboard, BookOpen, LayoutTemplate, Dumbbell, Calculator, TrendingUp, Moon, Sun, LogOut } from "lucide-react";
 import "../assets/css/bottom-nav.css";
 import { getMe } from "../features/auth/api.ts";
 import type { User } from "../features/auth/api.ts";
@@ -46,6 +46,7 @@ export default function MobileNavComponent() {
                 <NavLink to="/dashboard" className={navClass} onClick={close}><LayoutDashboard size={14} /> Dashboard</NavLink>
                 <NavLink to="/templates" className={navClass} onClick={close}><LayoutTemplate size={14} /> Templates</NavLink>
                 <NavLink to="/logbook" className={navClass} onClick={close}><BookOpen size={14} /> Log Book</NavLink>
+                <NavLink to="/insights" className={navClass} onClick={close}><TrendingUp size={14} /> Insights</NavLink>
 
                 <span className="mobile-nav-section">Tools</span>
                 <NavLink to="/tools/macro-calculator" className={navClass} onClick={close}><Calculator size={14} /> Macro Calculator</NavLink>

@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Moon, Sun, LogOut, LayoutDashboard, LayoutTemplate, BookOpen, Calculator, Dumbbell } from "lucide-react";
+import { Moon, Sun, LogOut, LayoutDashboard, LayoutTemplate, BookOpen, Calculator, Dumbbell, TrendingUp } from "lucide-react";
 import "../assets/css/sidebar.css";
 import { getMe } from "../features/auth/api.ts";
 import type { User } from "../features/auth/api.ts";
@@ -31,6 +31,7 @@ function SidebarComponent() {
             <NavLink to="/dashboard" className={navClass}><LayoutDashboard size={14}/> Dashboard</NavLink>
             <NavLink to="/templates" className={navClass}><LayoutTemplate size={14}/> Templates</NavLink>
             <NavLink to="/logbook" className={navClass}><BookOpen size={14}/> Log Book</NavLink>
+            <NavLink to="/insights" className={navClass}><TrendingUp size={14}/> Insights</NavLink>
 
             <span className="sidebar-section-label">Tools</span>
             <NavLink to="/tools/macro-calculator" className={navClass}><Calculator size={14}/> Macro Calculator</NavLink>
