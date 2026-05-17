@@ -1,10 +1,45 @@
 import { useState, useMemo, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import type { Exercise } from "../../exercises/api.ts";
-import { X } from "lucide-react";
+import { X, Info } from "lucide-react";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import { useRecentExercises } from "../hooks/useRecentExercises.ts";
 
 const TYPE_LABELS: Record<string, string> = { Strength: "Strength", Cardio: "Cardio", Plyometric: "Plyo" };
+
+type TooltipState = { text: string; x: number; y: number } | null;
+
+function InfoTooltip({ description }: { description: string }) {
+    const [tooltip, setTooltip] = useState<TooltipState>(null);
+    const iconRef = useRef<HTMLDivElement>(null);
+
+    function showTooltip() {
+        const rect = iconRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        setTooltip({ text: description, x: rect.right, y: rect.top + rect.height / 2 });
+    }
+
+    return (
+        <div
+            ref={iconRef}
+            className="exercise-library-row-info"
+            onClick={ev => ev.stopPropagation()}
+            onMouseEnter={showTooltip}
+            onMouseLeave={() => setTooltip(null)}
+        >
+            <Info size={14} />
+            {tooltip && createPortal(
+                <div
+                    className="exercise-library-row-tooltip"
+                    style={{ top: tooltip.y, left: tooltip.x }}
+                >
+                    {tooltip.text}
+                </div>,
+                document.body
+            )}
+        </div>
+    );
+}
 
 function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSelect: (exercise: Exercise) => void }) {
     const [search, setSearch] = useState("");
@@ -119,6 +154,7 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
                                     <p className="exercise-library-name">{e.name}</p>
                                     <p className="exercise-library-muscles">{e.targetMuscles.join(", ")}</p>
                                 </div>
+                                {e.description ? <InfoTooltip description={e.description} /> : <span />}
                             </li>
                         ))}
                     </ul>
@@ -140,6 +176,7 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
                             <p className="exercise-library-name">{e.name}</p>
                             <p className="exercise-library-muscles">{e.targetMuscles.join(", ")}</p>
                         </div>
+                        {e.description ? <InfoTooltip description={e.description} /> : <span />}
                     </li>
                 ))}
             </ul>
