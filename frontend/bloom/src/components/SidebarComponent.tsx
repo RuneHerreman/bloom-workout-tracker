@@ -1,8 +1,11 @@
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Moon, Sun, LogOut } from "lucide-react";
 import "../assets/css/sidebar.css";
 import { getMe } from "../features/auth/api.ts";
 import type { User } from "../features/auth/api.ts";
+import { useDarkMode } from "../hooks/useDarkMode.ts";
+import { useAuth } from "../context/AuthContext.tsx";
 
 const GridIcon = () => (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
@@ -19,6 +22,8 @@ function navClass({ isActive }: { isActive: boolean }) {
 
 function SidebarComponent() {
     const [user, setUser] = useState<User | null>(null);
+    const { dark, toggle } = useDarkMode();
+    const { logout } = useAuth();
 
     useEffect(() => {
         getMe().then(setUser).catch(() => null);
@@ -40,8 +45,13 @@ function SidebarComponent() {
             <NavLink to="/tools/one-rep-max" className={navClass}><GridIcon/> 1RM Calculator</NavLink>
 
             <div className="sidebar-user">
-                <div className="sidebar-avatar"/>
-                <span>{user?.username ?? "—"}</span>
+                <span className="sidebar-username">{user?.username ?? "—"}</span>
+                <button className="sidebar-theme-toggle" onClick={toggle} aria-label="Toggle dark mode">
+                    {dark ? <Sun size={14} /> : <Moon size={14} />}
+                </button>
+                <button className="sidebar-logout" onClick={logout} aria-label="Log out">
+                    <LogOut size={14} />
+                </button>
             </div>
         </aside>
     );

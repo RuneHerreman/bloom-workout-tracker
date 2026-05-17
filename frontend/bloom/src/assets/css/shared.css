@@ -55,6 +55,40 @@
 
 
 /* =============================================================================
+   DARK MODE
+   ============================================================================= */
+
+html.dark {
+    --primary: #00954e;
+    /* Surfaces — page is darkest, cards lift above it, hover lifts further */
+    --surface-lighter:    #1e1e1c;
+    --surface-light:      #272724;
+    --surface-less-light: #313130;
+
+    /* Text */
+    --ink:       #f2efe8;
+    --ink-muted: #a8a49c;
+    --dark-text: #c4e1d1;
+
+    /* Borders — visible against all surface levels */
+    --border:       #46463e;
+    --border-light: #3a3a32;
+    --grey-light:   #353532;
+    --grey:         #52524a;
+
+    /* Semantic */
+    --danger-lighter: rgb(80 20 20 / 0.5);
+
+    /* Misc */
+    --backdrop-bg: rgb(0 0 0 / 0.65);
+    --kbd-bg:      #2e2e28;
+
+    /* Active sidebar item — light green readable on dark bg */
+    --primary-transparent: rgb(160 220 190 / 0.95);
+}
+
+
+/* =============================================================================
    LAYOUT — OVERLAY
    ============================================================================= */
 
@@ -1087,7 +1121,7 @@
     border: none;
     border-radius: var(--radius-md);
     background: var(--primary);
-    color: var(--surface-lighter);
+    color: white;
     font-size: 0.85rem;
     font-family: var(--sans), sans-serif;
     cursor: pointer;

@@ -194,7 +194,7 @@ h2 {
 
 #features li p:first-child{
     font-weight: 500;
-    color: #000;
+    color: var(--ink);
     font-size: 1.25rem;
     margin-bottom: 0.5rem;
 }
