@@ -11,18 +11,19 @@ import LogExerciseCard from "./LogExerciseCard.tsx";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import Overlay from "../../../components/general/OverlayComponent.tsx";
 import ExerciseLibrary from "../../templates/components/ExerciseLibrary.tsx";
-import { Save, Trash2, Plus } from "lucide-react";
+import { Save, Trash2, Plus, MoreHorizontal, BookmarkPlus } from "lucide-react";
 
 interface LogDetailProps {
     log: LoggedWorkout;
     exercises: Record<string, Exercise>;
     onSave: (id: string, name: string, loggedAt: string, note: string | null, exercises: LoggedExercise[]) => void;
     onDelete: (id: string) => void;
+    onCreateTemplate: (name: string, exercises: LoggedExercise[]) => void;
     onDirtyChange?: (isDirty: boolean, save: () => Promise<void>) => void;
     autoFocusTitle?: boolean;
 }
 
-function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange, autoFocusTitle }: LogDetailProps) {
+function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirtyChange, autoFocusTitle }: LogDetailProps) {
     const initialDate = toDateInputValue(log.loggedAt);
 
     const [logExercises, setLogExercises] = useState<LoggedExercise[]>(() =>
@@ -37,7 +38,9 @@ function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange, autoFocusT
     const [lastAddedId, setLastAddedId] = useState<string | null>(null);
     const [showSticky, setShowSticky] = useState(false);
     const [panelTop, setPanelTop] = useState(0);
+    const [menuOpen, setMenuOpen] = useState(false);
     const actionsRef = useRef<HTMLDivElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
     const titleInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -81,6 +84,17 @@ function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange, autoFocusT
         observer.observe(el);
         return () => observer.disconnect();
     }, []);
+
+    useEffect(() => {
+        if (!menuOpen) return;
+        function handleClickOutside(e: MouseEvent) {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+                setMenuOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [menuOpen]);
 
     function handleSetsChange(exerciseId: string, sets: LoggedSet[]) {
         setLogExercises(prev =>
@@ -174,7 +188,33 @@ function LogDetail({ log, exercises, onSave, onDelete, onDirtyChange, autoFocusT
                 </div>
                 <div className="actions-row" ref={actionsRef}>
                     <Button text="Save Changes" style="green" icon={<Save size={14} />} disabled={!hasChanges || saving} onClick={handleSave} />
-                    <Button text="Delete Log" style="red" icon={<Trash2 size={14} />} onClick={() => onDelete(log.id)} />
+                    <div className="overflow-menu" ref={menuRef}>
+                        <button
+                            className="overflow-menu-trigger"
+                            aria-label="More actions"
+                            onClick={() => setMenuOpen(o => !o)}
+                        >
+                            <MoreHorizontal size={16} />
+                        </button>
+                        {menuOpen && (
+                            <div className="overflow-menu-dropdown">
+                                <button
+                                    className="overflow-menu-item"
+                                    onClick={() => { setMenuOpen(false); onCreateTemplate(name, logExercises); }}
+                                >
+                                    <BookmarkPlus size={14} />
+                                    Create Template from Log
+                                </button>
+                                <button
+                                    className="overflow-menu-item danger"
+                                    onClick={() => { setMenuOpen(false); onDelete(log.id); }}
+                                >
+                                    <Trash2 size={14} />
+                                    Delete Log
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 

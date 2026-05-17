@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { useLocation, useBlocker } from "react-router-dom";
+import { useLocation, useBlocker, useNavigate } from "react-router-dom";
 import "../../assets/css/logbook.css";
 import { getLogs, createLog, deleteLog } from "./api.ts";
 import type { LoggedWorkout } from "./api.ts";
 import type { LoggedExercise, LoggedSet } from "../../assets/js/data/apiTypes.ts";
 import { searchExercises } from "../exercises/api.ts";
 import type { Exercise } from "../exercises/api.ts";
-import type { WorkoutTemplate, PlannedSet } from "../templates/api.ts";
+import type { WorkoutTemplate, PlannedSet, TemplateExercise } from "../templates/api.ts";
+import { createTemplate } from "../templates/api.ts";
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
 import Button from "../../components/general/ButtonComponent.tsx";
 import LogSideBar from "./components/LogSideBar.tsx";
@@ -27,6 +28,7 @@ function plannedToLogged(s: PlannedSet, order: number): LoggedSet {
 
 const LogbookPage = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [logs, setLogs] = useState<LoggedWorkout[]>([]);
     const [exercises, setExercises] = useState<Record<string, Exercise>>({});
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -99,6 +101,25 @@ const LogbookPage = () => {
             setLogs(fetched.sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime()));
         }
     };
+
+    async function handleCreateTemplate(name: string, logExercises: LoggedExercise[]) {
+        const templateExercises: TemplateExercise[] = logExercises
+            .sort((a, b) => a.order - b.order)
+            .map(ex => ({
+                exerciseId: ex.exerciseId,
+                order: ex.order,
+                sets: ex.sets.sort((a, b) => a.order - b.order).map((s, j) => {
+                    if (s.type === "Cardio") {
+                        return { type: "Cardio" as const, order: j + 1, reps: null,
+                            duration: s.duration, distance: s.distance, distanceUnit: s.distanceUnit };
+                    }
+                    return { type: s.type as PlannedSet["type"], order: j + 1, reps: s.reps,
+                        duration: null, distance: null, distanceUnit: null };
+                }),
+            }));
+        await createTemplate(name, templateExercises);
+        navigate("/templates");
+    }
 
     const handleDirtyChange = useCallback((isDirty: boolean, save: () => Promise<void>) => {
         if (isDirty) {
@@ -209,6 +230,7 @@ const LogbookPage = () => {
                             exercises={exercises}
                             onSave={handleSave}
                             onDelete={handleDelete}
+                            onCreateTemplate={handleCreateTemplate}
                             onDirtyChange={handleDirtyChange}
                             autoFocusTitle={selectedLog.id === newlyCreatedId}
                         />

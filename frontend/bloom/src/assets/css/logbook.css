@@ -176,6 +176,7 @@
     min-width: 0;
     overflow: hidden;
     position: relative;
+    background: var(--surface-lighter);
 }
 
 /* ── GPX splits bar ──────────────────────────────────────────────────────────── */
@@ -189,6 +190,7 @@
 .gpx-splits-bar-area {
     position: relative;
     width: 100%;
+    background: var(--surface-lighter);
 }
 
 /* ── GPX responsive ──────────────────────────────────────────────────────────── */

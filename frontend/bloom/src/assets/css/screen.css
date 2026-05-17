@@ -48,7 +48,7 @@ html, body {
     position: relative;
     color: var(--primary-muted);
     background: var(--surface-lighter);
-    border: 0.12rem solid var(--primary-muted);
+    border: 0.12rem solid var(--primary-light);
     transition: var(--transition);
 }
 

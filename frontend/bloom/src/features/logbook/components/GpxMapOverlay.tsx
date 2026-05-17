@@ -13,6 +13,7 @@ import { formatDuration, formatPace, computeKmSplits } from "../gpxUtils.ts";
 import { MapPin, TrendingUp, Clock, Ruler } from "lucide-react";
 import L, { type LatLngTuple } from "leaflet";
 import Overlay from "../../../components/general/OverlayComponent.tsx";
+import { useDarkModeContext } from "../../../context/DarkModeContext.tsx";
 
 ChartJS.register(
     CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip,
@@ -131,6 +132,18 @@ function MapHoverTracker({ points, onHover }: { points: GpxTrackPoint[], onHover
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayProps) {
+    const { dark } = useDarkModeContext();
+
+    const chartGrid    = dark ? "#2a2a28" : "#F0F0F0";
+    const chartTick    = dark ? "#6b6b60" : "#999";
+    const tooltipBg    = dark ? "rgba(30,30,28,0.97)" : "rgba(255,255,255,0.95)";
+    const tooltipTitle = dark ? "#f2efe8" : "#333";
+    const tooltipBody  = dark ? "#a8a49c" : "#666";
+    const tooltipBorder = dark ? "#46463e" : "#e3e3e3";
+    const tileUrl = dark
+        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+
     const positions = useMemo<LatLngTuple[]>(() => points.map(p => [p.lat, p.lon]), [points]);
     const center: LatLngTuple = positions.length > 0 ? positions[Math.floor(positions.length / 2)] : [51.505, -0.09];
 
@@ -216,9 +229,9 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
         plugins: {
             legend: { display: false },
             tooltip: {
-                backgroundColor: "rgba(255,255,255,0.95)",
-                titleColor: "#333", bodyColor: "#666",
-                borderColor: "#e3e3e3", borderWidth: 1,
+                backgroundColor: tooltipBg,
+                titleColor: tooltipTitle, bodyColor: tooltipBody,
+                borderColor: tooltipBorder, borderWidth: 1,
                 padding: 10,
                 callbacks: {
                     title: (items: { label: string }[]) => `km ${items[0]?.label}`,
@@ -234,9 +247,9 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
         scales: {
             x: {
                 border: { display: false },
-                grid: { color: "#F0F0F0" },
+                grid: { color: chartGrid },
                 ticks: {
-                    font: { size: 10 }, color: "#999", maxTicksLimit: 5,
+                    font: { size: 10 }, color: chartTick, maxTicksLimit: 5,
                     callback: (v: number | string) =>
                         formatPace(typeof v === "number" ? v : parseFloat(v as string)),
                 },
@@ -245,12 +258,12 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
                 border: { display: false },
                 grid: { display: false },
                 ticks: {
-                    font: { size: 10 }, color: "#999",
+                    font: { size: 10 }, color: chartTick,
                     callback: (_v: number | string, i: number) => `${i + 1} km`,
                 },
             },
         },
-    }), [splits]);
+    }), [splits, tooltipBg, tooltipTitle, tooltipBody, tooltipBorder, chartGrid, chartTick]);
 
     const chartsRef = useRef<Record<string, ChartJS<"line">>>({});
     const [hoverDistKm, setHoverDistKm] = useState<number | null>(null);
@@ -301,9 +314,9 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
             tooltip: {
                 mode: "index" as const,
                 intersect: false,
-                backgroundColor: "rgba(255,255,255,0.95)",
-                titleColor: "#333", bodyColor: "#666",
-                borderColor: "#e3e3e3", borderWidth: 1,
+                backgroundColor: tooltipBg,
+                titleColor: tooltipTitle, bodyColor: tooltipBody,
+                borderColor: tooltipBorder, borderWidth: 1,
                 padding: 12, boxPadding: 6, usePointStyle: true,
                 callbacks: {
                     title: (items: { label: string }[]) => `${items[0]?.label} km`,
@@ -317,14 +330,14 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
             y: {
                 reverse: cfg.reverseY ?? false,
                 border: { display: false },
-                grid: { color: "#F0F0F0" },
+                grid: { color: chartGrid },
                 ticks: {
-                    font: { size: 10 }, color: "#999", maxTicksLimit: 4,
+                    font: { size: 10 }, color: chartTick, maxTicksLimit: 4,
                     callback: cfg.formatTick ?? ((v: number | string) => `${v} ${cfg.unit}`),
                 },
             },
         },
-        elements: { point: { radius: 0, hoverRadius: 6, hoverBorderWidth: 2, hoverBorderColor: "#fff" }, line: { tension: 0.3 } },
+        elements: { point: { radius: 0, hoverRadius: 6, hoverBorderWidth: 2, hoverBorderColor: dark ? "#1e1e1c" : "#fff" }, line: { tension: 0.3 } },
     });
 
     const splitsBarHeight = `${Math.max(6, splits.length * 1.55)}rem`;
@@ -339,7 +352,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
                         <div className="gpx-map-inner">
                             <MapContainer center={center} zoom={13} style={{ width: "100%", height: "100%" }} zoomControl>
                                 <TileLayer
-                                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                                    url={tileUrl}
                                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
                                 />
                                 <Polyline positions={positions} pathOptions={{ color: "#2D8055", weight: 3, opacity: 0.85 }} />
