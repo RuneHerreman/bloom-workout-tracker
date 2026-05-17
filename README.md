@@ -92,20 +92,15 @@ docker compose up --build -d
 **Backend**
 
 ```bash
-# Start only the database
+# From the repo root — start only the database
 docker compose up bloom-db -d
 
-# Override the DB host for local development (bloom-db is the Docker-internal hostname)
 # Run the API
 cd src/Bloom.Main
-dotnet run
+dotnet run --Database:ConnectionString="Host=localhost;Port=5432;Database=bloom;Username=bloom_user;Password=change_me_strong_password"
 ```
 
-> The `appsettings.Development.json` connection string uses `Host=bloom-db`. Override it for local runs:
-> ```bash
-> dotnet run --Database:ConnectionString="Host=localhost;Port=5432;Database=bloom;Username=bloom_user;Password=change_me_strong_password"
-> ```
-> Use the credentials from your `.env` file.
+Replace the username and password with the values from your `.env` file. The override is required because `appsettings.Development.json` defaults to `Host=bloom-db`, which is the Docker-internal hostname and unreachable from the host machine.
 
 **Frontend**
 
