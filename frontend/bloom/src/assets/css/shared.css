@@ -14,10 +14,6 @@
     --surface-dark:        #01110A;
     --dark-text:           #00261a;
 
-    /* Exercise type raw channels — use as rgb(var(--strength-rgb) / <alpha>) */
-    --strength-rgb:  0 62 31;
-    --cardio-rgb:    233 118 43;
-    --plyo-rgb:      45 128 85;
 
     /* Neutrals */
     --border:        #bfbdb6;
@@ -36,6 +32,13 @@
     /* Semantic */
     --danger:         #7B1616;
     --danger-lighter: rgb(255 225 225 / 0.75);
+    --danger-base:    rgb(220, 38, 38);
+    --danger-text:    #b91c1c;
+
+    /* Misc */
+    --backdrop-bg:  rgb(0 0 0 / 0.35);
+    --border-light: #e3e3e3;
+    --kbd-bg:       #f0f0ee;
 
     /* Shape */
     --sidebar-width:        13rem;
@@ -58,7 +61,7 @@
 .overlay-backdrop {
     position: fixed;
     inset: 0;
-    background: rgb(0 0 0 / 0.35);
+    background: var(--backdrop-bg);
     backdrop-filter: blur(0.25rem);
     display: flex;
     align-items: center;
@@ -193,7 +196,7 @@
     width: 17rem;
     flex-shrink: 0;
     border-right: 0.0625rem solid var(--border);
-    background: white;
+    background: var(--surface-lighter);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -262,7 +265,7 @@
     display: flex;
     align-items: center;
     gap: 0.55rem;
-    background: white;
+    background: var(--surface-lighter);
     border: 0.0625rem solid var(--border);
     transition: box-shadow var(--transition), transform var(--transition);
     position: relative;
@@ -289,10 +292,10 @@
     border-bottom-width: 0.18rem;
 }
 
-.sidebar-card:hover.strength::before   { border-left-color: rgb(var(--strength-rgb) / 0.65); border-bottom-color: rgb(var(--strength-rgb) / 0.65); }
-.sidebar-card:hover.cardio::before     { border-left-color: rgb(var(--cardio-rgb)   / 0.65); border-bottom-color: rgb(var(--cardio-rgb)   / 0.65); }
-.sidebar-card:hover.plyometric::before { border-left-color: rgb(var(--plyo-rgb)     / 0.65); border-bottom-color: rgb(var(--plyo-rgb)     / 0.65); }
-.sidebar-card:hover.mix::before        { border-left-color: rgb(var(--strength-rgb) / 0.65); border-bottom-color: rgb(var(--cardio-rgb)   / 0.65); }
+.sidebar-card:hover.strength::before   { border-left-color: color-mix(in srgb, var(--primary)       65%, transparent); border-bottom-color: color-mix(in srgb, var(--primary)       65%, transparent); }
+.sidebar-card:hover.cardio::before     { border-left-color: color-mix(in srgb, var(--accent)        65%, transparent); border-bottom-color: color-mix(in srgb, var(--accent)        65%, transparent); }
+.sidebar-card:hover.plyometric::before { border-left-color: color-mix(in srgb, var(--primary-light) 65%, transparent); border-bottom-color: color-mix(in srgb, var(--primary-light) 65%, transparent); }
+.sidebar-card:hover.mix::before        { border-left-color: color-mix(in srgb, var(--primary)       65%, transparent); border-bottom-color: color-mix(in srgb, var(--accent)        65%, transparent); }
 
 .sidebar-card.active {
     transform: translateY(-1px);
@@ -303,19 +306,19 @@
     border-color: var(--border);
 }
 
-.sidebar-card.active.strength   { box-shadow: 0 3px 5px rgb(var(--strength-rgb) / 0.14); }
-.sidebar-card.active.cardio     { box-shadow: 0 3px 5px rgb(var(--cardio-rgb)   / 0.14); }
-.sidebar-card.active.plyometric { box-shadow: 0 3px 5px rgb(var(--plyo-rgb)     / 0.14); }
-.sidebar-card.active.mix        { box-shadow: 0 3px 5px rgb(var(--strength-rgb) / 0.09), 0 3px 5px rgb(var(--cardio-rgb) / 0.09); }
+.sidebar-card.active.strength   { box-shadow: 0 3px 5px color-mix(in srgb, var(--primary)       14%, transparent); }
+.sidebar-card.active.cardio     { box-shadow: 0 3px 5px color-mix(in srgb, var(--accent)        14%, transparent); }
+.sidebar-card.active.plyometric { box-shadow: 0 3px 5px color-mix(in srgb, var(--primary-light) 14%, transparent); }
+.sidebar-card.active.mix        { box-shadow: 0 3px 5px color-mix(in srgb, var(--primary) 9%, transparent), 0 3px 5px color-mix(in srgb, var(--accent) 9%, transparent); }
 
-.sidebar-card.active.strength::before   { border-color: rgb(var(--strength-rgb) / 0.65); }
-.sidebar-card.active.cardio::before     { border-color: rgb(var(--cardio-rgb)   / 0.65); }
-.sidebar-card.active.plyometric::before { border-color: rgb(var(--plyo-rgb)     / 0.65); }
+.sidebar-card.active.strength::before   { border-color: color-mix(in srgb, var(--primary)       65%, transparent); }
+.sidebar-card.active.cardio::before     { border-color: color-mix(in srgb, var(--accent)        65%, transparent); }
+.sidebar-card.active.plyometric::before { border-color: color-mix(in srgb, var(--primary-light) 65%, transparent); }
 .sidebar-card.active.mix::before {
-    border-top-color:    rgb(var(--strength-rgb) / 0.65);
-    border-left-color:   rgb(var(--strength-rgb) / 0.65);
-    border-bottom-color: rgb(var(--cardio-rgb)   / 0.65);
-    border-right-color:  rgb(var(--cardio-rgb)   / 0.65);
+    border-top-color:    color-mix(in srgb, var(--primary) 65%, transparent);
+    border-left-color:   color-mix(in srgb, var(--primary) 65%, transparent);
+    border-bottom-color: color-mix(in srgb, var(--accent)  65%, transparent);
+    border-right-color:  color-mix(in srgb, var(--accent)  65%, transparent);
 }
 
 .sidebar-card-name {
@@ -350,10 +353,10 @@
     position: relative;
 }
 
-.type-dot.strength   { background: rgb(var(--strength-rgb) / 0.8); }
-.type-dot.cardio     { background: rgb(var(--cardio-rgb)   / 0.8); }
-.type-dot.plyometric { background: rgb(var(--plyo-rgb)     / 0.8); }
-.type-dot.mix        { background: linear-gradient(135deg, rgb(var(--strength-rgb) / 0.8), rgb(var(--cardio-rgb) / 1)); }
+.type-dot.strength   { background: color-mix(in srgb, var(--primary)       80%, transparent); }
+.type-dot.cardio     { background: color-mix(in srgb, var(--accent)        80%, transparent); }
+.type-dot.plyometric { background: color-mix(in srgb, var(--primary-light) 80%, transparent); }
+.type-dot.mix        { background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 80%, transparent), var(--accent)); }
 
 .type-dot::after {
     content: attr(data-label);
@@ -362,7 +365,7 @@
     left: 50%;
     transform: translateX(-50%);
     background: var(--surface-dark);
-    color: white;
+    color: var(--surface-lighter);
     font-size: 0.65rem;
     padding: 0.15rem 0.4rem;
     border-radius: 0.2rem;
@@ -383,11 +386,11 @@
     line-height: 1;
 }
 
-.type-badge.strength   { background: rgb(var(--strength-rgb) / 0.1);  color: var(--primary-muted); }
-.type-badge.cardio     { background: rgb(var(--cardio-rgb)   / 0.12); color: var(--accent); }
-.type-badge.plyometric { background: rgb(var(--plyo-rgb)     / 0.12); color: var(--primary-light); }
+.type-badge.strength   { background: color-mix(in srgb, var(--primary)       10%, transparent); color: var(--primary-muted); }
+.type-badge.cardio     { background: color-mix(in srgb, var(--accent)        12%, transparent); color: var(--accent); }
+.type-badge.plyometric { background: color-mix(in srgb, var(--primary-light) 12%, transparent); color: var(--primary-light); }
 .type-badge.mix {
-    background: linear-gradient(to right, rgb(var(--strength-rgb) / 0.1), rgb(var(--cardio-rgb) / 0.12));
+    background: linear-gradient(to right, color-mix(in srgb, var(--primary) 10%, transparent), color-mix(in srgb, var(--accent) 12%, transparent));
     color: var(--ink-muted);
 }
 
@@ -428,10 +431,10 @@
 
 /* Active states by type */
 .filter-chip.strength.active,
-.exercise-library-chip.active  { background: rgb(var(--strength-rgb) / 0.08); border-color: var(--primary);       color: var(--primary); }
-.filter-chip.cardio.active     { background: rgb(var(--cardio-rgb)   / 0.08); border-color: var(--accent);        color: var(--accent); }
+.exercise-library-chip.active  { background: color-mix(in srgb, var(--primary)       8%, transparent); border-color: var(--primary);       color: var(--primary); }
+.filter-chip.cardio.active     { background: color-mix(in srgb, var(--accent)        8%, transparent); border-color: var(--accent);        color: var(--accent); }
 .filter-chip.plyometric.active,
-.focus-chip.active             { background: rgb(var(--plyo-rgb)     / 0.08); border-color: var(--primary-light); color: var(--primary-light); }
+.focus-chip.active             { background: color-mix(in srgb, var(--primary-light) 8%, transparent); border-color: var(--primary-light); color: var(--primary-light); }
 
 
 /* =============================================================================
@@ -447,8 +450,8 @@
     position: absolute;
     top: calc(100% + 0.5rem);
     right: 0;
-    background: white;
-    border: 0.0625rem solid #e3e3e3;
+    background: var(--surface-lighter);
+    border: 0.0625rem solid var(--border-light);
     border-radius: var(--radius-md);
     padding: 0.75rem;
     display: flex;
@@ -509,16 +512,16 @@
 .shortcut-row kbd {
     font-family: var(--sans), sans-serif;
     font-size: 0.68rem;
-    color: #333;
-    background: #f0f0ee;
-    border: 0.0625rem solid #e3e3e3;
+    color: var(--ink);
+    background: var(--kbd-bg);
+    border: 0.0625rem solid var(--border-light);
     border-radius: 0.2rem;
     padding: 0.15rem 0.4rem;
     letter-spacing: 0.02em;
 }
 
 .shortcut-row span {
-    color: #666;
+    color: var(--ink-muted);
 }
 
 
@@ -546,7 +549,7 @@
     padding: 0.5rem 0.75rem;
     border: 0.0625rem solid var(--border);
     border-radius: var(--radius-md);
-    background: white;
+    background: var(--surface-lighter);
     color: var(--ink);
     outline: none;
     box-sizing: border-box;
@@ -681,7 +684,7 @@
 
 .exercise-card {
     border: 0.0625rem solid var(--border);
-    background-color: white;
+    background-color: var(--surface-lighter);
     border-radius: var(--widget-border-radius);
     overflow: hidden;
 }
@@ -1040,9 +1043,9 @@
 .error-banner {
     padding: 0.6rem 0.9rem;
     border-radius: var(--radius-md);
-    background: rgb(220 38 38 / 0.08);
-    border: 0.0625rem solid rgb(220 38 38 / 0.25);
-    color: #b91c1c;
+    background: color-mix(in srgb, var(--danger-base)  8%, transparent);
+    border: 0.0625rem solid color-mix(in srgb, var(--danger-base) 25%, transparent);
+    color: var(--danger-text);
     font-size: 0.8rem;
 }
 
@@ -1084,7 +1087,7 @@
     border: none;
     border-radius: var(--radius-md);
     background: var(--primary);
-    color: white;
+    color: var(--surface-lighter);
     font-size: 0.85rem;
     font-family: var(--sans), sans-serif;
     cursor: pointer;

@@ -37,7 +37,7 @@
     line-height: 1.5;
     resize: vertical;
     outline: none;
-    background: white;
+    background: var(--surface-lighter);
     box-sizing: border-box;
     transition: border-color var(--transition);
 }
@@ -63,7 +63,7 @@
     padding: 0.875rem 1rem;
     border: 0.0625rem solid var(--border);
     border-radius: var(--widget-border-radius);
-    background: white;
+    background: var(--surface-lighter);
     cursor: pointer;
     text-align: left;
     display: flex;
@@ -229,7 +229,7 @@
     padding: 0.875rem 1.25rem;
     position: sticky;
     bottom: 0;
-    background: oklch(0.998 0.004 95);
+    background: var(--surface-lighter);
     border-top: 0.0625rem solid var(--border);
     border-radius: 0 0 var(--widget-border-radius) var(--widget-border-radius);
     z-index: 1;

@@ -8,7 +8,7 @@
     top: 2rem;
     right: 0;
     z-index: 20;
-    background: white;
+    background: var(--surface-lighter);
     padding: 1rem 1.25rem;
     border-radius: 0.5rem 0 0 0.5rem;
 
@@ -57,7 +57,7 @@
 #home-header h1 {
     position: relative;
     z-index: 2;
-    color: white;
+    color: var(--surface-lighter);
     width: min-content;
     font-size: 6rem;
     font-weight: 100;
@@ -75,7 +75,7 @@
 
     padding: 2rem 3rem 2rem 2rem;
     border-radius: 1rem 0 0 0;
-    background: #fff;
+    background: var(--surface-lighter);
     font-size: 3.5rem;
     font-weight: 500;
 }
@@ -142,7 +142,7 @@ h2 {
 #exercise-type-image-section p {
     position: relative;
     z-index: 2;
-    color: white;
+    color: var(--surface-lighter);
     text-align: left;
     font-size: 6rem;
     font-weight: 150;
@@ -297,7 +297,7 @@ footer article {
 
 footer article img {
     grid-column: 1 / -1;
-    background: white;
+    background: var(--surface-lighter);
     border-radius: 0.5rem;
     padding: 0.9rem;
     width: 7rem;
@@ -306,7 +306,7 @@ footer article img {
 }
 
 footer article ul {
-    color: white;
+    color: var(--surface-lighter);
 }
 
 footer article ul li:first-of-type {
@@ -328,9 +328,9 @@ footer > section:first-of-type {
 
 footer:last-child p{
     font-size: 0.9rem;
-    color: white;
+    color: var(--surface-lighter);
     padding-top: 1rem;
-    border-top: white 0.1rem solid;
+    border-top: var(--surface-lighter) 0.1rem solid;
 }
 
 
