@@ -58,7 +58,7 @@
    DARK MODE
    ============================================================================= */
 
-html.dark {
+.dark {
     --primary: #00954e;
     /* Surfaces — page is darkest, cards lift above it, hover lifts further */
     --surface-lighter:    #1e1e1c;
@@ -77,7 +77,12 @@ html.dark {
     --grey:         #52524a;
 
     /* Semantic */
+    --danger:         #f87171;
     --danger-lighter: rgb(80 20 20 / 0.5);
+    --danger-text:    #fca5a5;
+
+    /* Primary variants — lightened for legibility on dark surfaces */
+    --primary-muted:  #4ade80;
 
     /* Misc */
     --backdrop-bg: rgb(0 0 0 / 0.65);
