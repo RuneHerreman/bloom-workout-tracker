@@ -34,6 +34,7 @@ import {
     estimateMaxHr,
     buildHrZoneData,
     buildAtlCtlSeries,
+    buildGpxCache,
     extractRoutePolylines,
     ZONE_COLORS,
     ZONE_LABELS,
@@ -125,35 +126,6 @@ function InsightsPage() {
         padding: 10,
     } : TOOLTIP_STYLE, [dark]);
 
-    const prLineOptions = useMemo((): ChartOptions<"line"> => ({
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                ...tooltipStyle,
-                padding: 12,
-                boxPadding: 6,
-                usePointStyle: true,
-                callbacks: { label: (ctx: TooltipItem<"line">) => ` ${ctx.dataset.label}: ${ctx.raw} kg` },
-            },
-        },
-        scales: {
-            y: {
-                type: "logarithmic",
-                border: { display: false },
-                grid: { color: gridColor },
-                ticks: { callback: (v) => `${v} kg`, color: tickColor },
-            },
-            x: {
-                border: { display: false },
-                offset: true,
-                grid: { color: gridColor },
-                ticks: { color: tickColor, padding: 10 },
-            },
-        },
-    }), [dark, gridColor, tickColor, tooltipStyle]);
-
     const barOptions = useMemo((): ChartOptions<"bar"> => ({
         responsive: true,
         maintainAspectRatio: false,
@@ -194,6 +166,37 @@ function InsightsPage() {
     }, [filteredVolume, typeFilters, muscleFilters]);
 
     const volumeChart = useMemo(() => buildVolumeChartSeries(prFilteredVolume, Infinity), [prFilteredVolume]);
+
+    const isSinglePrMonth = volumeChart.labels.length <= 1;
+
+    const prLineOptions = useMemo((): ChartOptions<"line"> => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                ...tooltipStyle,
+                padding: 12,
+                boxPadding: 6,
+                usePointStyle: true,
+                callbacks: { label: (ctx: TooltipItem<"line">) => ` ${ctx.dataset.label}: ${ctx.raw} kg` },
+            },
+        },
+        scales: {
+            y: {
+                type: "logarithmic",
+                border: { display: false },
+                grid: { color: gridColor },
+                ticks: { callback: (v) => `${v} kg`, color: tickColor },
+            },
+            x: {
+                border: { display: false },
+                offset: isSinglePrMonth,
+                grid: { color: gridColor },
+                ticks: { color: tickColor, padding: 10 },
+            },
+        },
+    }), [dark, gridColor, tickColor, tooltipStyle, isSinglePrMonth]);
 
     const exerciseColorMap = useMemo(() => {
         const map = new Map<string, string>();
@@ -264,9 +267,10 @@ function InsightsPage() {
 
     // ── Cardio advanced ────────────────────────────────────────────────────────
     const maxHr = useMemo(() => user?.birthDate ? estimateMaxHr(user.birthDate) : 190, [user]);
-    const routePolylines = useMemo(() => extractRoutePolylines(filteredLogs), [filteredLogs]);
-    const hrZoneData = useMemo(() => buildHrZoneData(filteredLogs, maxHr), [filteredLogs, maxHr]);
-    const atlCtlSeries = useMemo(() => buildAtlCtlSeries(filteredLogs, maxHr), [filteredLogs, maxHr]);
+    const gpxCache = useMemo(() => buildGpxCache(logs), [logs]);
+    const routePolylines = useMemo(() => extractRoutePolylines(filteredLogs, gpxCache), [filteredLogs, gpxCache]);
+    const hrZoneData = useMemo(() => buildHrZoneData(filteredLogs, maxHr, gpxCache), [filteredLogs, maxHr, gpxCache]);
+    const atlCtlSeries = useMemo(() => buildAtlCtlSeries(filteredLogs, maxHr, gpxCache), [filteredLogs, maxHr, gpxCache]);
 
     const hrDonutData = useMemo(() => ({
         labels: ZONE_LABELS,

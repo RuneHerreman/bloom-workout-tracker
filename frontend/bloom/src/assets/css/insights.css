@@ -6,6 +6,12 @@
     min-height: 100%;
 }
 
+/* ── Chips ───────────────────────────────────────────────────────────────────── */
+
+.insights-page .filter-chip:not(.active) {
+    background: var(--surface-lighter);
+}
+
 /* ── Period bar ──────────────────────────────────────────────────────────────── */
 
 .insights-period-bar {

@@ -1,5 +1,18 @@
 import type { LoggedWorkout } from "../../assets/js/data/apiTypes.ts";
-import { parseGpxTrackPoints } from "../logbook/gpxUtils.ts";
+import { parseGpxTrackPoints, type GpxTrackPoint } from "../logbook/gpxUtils.ts";
+
+export type GpxCache = Map<string, GpxTrackPoint[]>;
+
+export function buildGpxCache(logs: LoggedWorkout[]): GpxCache {
+    const cache: GpxCache = new Map();
+    for (const log of logs) {
+        for (let i = 0; i < log.exercises.length; i++) {
+            const gpx = log.exercises[i].gpxData;
+            if (gpx) cache.set(`${log.id}-${i}`, parseGpxTrackPoints(gpx));
+        }
+    }
+    return cache;
+}
 
 // ── HR Zones ──────────────────────────────────────────────────────────────────
 
@@ -44,14 +57,15 @@ export interface HrZoneResult {
     hasData: boolean;
 }
 
-export function buildHrZoneData(logs: LoggedWorkout[], maxHr: number): HrZoneResult {
+export function buildHrZoneData(logs: LoggedWorkout[], maxHr: number, cache: GpxCache): HrZoneResult {
     const overallSecs = [0, 0, 0, 0, 0];
     const sessions: SessionZoneData[] = [];
 
     for (const log of logs) {
-        for (const ex of log.exercises) {
+        for (let ei = 0; ei < log.exercises.length; ei++) {
+            const ex = log.exercises[ei];
             if (!ex.gpxData) continue;
-            const pts = parseGpxTrackPoints(ex.gpxData);
+            const pts = cache.get(`${log.id}-${ei}`) ?? [];
             const hrPts = pts.filter(p => p.hr !== undefined && p.elapsedMs !== undefined);
             if (hrPts.length < 2) continue;
 
@@ -101,12 +115,13 @@ export interface AtlCtlPoint {
     form: number;      // CTL - ATL
 }
 
-function sessionLoad(log: LoggedWorkout, maxHr: number): number {
+function sessionLoad(log: LoggedWorkout, maxHr: number, cache: GpxCache): number {
     let totalLoad = 0;
 
-    for (const ex of log.exercises) {
+    for (let ei = 0; ei < log.exercises.length; ei++) {
+        const ex = log.exercises[ei];
         if (!ex.gpxData) continue;
-        const pts = parseGpxTrackPoints(ex.gpxData);
+        const pts = cache.get(`${log.id}-${ei}`) ?? [];
         const hrPts = pts.filter(p => p.hr !== undefined && p.elapsedMs !== undefined);
         if (hrPts.length < 2) continue;
 
@@ -131,13 +146,13 @@ function sessionLoad(log: LoggedWorkout, maxHr: number): number {
     return totalLoad;
 }
 
-export function buildAtlCtlSeries(logs: LoggedWorkout[], maxHr: number): AtlCtlPoint[] {
+export function buildAtlCtlSeries(logs: LoggedWorkout[], maxHr: number, cache: GpxCache): AtlCtlPoint[] {
     if (logs.length === 0 || maxHr <= 0) return [];
 
     const loadByDate = new Map<string, number>();
     for (const log of logs) {
         const dateKey = log.loggedAt.slice(0, 10);
-        const load = sessionLoad(log, maxHr);
+        const load = sessionLoad(log, maxHr, cache);
         if (load > 0) loadByDate.set(dateKey, (loadByDate.get(dateKey) ?? 0) + load);
     }
 
@@ -176,14 +191,14 @@ export interface RoutePolyline {
     distanceKm: number;
 }
 
-export function extractRoutePolylines(logs: LoggedWorkout[]): RoutePolyline[] {
+export function extractRoutePolylines(logs: LoggedWorkout[], cache: GpxCache): RoutePolyline[] {
     const routes: RoutePolyline[] = [];
 
     for (const log of logs) {
         for (let ei = 0; ei < log.exercises.length; ei++) {
             const ex = log.exercises[ei];
             if (!ex.gpxData) continue;
-            const pts = parseGpxTrackPoints(ex.gpxData);
+            const pts = cache.get(`${log.id}-${ei}`) ?? [];
             if (pts.length < 2) continue;
             const distanceKm = pts[pts.length - 1].distanceKm;
             routes.push({

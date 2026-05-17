@@ -8,7 +8,8 @@ import {
     LineElement,
     Title,
     Tooltip,
-    Legend, type TooltipItem
+    Legend,
+    type TooltipItem
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import WidgetHeader from "./WidgetHeader.tsx";
@@ -46,15 +47,13 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
         labels: monthLabels,
         datasets: series.map((s, i) => {
             const color = PALETTE[i % PALETTE.length];
-            const fillColor = `${color}33`;
-
             return {
                 label: s.name,
                 data: s.data,
                 borderColor: color,
-                backgroundColor: fillColor,
+                backgroundColor: color,
                 borderWidth: 3,
-                fill: true,
+                fill: false,
                 tension: 0.4,
                 pointRadius: 3,
                 pointHoverRadius: 6,
@@ -66,6 +65,8 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
             };
         })
     }), [series, monthLabels]);
+
+    const isSingleMonth = monthLabels.length <= 1;
 
     const options = useMemo(() => ({
         responsive: true,
@@ -114,7 +115,7 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
             },
             x: {
                 border: { display: false },
-                offset: true,
+                offset: isSingleMonth,
                 grid: {
                     display: true,
                 },
@@ -125,7 +126,7 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
                 }
             }
         }
-    }), []);
+    }), [isSingleMonth]);
 
     return (
         <GeneralWidget
