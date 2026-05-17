@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -7,19 +7,22 @@ import {
     PointElement,
     LineElement,
     BarElement,
+    ArcElement,
+    DoughnutController,
     Tooltip,
     Legend,
     Filler,
     type ChartOptions,
     type TooltipItem,
 } from "chart.js";
-import { Bar, Line } from "react-chartjs-2";
+import { Bar, Line, Doughnut } from "react-chartjs-2";
 import { ChevronDown, Search, Check } from "lucide-react";
-import type { LoggedWorkout, ExerciseVolumeResponse } from "../../assets/js/data/apiTypes.ts";
+import type { LoggedWorkout, ExerciseVolumeResponse, User } from "../../assets/js/data/apiTypes.ts";
 import type { ExerciseType } from "../../types.ts";
 import { getLogs, getVolume } from "../logbook/api.ts";
 import { searchExercises } from "../exercises/api.ts";
 import type { Exercise } from "../exercises/api.ts";
+import { getMe } from "../auth/api.ts";
 import {
     filterLogsByPeriod,
     filterVolumeByPeriod,
@@ -27,12 +30,26 @@ import {
     getAvailableYears,
     buildVolumeChartSeries,
 } from "./insightsTransforms.ts";
+import {
+    estimateMaxHr,
+    buildHrZoneData,
+    buildAtlCtlSeries,
+    extractRoutePolylines,
+    ZONE_COLORS,
+    ZONE_LABELS,
+} from "./cardioTransforms.ts";
 import GeneralWidget from "../dashboard/components/GeneralWidget.tsx";
 import WidgetHeader from "../dashboard/components/WidgetHeader.tsx";
 import { useDarkModeContext } from "../../context/DarkModeContext.tsx";
 import "../../assets/css/insights.css";
 
-ChartJS.register(CategoryScale, LinearScale, LogarithmicScale, PointElement, LineElement, BarElement, Tooltip, Legend, Filler);
+const InsightsHeatmap = lazy(() => import("./InsightsHeatmap.tsx"));
+
+ChartJS.register(
+    CategoryScale, LinearScale, LogarithmicScale,
+    PointElement, LineElement, BarElement, ArcElement, DoughnutController,
+    Tooltip, Legend, Filler
+);
 
 type Tab = "strength" | "cardio";
 
@@ -54,6 +71,13 @@ const TOOLTIP_STYLE = {
     padding: 10,
 };
 
+function fmtZoneTime(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+}
+
 function InsightsPage() {
     const [tab, setTab] = useState<Tab>("strength");
     const { dark } = useDarkModeContext();
@@ -66,14 +90,15 @@ function InsightsPage() {
     const [logs, setLogs] = useState<LoggedWorkout[]>([]);
     const [volumeData, setVolumeData] = useState<ExerciseVolumeResponse[]>([]);
     const [, setExercises] = useState<Exercise[]>([]);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const pickerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        Promise.all([getLogs(), getVolume(), searchExercises()])
-            .then(([l, v, e]) => { setLogs(l); setVolumeData(v); setExercises(e); })
+        Promise.all([getLogs(), getVolume(), searchExercises(), getMe()])
+            .then(([l, v, e, u]) => { setLogs(l); setVolumeData(v); setExercises(e); setUser(u); })
             .catch(e => setError(e instanceof Error ? e.message : "Failed to load insights"))
             .finally(() => setLoading(false));
     }, []);
@@ -91,6 +116,14 @@ function InsightsPage() {
 
     const gridColor = dark ? "rgba(255,255,255,0.06)" : "#F0F0F0";
     const tickColor = dark ? "#666" : "#999";
+    const tooltipStyle = useMemo(() => dark ? {
+        backgroundColor: "rgba(30,30,28,0.97)",
+        titleColor: "#f2efe8",
+        bodyColor: "#a8a49c",
+        borderColor: "#46463e",
+        borderWidth: 1,
+        padding: 10,
+    } : TOOLTIP_STYLE, [dark]);
 
     const prLineOptions = useMemo((): ChartOptions<"line"> => ({
         responsive: true,
@@ -98,7 +131,7 @@ function InsightsPage() {
         plugins: {
             legend: { display: false },
             tooltip: {
-                ...TOOLTIP_STYLE,
+                ...tooltipStyle,
                 padding: 12,
                 boxPadding: 6,
                 usePointStyle: true,
@@ -119,27 +152,27 @@ function InsightsPage() {
                 ticks: { color: tickColor, padding: 10 },
             },
         },
-    }), [dark, gridColor, tickColor]);
+    }), [dark, gridColor, tickColor, tooltipStyle]);
 
     const barOptions = useMemo((): ChartOptions<"bar"> => ({
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: TOOLTIP_STYLE },
+        plugins: { legend: { display: false }, tooltip: tooltipStyle },
         scales: {
             x: { border: { display: false }, grid: { color: gridColor }, ticks: { color: tickColor } },
             y: { border: { display: false }, grid: { display: false }, ticks: { color: tickColor } },
         },
-    }), [dark, gridColor, tickColor]);
+    }), [dark, gridColor, tickColor, tooltipStyle]);
 
     const lineOptions = useMemo((): ChartOptions<"line"> => ({
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: TOOLTIP_STYLE },
+        plugins: { legend: { display: false }, tooltip: tooltipStyle },
         scales: {
             x: { border: { display: false }, grid: { color: gridColor }, ticks: { color: tickColor } },
             y: { beginAtZero: true, border: { display: false }, grid: { color: gridColor }, ticks: { color: tickColor } },
         },
-    }), [dark, gridColor, tickColor]);
+    }), [dark, gridColor, tickColor, tooltipStyle]);
 
     const availableYears = useMemo(() => getAvailableYears(volumeData, logs), [volumeData, logs]);
     const periods = useMemo(() => [...FIXED_PERIODS, ...availableYears.map(String), "max"], [availableYears]);
@@ -162,7 +195,6 @@ function InsightsPage() {
 
     const volumeChart = useMemo(() => buildVolumeChartSeries(prFilteredVolume, Infinity), [prFilteredVolume]);
 
-    // Stable color map keyed by exercise name so colors don't shift when filtering
     const exerciseColorMap = useMemo(() => {
         const map = new Map<string, string>();
         volumeChart.series.forEach((s, i) => map.set(s.name, PALETTE[i % PALETTE.length]));
@@ -200,7 +232,7 @@ function InsightsPage() {
             }),
     }), [volumeChart, selectedExercises, exerciseColorMap]);
 
-    // Cardio
+    // ── Cardio base ────────────────────────────────────────────────────────────
     const cardioMonths = useMemo(() => extractCardioMonthly(filteredLogs), [filteredLogs]);
     const cardioLabels = useMemo(() => cardioMonths.map(m => m.label), [cardioMonths]);
 
@@ -229,6 +261,162 @@ function InsightsPage() {
         labels: cardioLabels,
         datasets: [{ label: "Duration (min)", data: cardioMonths.map(m => Math.round(m.totalDurationMin)), backgroundColor: "#528B8D", borderRadius: 4 }],
     }), [cardioMonths, cardioLabels]);
+
+    // ── Cardio advanced ────────────────────────────────────────────────────────
+    const maxHr = useMemo(() => user?.birthDate ? estimateMaxHr(user.birthDate) : 190, [user]);
+    const routePolylines = useMemo(() => extractRoutePolylines(filteredLogs), [filteredLogs]);
+    const hrZoneData = useMemo(() => buildHrZoneData(filteredLogs, maxHr), [filteredLogs, maxHr]);
+    const atlCtlSeries = useMemo(() => buildAtlCtlSeries(filteredLogs, maxHr), [filteredLogs, maxHr]);
+
+    const hrDonutData = useMemo(() => ({
+        labels: ZONE_LABELS,
+        datasets: [{
+            data: hrZoneData.overall.map(z => Math.round(z.seconds / 60)),
+            backgroundColor: ZONE_COLORS,
+            borderWidth: 0,
+            hoverOffset: 6,
+        }],
+    }), [hrZoneData]);
+
+    const hrDonutOptions = useMemo((): ChartOptions<"doughnut"> => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "68%",
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                ...tooltipStyle,
+                callbacks: {
+                    label: (ctx: TooltipItem<"doughnut">) =>
+                        ` ${ZONE_LABELS[ctx.dataIndex]}: ${fmtZoneTime((ctx.raw as number) * 60)}`,
+                },
+            },
+        },
+    }), [tooltipStyle]);
+
+    const hrStackedData = useMemo(() => {
+        const recentSessions = hrZoneData.sessions.slice(-20);
+        return {
+            labels: recentSessions.map(s => s.label),
+            datasets: ZONE_LABELS.map((label, zi) => ({
+                label,
+                data: recentSessions.map(s => Math.round(s.zones[zi] / 60)),
+                backgroundColor: ZONE_COLORS[zi],
+                stack: "zones",
+                borderWidth: 0,
+                borderRadius: zi === 4 ? 3 : 0,
+            })),
+        };
+    }, [hrZoneData]);
+
+    const hrStackedOptions = useMemo((): ChartOptions<"bar"> => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                ...tooltipStyle,
+                callbacks: {
+                    label: (ctx: TooltipItem<"bar">) =>
+                        ` ${ctx.dataset.label}: ${fmtZoneTime((ctx.raw as number) * 60)}`,
+                },
+            },
+        },
+        scales: {
+            x: {
+                stacked: true,
+                border: { display: false },
+                grid: { display: false },
+                ticks: { color: tickColor, maxRotation: 45, font: { size: 10 } },
+            },
+            y: {
+                stacked: true,
+                border: { display: false },
+                grid: { color: gridColor },
+                ticks: { color: tickColor, callback: v => `${v}m` },
+            },
+        },
+    }), [dark, gridColor, tickColor, tooltipStyle]);
+
+    const atlCtlChartData = useMemo(() => {
+        const pts = atlCtlSeries;
+        const labels = pts.map(p => {
+            const d = new Date(p.date);
+            return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+        });
+        return {
+            labels,
+            datasets: [
+                {
+                    label: "Fitness (CTL)",
+                    data: pts.map(p => Math.round(p.ctl * 10) / 10),
+                    borderColor: "#558B6E",
+                    backgroundColor: "#558B6E22",
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    pointBorderWidth: 0,
+                    pointBackgroundColor: "#558B6E",
+                },
+                {
+                    label: "Fatigue (ATL)",
+                    data: pts.map(p => Math.round(p.atl * 10) / 10),
+                    borderColor: "#E9762B",
+                    backgroundColor: "#E9762B18",
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    pointBorderWidth: 0,
+                    pointBackgroundColor: "#E9762B",
+                },
+                {
+                    label: "Form (CTL−ATL)",
+                    data: pts.map(p => Math.round(p.form * 10) / 10),
+                    borderColor: "#528B8D",
+                    backgroundColor: "transparent",
+                    borderWidth: 1.5,
+                    borderDash: [5, 4],
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    pointBorderWidth: 0,
+                    pointBackgroundColor: "#528B8D",
+                },
+            ],
+        };
+    }, [atlCtlSeries]);
+
+    const atlCtlOptions = useMemo((): ChartOptions<"line"> => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+            legend: { display: true, position: "top", align: "end", labels: { color: tickColor, font: { size: 11 }, boxWidth: 12, padding: 16, usePointStyle: true } },
+            tooltip: {
+                ...tooltipStyle,
+                padding: 12,
+                boxPadding: 6,
+                usePointStyle: true,
+            },
+        },
+        scales: {
+            x: {
+                border: { display: false },
+                grid: { color: gridColor },
+                ticks: { color: tickColor, maxTicksLimit: 10, font: { size: 10 } },
+            },
+            y: {
+                border: { display: false },
+                grid: { color: gridColor },
+                ticks: { color: tickColor },
+            },
+        },
+    }), [dark, gridColor, tickColor, tooltipStyle]);
 
     function toggleType(t: ExerciseType) {
         setTypeFilters(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
@@ -324,7 +512,6 @@ function InsightsPage() {
                                 )}
                             </div>
 
-                            {/* Exercise picker */}
                             <div className="insights-exercise-picker" ref={pickerRef}>
                                 <button
                                     className={`insights-picker-trigger${selectedExercises.size > 0 ? " has-selection" : ""}`}
@@ -394,9 +581,82 @@ function InsightsPage() {
                 )}
 
                 {!loading && !error && tab === "cardio" && (
-                    cardioMonths.length === 0
-                        ? <p className="insights-empty">No cardio sessions logged in this period.</p>
-                        : (
+                    <>
+                        {/* Route Heatmap */}
+                        {routePolylines.length > 0 && (
+                            <section className="insights-section">
+                                <div className="insights-section-header">
+                                    <span className="insights-section-title">Route Map</span>
+                                </div>
+                                <GeneralWidget
+                                    className="general-widget--map"
+                                    content={
+                                        <Suspense fallback={<div className="insights-heatmap insights-heatmap-loading" />}>
+                                            <InsightsHeatmap routes={routePolylines} />
+                                        </Suspense>
+                                    }
+                                />
+                            </section>
+                        )}
+
+                        {/* ATL / CTL Fitness-Fatigue-Form */}
+                        {atlCtlSeries.length > 1 && (
+                            <section className="insights-section">
+                                <div className="insights-section-header">
+                                    <span className="insights-section-title">Fitness · Fatigue · Form</span>
+                                </div>
+                                <GeneralWidget
+                                    content={
+                                        <div className="insights-atl-chart">
+                                            <Line data={atlCtlChartData} options={atlCtlOptions} />
+                                        </div>
+                                    }
+                                />
+                            </section>
+                        )}
+
+                        {/* HR Zones */}
+                        {hrZoneData.hasData && (
+                            <section className="insights-section">
+                                <div className="insights-section-header">
+                                    <span className="insights-section-title">Heart Rate Zones</span>
+                                </div>
+                                <div className="insights-grid-2">
+                                    <GeneralWidget
+                                        header={<WidgetHeader title="Distribution" subtitle="Overall time in zone" />}
+                                        content={
+                                            <div className="insights-zone-donut-wrap">
+                                                <div className="insights-zone-donut">
+                                                    <Doughnut data={hrDonutData} options={hrDonutOptions} />
+                                                </div>
+                                                <div className="insights-zone-legend">
+                                                    {hrZoneData.overall.map((z, i) => (
+                                                        <div key={i} className="insights-zone-row">
+                                                            <span className="insights-zone-dot" style={{ background: z.color }} />
+                                                            <span className="insights-zone-label">{z.label}</span>
+                                                            <span className="insights-zone-time">{fmtZoneTime(z.seconds)}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        }
+                                    />
+                                    <GeneralWidget
+                                        header={<WidgetHeader title="Per Session" subtitle="Recent 20 sessions" />}
+                                        content={
+                                            <div className="insights-chart-area">
+                                                <Bar data={hrStackedData} options={hrStackedOptions} />
+                                            </div>
+                                        }
+                                    />
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Existing cardio stats */}
+                        {cardioMonths.length === 0 ? (
+                            <p className="insights-empty">No cardio sessions logged in this period.</p>
+                        ) : (
                             <>
                                 <div className="insights-grid-2">
                                     <GeneralWidget
@@ -425,7 +685,8 @@ function InsightsPage() {
                                     }
                                 />
                             </>
-                        )
+                        )}
+                    </>
                 )}
             </div>
         </div>

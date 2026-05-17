@@ -15,9 +15,9 @@ interface LogExerciseCardProps {
     id: string;
     exercise: LoggedExercise;
     exerciseInfo?: Exercise;
-    onSetsChange: (exerciseId: string, sets: LoggedSet[]) => void;
-    onDelete: (exerciseId: string) => void;
-    onGpxChange?: (exerciseId: string, gpxData: string | null) => void;
+    onSetsChange: (exerciseOrder: number, sets: LoggedSet[]) => void;
+    onDelete: (exerciseOrder: number) => void;
+    onGpxChange?: (exerciseOrder: number, gpxData: string | null) => void;
     autoFocus?: boolean;
 }
 
@@ -45,7 +45,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
     );
 
     function pushChange(updated: LogRowItem[]) {
-        onSetsChange(exercise.exerciseId, updated.map((item, i) => ({ ...item.set, order: i + 1 })));
+        onSetsChange(exercise.order, updated.map((item, i) => ({ ...item.set, order: i + 1 })));
     }
 
     function handleDragEnd(event: DragEndEvent) {
@@ -82,7 +82,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
             const xml = ev.target?.result as string;
             const stats = parseGpx(xml);
             setGpxStats(stats);
-            onGpxChange?.(exercise.exerciseId, xml);
+            onGpxChange?.(exercise.order, xml);
         };
         reader.readAsText(file);
         e.target.value = "";
@@ -90,7 +90,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
 
     function handleRemoveGpx() {
         setGpxStats(null);
-        onGpxChange?.(exercise.exerciseId, null);
+        onGpxChange?.(exercise.order, null);
     }
 
     function handleAddSet() {
@@ -119,7 +119,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
                 </div>
                 <div className="exercise-card-actions">
                     <span className="exercise-drag-handle" {...attributes} {...listeners} tabIndex={-1}><GripVertical size={16} /></span>
-                    <button className="exercise-delete-btn" tabIndex={-1} onClick={() => onDelete(exercise.exerciseId)}><X size={14} /></button>
+                    <button className="exercise-delete-btn" tabIndex={-1} onClick={() => onDelete(exercise.order)}><X size={14} /></button>
                 </div>
             </header>
             <section className={bodyClass}>

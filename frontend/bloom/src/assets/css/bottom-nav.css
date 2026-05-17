@@ -68,7 +68,7 @@
         transform: translateY(-0.5rem);
         opacity: 0;
         pointer-events: none;
-        transition: transform 0.2s ease, opacity 0.15s ease;
+        transition: transform var(--transition-spring), opacity 0.15s ease;
     }
 
     .mobile-nav-dropdown.open {

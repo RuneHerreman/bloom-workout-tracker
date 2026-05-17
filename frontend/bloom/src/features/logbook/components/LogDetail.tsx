@@ -35,7 +35,7 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [addExerciseOpen, setAddExerciseOpen] = useState(false);
-    const [lastAddedId, setLastAddedId] = useState<string | null>(null);
+    const [lastAddedOrder, setLastAddedOrder] = useState<number | null>(null);
     const [showSticky, setShowSticky] = useState(false);
     const [panelTop, setPanelTop] = useState(0);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -96,21 +96,21 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [menuOpen]);
 
-    function handleSetsChange(exerciseId: string, sets: LoggedSet[]) {
+    function handleSetsChange(exerciseOrder: number, sets: LoggedSet[]) {
         setLogExercises(prev =>
-            prev.map(ex => ex.exerciseId === exerciseId ? { ...ex, sets } : ex)
+            prev.map(ex => ex.order === exerciseOrder ? { ...ex, sets } : ex)
         );
     }
 
-    function handleGpxChange(exerciseId: string, gpxData: string | null) {
+    function handleGpxChange(exerciseOrder: number, gpxData: string | null) {
         setLogExercises(prev =>
-            prev.map(ex => ex.exerciseId === exerciseId ? { ...ex, gpxData } : ex)
+            prev.map(ex => ex.order === exerciseOrder ? { ...ex, gpxData } : ex)
         );
     }
 
-    function handleDeleteExercise(exerciseId: string) {
+    function handleDeleteExercise(exerciseOrder: number) {
         setLogExercises(prev =>
-            prev.filter(ex => ex.exerciseId !== exerciseId).map((ex, i) => ({ ...ex, order: i + 1 }))
+            prev.filter(ex => ex.order !== exerciseOrder).map((ex, i) => ({ ...ex, order: i + 1 }))
         );
     }
 
@@ -123,7 +123,7 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
             ...prev,
             { exerciseId, order: prev.length + 1, sets: [defaultSet], gpxData: null },
         ]);
-        setLastAddedId(exerciseId);
+        setLastAddedOrder(logExercises.length + 1);
         setAddExerciseOpen(false);
     }
 
@@ -133,7 +133,7 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
         const focused = document.activeElement;
         if (focused?.tagName === "TEXTAREA") return;
         const card = focused?.closest("[data-exercise-id]");
-        const id = card?.getAttribute("data-exercise-id") ?? logExercises.at(-1)?.exerciseId;
+        const id = card?.getAttribute("data-exercise-id") ?? logExercises.at(-1)?.order.toString();
         if (!id) return;
         const btn = document.querySelector<HTMLButtonElement>(`[data-exercise-id="${id}"] .exercise-footer button`);
         btn?.click();
@@ -226,17 +226,17 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
             />
 
             <DndContext collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={onDragCancel}>
-                <SortableContext items={logExercises.map(ex => ex.exerciseId)} strategy={verticalListSortingStrategy}>
+                <SortableContext items={logExercises.map(ex => String(ex.order))} strategy={verticalListSortingStrategy}>
                     {logExercises.map(ex => (
                         <LogExerciseCard
-                            key={ex.exerciseId}
-                            id={ex.exerciseId}
+                            key={ex.order}
+                            id={String(ex.order)}
                             exercise={ex}
                             exerciseInfo={exercises[ex.exerciseId]}
                             onSetsChange={handleSetsChange}
                             onDelete={handleDeleteExercise}
                             onGpxChange={handleGpxChange}
-                            autoFocus={ex.exerciseId === lastAddedId}
+                            autoFocus={ex.order === lastAddedOrder}
                         />
                     ))}
                 </SortableContext>

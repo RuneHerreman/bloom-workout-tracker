@@ -65,6 +65,84 @@ export function createPlyometricSet(
     };
 }
 
+// ── GPX encoding ─────────────────────────────────────────────────────────────
+// GPX XML is gzip-compressed then base64-encoded before sending. This reduces
+// a typical 5 MB GPX file to ~50 KB on the wire and prevents EF Core OOM when
+// it serializes the jsonb column.
+// Detection: gzip magic bytes 0x1F 0x8B at the start of the decoded buffer.
+// Fallback: plain base64 (previous format) and raw XML (oldest rows) both work.
+
+async function gzipToBase64(data: Uint8Array): Promise<string> {
+    const cs = new CompressionStream("gzip");
+    const writer = cs.writable.getWriter();
+    writer.write(data);
+    writer.close();
+    const chunks: Uint8Array[] = [];
+    const reader = cs.readable.getReader();
+    for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+    }
+    const out = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
+    let off = 0;
+    for (const c of chunks) { out.set(c, off); off += c.length; }
+    let binary = "";
+    out.forEach(b => binary += String.fromCharCode(b));
+    return btoa(binary);
+}
+
+async function gunzipFromBase64(b64: string): Promise<Uint8Array> {
+    const binary = atob(b64);
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    const ds = new DecompressionStream("gzip");
+    const writer = ds.writable.getWriter();
+    writer.write(bytes);
+    writer.close();
+    const chunks: Uint8Array[] = [];
+    const reader = ds.readable.getReader();
+    for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+    }
+    const out = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
+    let off = 0;
+    for (const c of chunks) { out.set(c, off); off += c.length; }
+    return out;
+}
+
+async function encodeGpx(xml: string): Promise<string> {
+    return gzipToBase64(new TextEncoder().encode(xml));
+}
+
+async function decodeGpx(stored: string): Promise<string> {
+    if (!stored || stored.trimStart().startsWith("<")) return stored; // legacy raw XML
+    const binary = atob(stored);
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
+        // gzip-compressed
+        return new TextDecoder().decode(await gunzipFromBase64(stored));
+    }
+    // legacy plain base64
+    return new TextDecoder().decode(bytes);
+}
+
+async function encodeExercises(exercises: LoggedExercise[]): Promise<LoggedExercise[]> {
+    return Promise.all(exercises.map(async ex =>
+        ex.gpxData ? { ...ex, gpxData: await encodeGpx(ex.gpxData) } : ex
+    ));
+}
+
+async function decodeWorkout(log: LoggedWorkout): Promise<LoggedWorkout> {
+    return {
+        ...log,
+        exercises: await Promise.all(log.exercises.map(async ex =>
+            ex.gpxData ? { ...ex, gpxData: await decodeGpx(ex.gpxData) } : ex
+        )),
+    };
+}
+
 // ── API functions ─────────────────────────────────────────────────────────────
 
 let _logsCache: Promise<LoggedWorkout[]> | null = null;
@@ -72,13 +150,15 @@ let _logsCache: Promise<LoggedWorkout[]> | null = null;
 export function getLogs(): Promise<LoggedWorkout[]> {
     if (!_logsCache) {
         _logsCache = fetchFromServer<LoggedWorkout[]>("logs", "GET")
+            .then(logs => Promise.all(logs.map(decodeWorkout)))
             .catch(e => { _logsCache = null; throw e; });
     }
     return _logsCache;
 }
 
 export async function getLog(logId: string): Promise<LoggedWorkout> {
-    return fetchFromServer<LoggedWorkout>(`logs/${logId}`, "GET");
+    const log = await fetchFromServer<LoggedWorkout>(`logs/${logId}`, "GET");
+    return decodeWorkout(log);
 }
 
 export async function createLog(
@@ -89,7 +169,7 @@ export async function createLog(
 ): Promise<string> {
     const response = await fetchFromServer<{ loggedWorkoutId: string }>("logs", "POST", {
         name,
-        exercises,
+        exercises: await encodeExercises(exercises),
         ...(note != null ? { note } : {}),
         ...(loggedAt ? { loggedAt } : {}),
     });
@@ -105,7 +185,8 @@ export async function updateLog(
     note?: string | null
 ): Promise<string> {
     const response = await fetchFromServer<{ loggedWorkoutId: string }>(`logs/${logId}`, "PUT", {
-        name, loggedAt, exercises,
+        name, loggedAt,
+        exercises: await encodeExercises(exercises),
         ...(note != null ? { note } : {}),
     });
     _logsCache = null;

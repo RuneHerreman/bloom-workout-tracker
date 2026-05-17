@@ -143,7 +143,6 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
     const tileUrl = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
     const positions = useMemo<LatLngTuple[]>(() => points.map(p => [p.lat, p.lon]), [points]);
-    const center: LatLngTuple = positions.length > 0 ? positions[Math.floor(positions.length / 2)] : [51.505, -0.09];
 
     const chartConfigs = useMemo<ChartConfig[]>(() => {
         const ds = (filter: (p: GpxTrackPoint) => boolean) => downsample(points.filter(filter), 300);
@@ -348,7 +347,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
                 <div className="gpx-left-col">
                     <div className="gpx-map-cell">
                         <div className="gpx-map-inner">
-                            <MapContainer center={center} zoom={13} style={{ width: "100%", height: "100%" }} zoomControl>
+                            <MapContainer center={[0, 0]} zoom={2} style={{ width: "100%", height: "100%" }} zoomControl>
                                 <TileLayer
                                     url={tileUrl}
                                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
