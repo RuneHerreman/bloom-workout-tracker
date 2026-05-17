@@ -27,16 +27,24 @@ export async function logout(): Promise<void> {
     await fetchFromServer<void>("users/logout", "POST");
 }
 
-export async function getMe(): Promise<User> {
-    return fetchFromServer<User>("users/me", "GET");
+let _meCache: Promise<User> | null = null;
+
+export function getMe(): Promise<User> {
+    if (!_meCache) {
+        _meCache = fetchFromServer<User>("users/me", "GET")
+            .catch(e => { _meCache = null; throw e; });
+    }
+    return _meCache;
 }
 
 export async function updateMe(body: UpdateUserInfoBody): Promise<void> {
     await fetchFromServer<unknown>("users/me", "PUT", body);
+    _meCache = null;
 }
 
 export async function deleteMe(): Promise<void> {
     await fetchFromServer<unknown>("users/me", "DELETE");
+    _meCache = null;
 }
 
 export async function changePassword(oldPassword: string, newPassword: string): Promise<void> {

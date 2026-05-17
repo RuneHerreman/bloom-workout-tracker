@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import type { ReactNode } from "react";
 import { getMe, logout as logoutApi } from "../features/auth/api.ts";
+import { getLogs, getVolume } from "../features/logbook/api.ts";
+import { searchExercises } from "../features/exercises/api.ts";
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -32,7 +34,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const verifySession = async () => {
             try {
                 await getMe();
-                if (isMounted) setIsAuthenticated(true);
+                if (isMounted) {
+                    setIsAuthenticated(true);
+                    getLogs();
+                    getVolume();
+                    searchExercises();
+                }
             } catch {
                 if (isMounted) setIsAuthenticated(false);
             } finally {

@@ -174,6 +174,7 @@ export async function createLog(
         ...(loggedAt ? { loggedAt } : {}),
     });
     _logsCache = null;
+    _volumeCache = null;
     return response.loggedWorkoutId;
 }
 
@@ -190,19 +191,30 @@ export async function updateLog(
         ...(note != null ? { note } : {}),
     });
     _logsCache = null;
+    _volumeCache = null;
     return response.loggedWorkoutId;
 }
 
 export async function deleteLog(logId: string): Promise<void> {
     await fetchFromServer<unknown>(`logs/${logId}`, "DELETE");
     _logsCache = null;
+    _volumeCache = null;
 }
 
 export async function getPRs(filters?: ExerciseFilters): Promise<ExercisePrResponse[]> {
     return fetchFromServer<ExercisePrResponse[]>(`logs/pr${buildExerciseParams(filters)}`, "GET");
 }
 
-export async function getVolume(filters?: VolumeFilters): Promise<ExerciseVolumeResponse[]> {
+let _volumeCache: Promise<ExerciseVolumeResponse[]> | null = null;
+
+export function getVolume(filters?: VolumeFilters): Promise<ExerciseVolumeResponse[]> {
+    if (!filters) {
+        if (!_volumeCache) {
+            _volumeCache = fetchFromServer<ExerciseVolumeResponse[]>("logs/volume", "GET")
+                .catch(e => { _volumeCache = null; throw e; });
+        }
+        return _volumeCache;
+    }
     return fetchFromServer<ExerciseVolumeResponse[]>(`logs/volume${buildVolumeParams(filters)}`, "GET");
 }
 
