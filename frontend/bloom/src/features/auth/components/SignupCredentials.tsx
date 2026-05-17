@@ -17,6 +17,7 @@ function SignupCredentials() {
     const [height, setHeight] = useState(0);
     const [weight, setWeight] = useState(0);
     const [activeDays, setActiveDays] = useState(0);
+    const [birthDate, setBirthDate] = useState("");
     const { markAuthenticated } = useAuth();
     const navigate = useNavigate();
 
@@ -40,7 +41,7 @@ function SignupCredentials() {
         e.preventDefault();
         if (!checkPasswordMatch()) return;
         try {
-            await register(email, password, height, weight, username, firstName, lastName, activeDays);
+            await register(email, password, height, weight, username, firstName, lastName, activeDays, birthDate);
             markAuthenticated();
             navigate("/dashboard");
         } catch (error) {
@@ -185,6 +186,16 @@ function SignupCredentials() {
                                 max="7"
                                 required
                                 onChange={(e) => setActiveDays(Number(e.target.value))}>
+                            </input>
+                        </div>
+                        <div>
+                            <label htmlFor="birthDate">Date of birth</label>
+                            <input
+                                type="date"
+                                id="birthDate"
+                                required
+                                max={new Date().toISOString().split("T")[0]}
+                                onChange={(e) => setBirthDate(e.target.value)}>
                             </input>
                         </div>
                         <p className="error-message">{errorMessage}</p>

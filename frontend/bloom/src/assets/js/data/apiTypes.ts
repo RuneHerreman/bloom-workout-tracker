@@ -160,6 +160,7 @@ export interface User {
     weight: number;
     height: number;
     activeDays: number;
+    birthDate: string;
     technicalPoints: string | null;
 }
 
@@ -172,6 +173,7 @@ export interface RegisterUserBody {
     weight: number;
     height: number;
     activeDays: number;
+    birthDate: string;
 }
 
 export interface RegisterUserResponse {
@@ -195,6 +197,7 @@ export interface UpdateUserInfoBody {
     weight: number;
     height: number;
     activeDays: number;
+    birthDate: string;
 }
 
 export interface UpdateUserInfoResponse {

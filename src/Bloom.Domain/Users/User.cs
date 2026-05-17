@@ -16,6 +16,7 @@ public class User : AggregateRoot<UserId>
     public decimal Weight { get; private set; }
     public int Height { get; private set; }
     public int ActiveDays { get; private set; }
+    public DateOnly BirthDate { get; private set; }
     public string? TechnicalPoints { get; private set; }
 
     private User() { }
@@ -29,7 +30,8 @@ public class User : AggregateRoot<UserId>
         string lastName,
         decimal weight,
         int height,
-        int activeDays) : base(id)
+        int activeDays,
+        DateOnly birthDate) : base(id)
     {
         Email = email;
         Username = username;
@@ -39,6 +41,7 @@ public class User : AggregateRoot<UserId>
         Weight = weight;
         Height = height;
         ActiveDays = activeDays;
+        BirthDate = birthDate;
     }
 
     public static User Create(
@@ -50,6 +53,7 @@ public class User : AggregateRoot<UserId>
         decimal weight,
         int height,
         int activeDays,
+        DateOnly birthDate,
         UserId? id = null)
     {
         var user = new User(
@@ -61,7 +65,8 @@ public class User : AggregateRoot<UserId>
             lastName,
             weight,
             height,
-            activeDays);
+            activeDays,
+            birthDate);
 
         user.ValidateState();
         user.RaiseDomainEvent(new UserRegistered(user.Id));
@@ -86,7 +91,8 @@ public class User : AggregateRoot<UserId>
         string lastName,
         decimal weight,
         int height,
-        int activeDays)
+        int activeDays,
+        DateOnly birthDate)
     {
         Email = Email.Create(email);
         Username = Username.Create(username);
@@ -95,6 +101,7 @@ public class User : AggregateRoot<UserId>
         Weight = weight;
         Height = height;
         ActiveDays = activeDays;
+        BirthDate = birthDate;
 
         ValidateState();
         RaiseDomainEvent(new UserUpdated(Id));
@@ -111,5 +118,6 @@ public class User : AggregateRoot<UserId>
         Asserts.EnsureGreaterThan(Height, 0);
         Asserts.EnsureNotNegative(ActiveDays);
         Asserts.EnsureLessThan(ActiveDays, 8);
+        Asserts.EnsureTrue(BirthDate < DateOnly.FromDateTime(DateTime.UtcNow));
     }
 }

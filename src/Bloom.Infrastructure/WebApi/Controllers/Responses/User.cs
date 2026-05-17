@@ -11,6 +11,7 @@ public record User(
     decimal Weight,
     int Height,
     int ActiveDays,
+    DateOnly BirthDate,
     string? TechnicalPoints
 );
 
@@ -27,6 +28,7 @@ public static class UserExtensions
             data.Weight,
             data.Height,
             data.ActiveDays,
+            data.BirthDate,
             data.TechnicalPoints
         );
     }

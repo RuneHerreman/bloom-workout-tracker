@@ -15,10 +15,11 @@ export async function register(
     username: string,
     firstName: string,
     lastName: string,
-    activeDays: number
+    activeDays: number,
+    birthDate: string
 ): Promise<void> {
     await fetchFromServer<void>("users/register", "POST", {
-        email, password, height, weight, username, firstName, lastName, activeDays,
+        email, password, height, weight, username, firstName, lastName, activeDays, birthDate,
     });
 }
 

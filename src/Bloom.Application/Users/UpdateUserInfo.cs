@@ -13,7 +13,8 @@ public sealed record UpdateUserInfoInput(
     string LastName,
     decimal Weight,
     int Height,
-    int ActiveDays
+    int ActiveDays,
+    DateOnly BirthDate
 );
 
 public sealed record UpdateUserInfoOutput(Guid UserId);
@@ -46,7 +47,8 @@ public class UpdateUserInfo(
             input.LastName,
             input.Weight,
             input.Height,
-            input.ActiveDays
+            input.ActiveDays,
+            input.BirthDate
         );
 
         await userRepo.Save(user.Value);

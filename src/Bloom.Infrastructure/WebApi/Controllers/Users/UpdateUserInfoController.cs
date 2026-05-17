@@ -19,7 +19,8 @@ public sealed record UpdateUserInfoBody(
     [Required, MinLength(1), MaxLength(100)] string LastName,
     [Range(typeof(decimal), "0.1", "500")] decimal Weight,
     [Range(1, 300)] int Height,
-    [Range(0, 7)] int ActiveDays
+    [Range(0, 7)] int ActiveDays,
+    [Required] DateOnly BirthDate
 );
 
 public sealed record UpdateUserInfoResponse(Guid UserId);
@@ -38,7 +39,8 @@ public static class UpdateUserInfoController
             request.Body.LastName,
             request.Body.Weight,
             request.Body.Height,
-            request.Body.ActiveDays
+            request.Body.ActiveDays,
+            request.Body.BirthDate
         ), ct);
 
         return TypedResults.Ok(new UpdateUserInfoResponse(output.UserId));

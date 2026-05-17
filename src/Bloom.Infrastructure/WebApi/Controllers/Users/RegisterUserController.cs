@@ -24,7 +24,8 @@ public sealed record RegisterUserBody(
     [Required, MinLength(1), MaxLength(100)] string LastName,
     [Range(typeof(decimal), "0.1", "500")] decimal Weight,
     [Range(1, 300)] int Height,
-    [Range(0, 7)] int ActiveDays
+    [Range(0, 7)] int ActiveDays,
+    [Required] DateOnly BirthDate
 );
 
 public static class RegisterUserController
@@ -42,7 +43,8 @@ public static class RegisterUserController
             request.Body.LastName,
             request.Body.Weight,
             request.Body.Height,
-            request.Body.ActiveDays
+            request.Body.ActiveDays,
+            request.Body.BirthDate
         ), ct);
 
         var opts = request.JwtOptions.Value;

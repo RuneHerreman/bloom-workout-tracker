@@ -20,6 +20,7 @@ public class UserDataConfiguration: IEntityTypeConfiguration<UserData>
         builder.Property(u => u.Weight).HasColumnType("numeric(5,2)").IsRequired();
         builder.Property(u => u.Height).IsRequired();
         builder.Property(u => u.ActiveDays).IsRequired();
+        builder.Property(u => u.BirthDate).IsRequired();
         builder.Property(u => u.TechnicalPoints);
     }
 }

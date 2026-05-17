@@ -14,7 +14,8 @@ public sealed record RegisterUserInput(
     string LastName,
     decimal Weight,
     int Height,
-    int ActiveDays
+    int ActiveDays,
+    DateOnly BirthDate
 );
 
 public sealed record RegisterUserOutput(string Token);
@@ -46,7 +47,8 @@ public class RegisterUser(
             input.LastName,
             input.Weight,
             input.Height,
-            input.ActiveDays
+            input.ActiveDays,
+            input.BirthDate
         );
 
         await userRepo.Save(user);
