@@ -110,7 +110,7 @@ function DashboardPage() {
             <div className="dashboard-body">
                 <div className="dashboard-stats">
                     <StatWidget label="Workouts (this month)" value={stats?.workoutsThisMonth ?? 0} changePercent={stats?.workoutChange} subtext={`${stats?.workoutsThisYear ?? 0} this year`} unit="sessions" />
-                    <StatWidget label="Volume (this month)"  value={stats?.volumeThisMonth ?? "0"} changePercent={stats?.volumeChange} unit="tonnes" />
+                    <StatWidget label="Volume (this month)"  value={stats?.volumeThisMonth ?? "0"} changePercent={stats?.volumeChange} unit={stats?.volumeUnit ?? "kg"} />
                     <StatWidget label="Active streak"        value={`${stats?.currentStreak ?? 0}`} subtext={`best: ${stats?.bestStreak ?? 0} days`} unit="days" />
                     <StatWidget label="Total PRs (this month)" value={stats?.totalPRs ?? 0} unit="PRs" />
                 </div>

@@ -59,12 +59,14 @@ function calculateVolume(workouts: LoggedWorkout[], currentYear: number, current
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const volLastMonth = calcVolForMonth(prevMonthYear, prevMonth);
 
-    const volumeThisMonthStr = volThisMonth >= 1000 ? (volThisMonth / 1000).toFixed(1) : volThisMonth.toString();
+    const useTonnes = volThisMonth >= 1000;
+    const volumeThisMonthStr = useTonnes ? (volThisMonth / 1000).toFixed(1) : volThisMonth.toString();
+    const volumeUnit = useTonnes ? "tonnes" : "kg";
     const volumeChange = volLastMonth > 0
         ? Math.round(((volThisMonth - volLastMonth) / volLastMonth) * 100)
         : undefined;
 
-    return { volumeThisMonth: volumeThisMonthStr, volumeChange };
+    return { volumeThisMonth: volumeThisMonthStr, volumeUnit, volumeChange };
 }
 
 function calculateStreaks(workouts: LoggedWorkout[], now: Date) {
