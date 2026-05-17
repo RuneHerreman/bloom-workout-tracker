@@ -12,7 +12,7 @@ import VolumeWidget from "./components/VolumeWidget.tsx";
 import type { ExerciseSeries } from "./components/VolumeWidget";
 import LogWidget from "./components/LogWidget.tsx";
 import type { LogEntryData } from "./components/LogWidget";
-import { getLogs, getVolume } from "./api.ts";
+import { getLogs, getVolume } from "../logbook/api.ts";
 import { searchExercises } from "../exercises/api.ts";
 import { updateTechnicalPoints } from "../auth/api.ts";
 import {
