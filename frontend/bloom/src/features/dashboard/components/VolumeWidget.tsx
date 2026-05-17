@@ -56,7 +56,7 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
                 borderWidth: 3,
                 fill: true,
                 tension: 0.4,
-                pointRadius: 0,
+                pointRadius: 3,
                 pointHoverRadius: 6,
                 pointBackgroundColor: color,
                 pointBorderColor: '#fff',
@@ -101,6 +101,7 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
         scales: {
             y: {
                 beginAtZero: true,
+                grace: '15%',
                 border: { display: false },
                 grid: {
                     color: '#F0F0F0',
@@ -113,6 +114,7 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
             },
             x: {
                 border: { display: false },
+                offset: true,
                 grid: {
                     display: true,
                 },
