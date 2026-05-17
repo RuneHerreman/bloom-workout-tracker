@@ -99,7 +99,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
             ? { ...last, order: items.length + 1 }
             : isCardio
                 ? { type: "Cardio", order: items.length + 1, reps: null, weight: null, weightUnit: null, rir: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
-                : { type: exerciseType, order: items.length + 1, reps: 10, weight: 60, weightUnit: "kg", rir: 2, duration: null, distance: null, distanceUnit: null };
+                : { type: exerciseType, order: items.length + 1, reps: 10, weight: 60, weightUnit: "kg", rir: null, duration: null, distance: null, distanceUnit: null };
         const updated = [...items, { id: crypto.randomUUID(), set: newSet }];
         setItems(updated);
         pushChange(updated);

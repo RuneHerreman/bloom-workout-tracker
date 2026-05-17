@@ -118,7 +118,7 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
         const type = exercises[exerciseId]?.type ?? "Strength";
         const defaultSet: LoggedSet = type === "Cardio"
             ? { type: "Cardio", order: 1, reps: null, weight: null, weightUnit: null, rir: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
-            : { type, order: 1, reps: 10, weight: 60, weightUnit: "kg", rir: 2, duration: null, distance: null, distanceUnit: null };
+            : { type, order: 1, reps: 10, weight: 60, weightUnit: "kg", rir: null, duration: null, distance: null, distanceUnit: null };
         setLogExercises(prev => [
             ...prev,
             { exerciseId, order: prev.length + 1, sets: [defaultSet], gpxData: null },

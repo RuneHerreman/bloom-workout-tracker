@@ -22,7 +22,7 @@ function plannedToLogged(s: PlannedSet, order: number): LoggedSet {
         return { type: "Cardio", order, reps: null, weight: null, weightUnit: null, rir: null,
             duration: s.duration, distance: s.distance, distanceUnit: s.distanceUnit };
     }
-    return { type: s.type, order, reps: s.reps, weight: 60, weightUnit: "kg", rir: 2,
+    return { type: s.type, order, reps: s.reps, weight: 60, weightUnit: "kg", rir: null,
         duration: null, distance: null, distanceUnit: null };
 }
 
