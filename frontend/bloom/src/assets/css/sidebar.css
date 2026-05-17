@@ -142,6 +142,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: inherit;
+    border-radius: var(--radius-sm);
+    transition: color var(--transition);
+}
+
+.sidebar-username:hover {
+    color: var(--primary-light);
+    text-decoration: underline;
 }
 
 /* ── Theme toggle ────────────────────────────────────────────────────────────── */

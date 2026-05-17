@@ -62,7 +62,7 @@
         right: 0;
         background: var(--surface-lighter);
         border-bottom: 0.0625rem solid var(--border);
-        padding: 0.5rem 0.75rem 0.75rem;
+        padding: 1rem 0.75rem 0.75rem 0.75rem;
         z-index: 100;
         gap: 0.15rem;
         transform: translateY(-0.5rem);
@@ -100,7 +100,7 @@
         display: flex;
         align-items: center;
         gap: 0.6rem;
-        padding: 0.65rem 0.75rem;
+        padding: 0.55rem 0.75rem;
         border-radius: 0.4rem;
         font-size: 0.9rem;
         color: var(--ink);
@@ -145,6 +145,14 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        color: inherit;
+        border-radius: var(--radius-sm);
+        transition: color var(--transition);
+    }
+
+    .mobile-nav-username:hover {
+        color: var(--primary-light);
+        text-decoration: underline;
     }
 
     .mobile-nav-theme,

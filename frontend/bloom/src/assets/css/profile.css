@@ -1,0 +1,200 @@
+/* ── Profile page layout ────────────────────────────────────────────────────── */
+
+.profile-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.profile-detail {
+    padding: 3rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 42rem;
+}
+
+.profile-loading {
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+}
+
+/* ── Section ─────────────────────────────────────────────────────────────────── */
+
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding-bottom: 2rem;
+    border-bottom: 0.0625rem solid var(--border);
+}
+
+.profile-section:last-child {
+    border-bottom: none;
+    padding-bottom: 3rem;
+}
+
+.profile-section-title {
+    font-family: var(--serif), serif;
+    font-size: 1.35rem;
+    font-weight: 400;
+    color: var(--dark-text);
+}
+
+/* ── Fields ──────────────────────────────────────────────────────────────────── */
+
+.profile-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.profile-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.profile-field label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    letter-spacing: 0.01em;
+}
+
+.profile-field input {
+    padding: 0.6rem 0.75rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-lighter);
+    color: var(--ink);
+    font-size: 0.875rem;
+    font-family: var(--sans), sans-serif;
+    transition: border-color var(--transition), background var(--transition);
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.profile-field input:hover {
+    border-color: var(--grey);
+}
+
+.profile-field input:focus {
+    border-color: var(--primary-light);
+    background: var(--surface-light);
+}
+
+/* ── Password wrapper ────────────────────────────────────────────────────────── */
+
+.profile-pw-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.profile-pw-wrap input {
+    padding-right: 2.5rem;
+}
+
+.profile-pw-toggle {
+    position: absolute;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-muted);
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    border-radius: var(--radius-sm);
+    transition: color var(--transition);
+    flex-shrink: 0;
+}
+
+.profile-pw-toggle:hover {
+    color: var(--ink);
+}
+
+/* ── Section actions ─────────────────────────────────────────────────────────── */
+
+.profile-section-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 0.25rem;
+}
+
+/* ── Success banner ──────────────────────────────────────────────────────────── */
+
+.profile-success-banner {
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--primary) 8%, transparent);
+    border: 0.0625rem solid color-mix(in srgb, var(--primary-light) 35%, transparent);
+    color: var(--primary-muted);
+    font-size: 0.8rem;
+}
+
+.dark .profile-success-banner {
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+/* ── Danger zone ─────────────────────────────────────────────────────────────── */
+
+.profile-danger-section {
+    padding: 1.25rem;
+    border: 0.0625rem solid color-mix(in srgb, var(--danger-base) 25%, transparent);
+    border-radius: var(--widget-border-radius);
+    background: color-mix(in srgb, var(--danger-base) 3%, transparent);
+}
+
+.profile-danger-title {
+    color: var(--danger-text);
+}
+
+.profile-danger-desc {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── Delete confirm input ────────────────────────────────────────────────────── */
+
+.profile-confirm-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.75rem;
+    border: 0.0625rem solid color-mix(in srgb, var(--danger-base) 35%, transparent);
+    border-radius: var(--radius-md);
+    background: var(--surface-lighter);
+    color: var(--ink);
+    font-size: 0.875rem;
+    font-family: var(--sans), sans-serif;
+    outline: none;
+    transition: border-color var(--transition);
+}
+
+.profile-confirm-input:focus {
+    border-color: var(--danger-base);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+    .profile-detail {
+        padding: 1.75rem;
+    }
+
+    .profile-row-2 {
+        grid-template-columns: 1fr;
+    }
+}

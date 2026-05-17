@@ -186,6 +186,10 @@
 }
 
 @media (max-width: 768px) {
+    .login-page h1 {
+        font-size:  1.75rem;
+    }
+
     .login-page {
         padding: 2rem;
     }
@@ -195,11 +199,10 @@
     }
 
     .login-page .loginsignup-form {
-        padding-left: 1rem;
         width: 90%;
         align-self: center;
         justify-self: left;
-        padding-right: 0;
+        padding: 4rem 0 0 1rem;
     }
 
     .login-page #onboarding form div:has(div) {
