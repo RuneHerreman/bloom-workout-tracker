@@ -1,61 +1,198 @@
-/* ── Bottom navigation (mobile only) ────────────────────────────────────────── */
+/* ── Mobile top nav (mobile only) ───────────────────────────────────────────── */
 
-.bottom-nav {
+.mobile-nav-bar,
+.mobile-nav-dropdown {
     display: none;
 }
 
 @media (max-width: 768px) {
-    .bottom-nav {
+    /* ── Top bar ─────────────────────────────────────────────────────────────── */
+
+    .mobile-nav-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         position: fixed;
-        bottom: 0;
+        top: 0;
         left: 0;
         right: 0;
-        display: flex;
-        align-items: center;
+        height: 3.5rem;
         background: var(--surface-lighter);
-        border-top: 0.0625rem solid var(--border);
-        z-index: 100;
-        height: fit-content;
-        padding: 0.35rem 1rem;
+        border-bottom: 0.0625rem solid var(--border);
+        padding: 0 1rem;
+        z-index: 101;
     }
 
-    .bottom-nav-item {
-        flex: 1;
+    .mobile-nav-logo img {
+        height: 1.5rem;
+        width: auto;
+    }
+
+    .dark .mobile-nav-logo img {
+        background: white;
+        padding: 0.3rem 0.4rem;
+        border-radius: var(--radius-sm);
+    }
+
+    .mobile-nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--ink);
+        padding: 0.375rem;
+        border-radius: var(--radius-sm);
+        transition: background var(--transition);
+    }
+
+    .mobile-nav-toggle:hover {
+        background: var(--grey-light);
+    }
+
+    /* ── Dropdown ────────────────────────────────────────────────────────────── */
+
+    .mobile-nav-dropdown {
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.2rem;
-        padding: 0.35rem 0;
-        color: var(--ink-muted);
-        font-size: 0.58rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        line-height: 1;
-        transition: color var(--transition);
+        position: fixed;
+        top: 3.5rem;
+        left: 0;
+        right: 0;
+        background: var(--surface-lighter);
+        border-bottom: 0.0625rem solid var(--border);
+        padding: 0.5rem 0.75rem 0.75rem;
+        z-index: 100;
+        gap: 0.15rem;
+        transform: translateY(-0.5rem);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.2s ease, opacity 0.15s ease;
     }
 
-    .bottom-nav-item.active { color: var(--primary-light); }
+    .mobile-nav-dropdown.open {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
 
-    /* ── Center dashboard button ─────────────────────────────────────────────── */
+    /* ── Section labels ──────────────────────────────────────────────────────── */
 
-    .bottom-nav-center-wrap {
+    .mobile-nav-section {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--ink-muted);
+        padding: 0 0.5rem;
+        margin-top: 0.75rem;
+        margin-bottom: 0.15rem;
+    }
+
+    .mobile-nav-section:first-child {
+        margin-top: 0.25rem;
+    }
+
+    /* ── Nav items ───────────────────────────────────────────────────────────── */
+
+    .mobile-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.65rem 0.75rem;
+        border-radius: 0.4rem;
+        font-size: 0.9rem;
+        color: var(--ink);
+        transition: background var(--transition);
+    }
+
+    .mobile-nav-item:hover {
+        background: var(--grey-light);
+    }
+
+    .mobile-nav-item.active {
+        background: color-mix(in srgb, var(--primary-faded) 80%, transparent);
+        color: var(--primary-transparent);
+        font-weight: 550;
+    }
+
+    .mobile-nav-item svg {
         flex-shrink: 0;
+        opacity: 0.7;
+    }
+
+    .mobile-nav-item.active svg {
+        opacity: 1;
+    }
+
+    /* ── Footer (user + controls) ────────────────────────────────────────────── */
+
+    .mobile-nav-footer {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.6rem 0.5rem 0.25rem;
+        margin-top: 0.5rem;
+        border-top: 0.0625rem solid var(--border);
+        font-size: 0.875rem;
+        color: var(--ink);
+    }
+
+    .mobile-nav-username {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mobile-nav-theme,
+    .mobile-nav-logout {
         display: flex;
         align-items: center;
         justify-content: center;
-        transform: translateY(-1.75rem);
-        transition: transform var(--transition), opacity var(--transition);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: var(--radius-sm);
+        transition: color var(--transition), background var(--transition);
+        flex-shrink: 0;
     }
 
-    .bottom-nav-center-wrap:active {
-        transform: translateY(-1rem) scale(0.92);
+    .mobile-nav-theme {
+        color: var(--ink-muted);
     }
 
-    .bottom-nav-center-wrap img {
-        width: 3rem;
-        height: 3rem;
-        object-fit: contain;
+    .mobile-nav-theme:hover {
+        color: var(--ink);
+        background: var(--grey-light);
+    }
+
+    .mobile-nav-logout {
+        color: var(--danger);
+        opacity: 0.7;
+    }
+
+    .mobile-nav-logout:hover {
+        opacity: 1;
+        background: color-mix(in srgb, var(--danger) 10%, transparent);
+    }
+
+    /* ── Backdrop (closes menu on outside tap) ───────────────────────────────── */
+
+    .mobile-nav-backdrop {
+        position: fixed;
+        inset: 0;
+        top: 3.5rem;
+        z-index: 99;
+    }
+
+    /* ── Push content below fixed top bar ────────────────────────────────────── */
+
+    .app-main {
+        padding-top: 3.5rem;
+        padding-bottom: 0;
     }
 }

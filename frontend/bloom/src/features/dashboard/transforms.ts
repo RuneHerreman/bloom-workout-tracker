@@ -269,7 +269,7 @@ export function transformWorkoutLogsForLogPanel(workouts: LoggedWorkout[]): LogE
     });
 }
 
-export function transformWorkoutsForMuscleChart(workouts: LoggedWorkout[], volumeData: ExerciseVolumeResponse[]): FocusSegment[] {
+export function transformWorkoutsForMuscleChart(workouts: LoggedWorkout[], exerciseData: Array<{ exerciseId?: string; id?: string; targetMuscles: string[] }>): FocusSegment[] {
     const muscleColors: Record<string, string> = {
         "chest": "#2D5A8E",
         "back": "#003E1F",
@@ -285,7 +285,10 @@ export function transformWorkoutsForMuscleChart(workouts: LoggedWorkout[], volum
     };
 
     const muscleMap = new Map<string, string[]>();
-    volumeData.forEach(ex => muscleMap.set(ex.exerciseId, ex.targetMuscles));
+    exerciseData.forEach(ex => {
+        const id = ex.exerciseId ?? ex.id;
+        if (id) muscleMap.set(id, ex.targetMuscles);
+    });
 
     const now = new Date();
     const counts = new Map<string, number>();

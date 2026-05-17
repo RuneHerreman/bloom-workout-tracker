@@ -13,6 +13,7 @@ import type { ExerciseSeries } from "./components/VolumeWidget";
 import LogWidget from "./components/LogWidget.tsx";
 import type { LogEntryData } from "./components/LogWidget";
 import { getLogs, getVolume } from "./api.ts";
+import { searchExercises } from "../exercises/api.ts";
 import { updateTechnicalPoints } from "../auth/api.ts";
 import {
     transFormVolumeDataForLineGraph,
@@ -76,8 +77,8 @@ function DashboardPage() {
     useEffect(() => {
         getMe().then(user => dispatch({ type: "SET_USER", user })).catch(() => null);
 
-        Promise.all([getVolume(), getLogs()])
-            .then(([volume, workouts]) => {
+        Promise.all([getVolume(), getLogs(), searchExercises()])
+            .then(([volume, workouts, exercises]) => {
                 const { series, labels } = transFormVolumeDataForLineGraph(volume);
                 dispatch({
                     type: "LOADED",
@@ -85,7 +86,7 @@ function DashboardPage() {
                         stats: calculateDashboardStats(workouts),
                         activityData: transformLogsForActivityCalendar(workouts),
                         focusSegments: transformWorkoutsForFocusChart(workouts),
-                        muscleFocusSegments: transformWorkoutsForMuscleChart(workouts, volume),
+                        muscleFocusSegments: transformWorkoutsForMuscleChart(workouts, exercises),
                         volumeSeries: series,
                         volumeLabels: labels,
                         logEntries: transformWorkoutLogsForLogPanel(workouts).slice(0, 5),

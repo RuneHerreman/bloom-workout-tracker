@@ -12,12 +12,26 @@ type TooltipState = { text: string; x: number; y: number } | null;
 function InfoTooltip({ description }: { description: string }) {
     const [tooltip, setTooltip] = useState<TooltipState>(null);
     const iconRef = useRef<HTMLDivElement>(null);
+    const dismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     function showTooltip() {
         const rect = iconRef.current?.getBoundingClientRect();
         if (!rect) return;
         setTooltip({ text: description, x: rect.right, y: rect.top + rect.height / 2 });
     }
+
+    function handleTouchStart(ev: React.TouchEvent) {
+        ev.stopPropagation();
+        if (tooltip) {
+            setTooltip(null);
+            if (dismissTimer.current) clearTimeout(dismissTimer.current);
+        } else {
+            showTooltip();
+            dismissTimer.current = setTimeout(() => setTooltip(null), 2500);
+        }
+    }
+
+    useEffect(() => () => { if (dismissTimer.current) clearTimeout(dismissTimer.current); }, []);
 
     return (
         <div
@@ -26,6 +40,7 @@ function InfoTooltip({ description }: { description: string }) {
             onClick={ev => ev.stopPropagation()}
             onMouseEnter={showTooltip}
             onMouseLeave={() => setTooltip(null)}
+            onTouchStart={handleTouchStart}
         >
             <Info size={14} />
             {tooltip && createPortal(
