@@ -16,18 +16,18 @@
 
 
     /* Neutrals */
-    --border:        #bfbdb6;
+    --border:        #c5bfb4;
     --grey-light:    oklch(0.89 0.012 90);
     --grey:          #CCCCCC;
 
     /* Surfaces */
-    --surface-less-light: #f5f3ed;
-    --surface-light:      #fcfaf4;
+    --surface-less-light: #ede7d8;
+    --surface-light:      #f7f2e8;
     --surface-lighter:    #ffffff;
 
     /* Text */
-    --ink:       #333333;
-    --ink-muted: #595959;
+    --ink:       #26221c;
+    --ink-muted: #73685e;
 
     /* Semantic */
     --danger:         #7B1616;
@@ -37,8 +37,12 @@
 
     /* Misc */
     --backdrop-bg:  rgb(0 0 0 / 0.35);
-    --border-light: #e3e3e3;
-    --kbd-bg:       #f0f0ee;
+    --border-light: #e4ddd0;
+    --kbd-bg:       #ede8dc;
+
+    /* Shadows */
+    --shadow-sm:     0 1px 4px rgba(38, 28, 10, 0.07);
+    --shadow-widget: 0 2px 10px rgba(38, 28, 10, 0.09);
 
     /* Shape */
     --sidebar-width:        13rem;
@@ -50,7 +54,7 @@
     --serif: 'Newsreader', 'Source Serif Pro', Georgia, serif;
     --sans:  "Archivo", Arial, Helvetica, sans-serif;
 
-    --transition: 0.15s ease-in-out;
+    --transition: 0.2s ease;
 }
 
 
