@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch {
             // server unreachable — proceed anyway, cookie will expire naturally
         }
-        setIsAuthenticated(false);
+        window.location.href = "/login";
     }, []);
 
     useEffect(() => {
