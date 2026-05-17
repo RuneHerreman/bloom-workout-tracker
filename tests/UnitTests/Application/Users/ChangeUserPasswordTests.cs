@@ -19,7 +19,7 @@ public sealed class ChangeUserPasswordTests : ApplicationTestBase
             _passwordHasher.HashPassword(password),
             "Alice",
             "Smith",
-            72.5m, 180, 4);
+            72.5m, 180, 4, new DateOnly(1990, 1, 1));
         await UserRepository.Save(user);
         return user;
     }

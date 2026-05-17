@@ -26,7 +26,7 @@ public sealed class CreateLoggedWorkoutTests : ApplicationTestBase
     [Fact]
     public async Task Execute_WithExistingUser_ShouldCreateLoggedWorkout()
     {
-        User user = User.Create("user@example.com", "alice", "hash", "Alice", "Smith", 72.5m, 180, 4);
+        User user = User.Create("user@example.com", "alice", "hash", "Alice", "Smith", 72.5m, 180, 4, new DateOnly(1990, 1, 1));
         await UserRepository.Save(user);
         var useCase = new CreateLoggedWorkout(UnitOfWork, StubCurrentUser.With(user.Id), CreateLogger<CreateLoggedWorkout>());
 
