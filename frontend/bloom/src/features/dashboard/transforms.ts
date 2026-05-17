@@ -9,6 +9,7 @@ export interface DashboardStats {
     workoutsThisMonth: number;
     workoutChange?: number;
     volumeThisMonth: string;
+    volumeUnit: string;
     volumeChange?: number;
     currentStreak: number;
     bestStreak: number;
@@ -21,7 +22,7 @@ export function calculateDashboardStats(workouts: LoggedWorkout[]): DashboardSta
     const currentMonth = now.getMonth();
 
     const { workoutsThisYear, workoutsThisMonth, workoutChange } = calculateWorkoutCounts(workouts, currentYear, currentMonth);
-    const { volumeThisMonth, volumeChange } = calculateVolume(workouts, currentYear, currentMonth);
+    const { volumeThisMonth, volumeUnit, volumeChange } = calculateVolume(workouts, currentYear, currentMonth);
     const { currentStreak, bestStreak } = calculateStreaks(workouts, now);
     const totalPRs = calculateMonthlyPRs(workouts, currentYear, currentMonth);
 
@@ -30,6 +31,7 @@ export function calculateDashboardStats(workouts: LoggedWorkout[]): DashboardSta
         workoutsThisMonth,
         workoutChange,
         volumeThisMonth,
+        volumeUnit,
         volumeChange,
         currentStreak,
         bestStreak,
