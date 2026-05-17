@@ -4,7 +4,7 @@ import { Moon, Sun, LogOut } from "lucide-react";
 import "../assets/css/sidebar.css";
 import { getMe } from "../features/auth/api.ts";
 import type { User } from "../features/auth/api.ts";
-import { useDarkMode } from "../hooks/useDarkMode.ts";
+import { useDarkModeContext } from "../context/DarkModeContext.tsx";
 import { useAuth } from "../context/AuthContext.tsx";
 
 const GridIcon = () => (
@@ -22,7 +22,7 @@ function navClass({ isActive }: { isActive: boolean }) {
 
 function SidebarComponent() {
     const [user, setUser] = useState<User | null>(null);
-    const { dark, toggle } = useDarkMode();
+    const { dark, toggle } = useDarkModeContext();
     const { logout } = useAuth();
 
     useEffect(() => {

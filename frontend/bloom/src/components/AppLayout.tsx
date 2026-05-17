@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import SidebarComponent from "./SidebarComponent.tsx";
 import BottomNavComponent from "./BottomNavComponent.tsx";
-import { useDarkMode } from "../hooks/useDarkMode.ts";
+import { DarkModeProvider, useDarkModeContext } from "../context/DarkModeContext.tsx";
 
-function AppLayout({ children }: { children: ReactNode }) {
-    const { dark } = useDarkMode();
+function AppLayoutInner({ children }: { children: ReactNode }) {
+    const { dark } = useDarkModeContext();
 
     return (
         <div className={`app-layout${dark ? " dark" : ""}`}>
@@ -14,6 +14,14 @@ function AppLayout({ children }: { children: ReactNode }) {
             </main>
             <BottomNavComponent />
         </div>
+    );
+}
+
+function AppLayout({ children }: { children: ReactNode }) {
+    return (
+        <DarkModeProvider>
+            <AppLayoutInner>{children}</AppLayoutInner>
+        </DarkModeProvider>
     );
 }
 

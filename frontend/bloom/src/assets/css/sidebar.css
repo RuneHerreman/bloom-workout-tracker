@@ -70,6 +70,13 @@
     height: auto;
 }
 
+.dark .sidebar-logo img {
+    background: white;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-md);
+    width: 7.5rem;
+}
+
 /* ── Section label ──────────────────────────────────────────────────────────── */
 
 .sidebar-section-label {
