@@ -13,19 +13,34 @@
 
 ---
 
-## What it does
+## Overview
 
-**Templates** — Build reusable routines. Set target reps, weight, and RIR for strength sets, or duration and distance for cardio. Templates load directly into a session so you are not starting from scratch every time.
+Bloom is a self-hosted workout tracking application designed for anyone serious about their training. Whether you're focused on strength training or cardio, Bloom helps you plan your workouts, log your performance, and analyze your progress over time. Since it's self-hosted, your data stays on your own infrastructure.
 
-**Logging** — Record actual reps and weight per set as you go. Every session is timestamped and stored in your own database.
+## Features
 
-**Analytics** — Volume trends over time, personal records by exercise, muscle group breakdown, and a 1-rep-max calculator. All derived from your own logs.
+**Templates** — Build reusable workout routines. Set target reps, weight, and RIR for strength sets, or duration and distance for cardio. Templates load directly into a session so you're not starting from scratch each time.
 
-**Tools** — Macro calculator and 1RM estimator as standalone pages.
+**Logging** — Record actual reps and weight per set as you go. Every session is timestamped and stored in your own database, giving you a complete history of your training.
+
+**Analytics** — Track volume trends over time, view personal records by exercise, see muscle group breakdowns, and use the built-in 1-rep-max calculator. All derived from your logged data.
+
+**Tools** — Standalone pages for macro calculation and 1RM estimation, useful for planning and reference.
 
 ---
 
-## Pages
+## Table of Contents
+
+- [Screenshots](#screenshots)
+- [Stack](#stack)
+- [Getting Started](#getting-started)
+- [Self-hosting](#self-hosting)
+- [Local Development](#local-development)
+- [Contributing](#contributing)
+
+---
+
+## Screenshots
 
 | | |
 |---|---|
@@ -50,20 +65,29 @@
 
 ---
 
-## Self-hosting
+## Getting Started
+
+The fastest way to get Bloom running is with Docker Compose. You'll have the application up and running in just a few minutes.
 
 ### Prerequisites
 
 - [Docker](https://www.docker.com/) with Compose
 
-### Run
+### Quick Start
 
 ```bash
 git clone https://github.com/RuneHerreman/bloom-workout-tracker.git
 cd bloom-workout-tracker
-cp .env.example .env          # fill in JWT__Key and any other values
+cp .env.example .env
+```
+
+Edit `.env` and set a strong random value for `Jwt__Key` (you can generate one with `openssl rand -hex 32`). Then:
+
+```bash
 docker compose up --build -d
 ```
+
+Once running, access:
 
 | Service | URL |
 |---|---|
@@ -71,7 +95,7 @@ docker compose up --build -d
 | API | http://localhost:8080 |
 | API docs (Scalar) | http://localhost:8080/scalar |
 
-### Stop / update
+### Stopping and Updating
 
 ```bash
 docker compose down
@@ -81,7 +105,29 @@ docker compose up --build -d
 
 ---
 
-## Local development
+## Self-hosting
+
+### Environment Configuration
+
+Before running Bloom, copy `.env.example` to `.env` and configure these values:
+
+**Database**
+- `POSTGRES_DB` — Database name (default: bloom)
+- `POSTGRES_USER` — Database user (default: bloom_user)
+- `POSTGRES_PASSWORD` — Strong password for the database user
+
+**API**
+- `ASPNETCORE_ENVIRONMENT` — Set to `Production` for deployment or `Development` for local testing with API docs
+- `ASPNETCORE_URLS` — API binding address (default: http://+:5000)
+- `Jwt__Key` — Random 64-character secret for JWT signing. Generate with: `openssl rand -hex 32`
+- `Jwt__Issuer` — JWT issuer name (default: bloom.workout)
+- `Jwt__Audience` — JWT audience name (default: users)
+
+For a production deployment, ensure `Jwt__Key` is a strong random value and never commit your `.env` file.
+
+---
+
+## Local Development
 
 ### Prerequisites
 
@@ -89,29 +135,35 @@ docker compose up --build -d
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - [Node.js](https://nodejs.org/) (LTS)
 
-**Backend**
+### Backend Setup
+
+Start the database container:
 
 ```bash
-# From the repo root — start only the database
 docker compose up bloom-db -d
+```
 
-# Run the API
+Run the API from the `src/Bloom.Main` directory:
+
+```bash
 cd src/Bloom.Main
 dotnet run --Database:ConnectionString="Host=localhost;Port=5432;Database=bloom;Username=bloom_user;Password=change_me_strong_password"
 ```
 
-Replace the username and password with the values from your `.env` file. The override is required because `appsettings.Development.json` defaults to `Host=bloom-db`, which is the Docker-internal hostname and unreachable from the host machine.
+Use the username and password from your `.env` file. This override is needed because the development configuration expects the Docker-internal hostname.
 
-**Frontend**
+### Frontend Setup
 
 ```bash
 cd frontend/bloom
-cp .env.example .env   # sets VITE_API_BASE_URL=http://localhost:8080/api/
+cp .env.example .env
 npm install
 npm run dev
 ```
 
-**Tests**
+The frontend will be available at http://localhost:5173 and communicate with the API at http://localhost:8080/api/.
+
+### Running Tests
 
 ```bash
 dotnet test
@@ -119,9 +171,9 @@ dotnet test
 
 ---
 
-## Migrations
+## Database Migrations
 
-If you need to recreate the migrations from scratch, delete the existing migration files and run:
+If you need to recreate migrations from scratch, delete existing migration files and run:
 
 ```bash
 dotnet ef migrations add InitialCreate \
@@ -130,3 +182,23 @@ dotnet ef migrations add InitialCreate \
   --context PostgresDomainDbContext \
   --output-dir Persistence/EntityFramework/Migrations/PostgreSQL
 ```
+
+---
+
+## Contributing
+
+Contributions are welcome. Please feel free to open issues or submit pull requests.
+
+To contribute:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -am 'Add feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a pull request
+
+---
+
+## License
+
+This project is provided as-is. Check the repository for license details.
