@@ -45,7 +45,7 @@ export interface LoggedSet {
     order: number;
     duration: string | null;
     distance: number | null;
-    distanceUnit: string | null;
+    distanceUnit: DistanceUnit | null;
     reps: number | null;
     weight: number | null;
     weightUnit: string | null;
