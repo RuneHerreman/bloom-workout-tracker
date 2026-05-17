@@ -136,6 +136,8 @@
     overflow: hidden;
 }
 
+.map-tiles-dark.leaflet-layer { filter: grayscale(100%) brightness(88%); }
+
 .gpx-splits-cell {
     padding: 0.75rem 1rem;
     border-top: 0.0625rem solid var(--border);

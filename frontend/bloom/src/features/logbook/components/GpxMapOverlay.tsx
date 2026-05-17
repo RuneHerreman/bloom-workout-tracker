@@ -140,9 +140,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
     const tooltipTitle = dark ? "#f2efe8" : "#333";
     const tooltipBody  = dark ? "#a8a49c" : "#666";
     const tooltipBorder = dark ? "#46463e" : "#e3e3e3";
-    const tileUrl = dark
-        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+    const tileUrl = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
     const positions = useMemo<LatLngTuple[]>(() => points.map(p => [p.lat, p.lon]), [points]);
     const center: LatLngTuple = positions.length > 0 ? positions[Math.floor(positions.length / 2)] : [51.505, -0.09];
@@ -354,6 +352,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
                                 <TileLayer
                                     url={tileUrl}
                                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+                                    className={dark ? "map-tiles-dark" : undefined}
                                 />
                                 <Polyline positions={positions} pathOptions={{ color: "#2D8055", weight: 3, opacity: 0.85 }} />
                                 {positions.length > 0 && <Marker position={positions[0]} icon={START_ICON} />}
