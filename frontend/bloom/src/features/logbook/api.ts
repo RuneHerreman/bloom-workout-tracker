@@ -75,7 +75,7 @@ export function createPlyometricSet(
 async function gzipToBase64(data: Uint8Array): Promise<string> {
     const cs = new CompressionStream("gzip");
     const writer = cs.writable.getWriter();
-    writer.write(data);
+    writer.write(data.buffer as ArrayBuffer);
     writer.close();
     const chunks: Uint8Array[] = [];
     const reader = cs.readable.getReader();
