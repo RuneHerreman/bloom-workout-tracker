@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import GeneralWidget from "./GeneralWidget.tsx";
 import WidgetHeader from "./WidgetHeader.tsx";
 
@@ -7,13 +7,13 @@ export interface LogEntryData {
     name: string;
     date: string;
     exerciseCount: number;
-    // New: Array of types, e.g., ["strength", "cardio", "strength"]
     exerciseTypes: string[];
 }
 
-function LogEntry({ name, date, exerciseCount, exerciseTypes }: LogEntryData) {
+function LogEntry({ id, name, date, exerciseCount, exerciseTypes }: LogEntryData) {
+    const navigate = useNavigate();
     return (
-        <div className="log-entry">
+        <div className="log-entry" role="button" tabIndex={0} onClick={() => navigate("/logbook", { state: { selectedLogId: id } })} onKeyDown={e => e.key === "Enter" && navigate("/logbook", { state: { selectedLogId: id } })}>
             <div className="log-entry-header">
                 <span className="log-entry-name">{name}</span>
                 <span className="log-entry-date">{date}</span>

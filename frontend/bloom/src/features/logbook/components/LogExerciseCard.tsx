@@ -19,9 +19,10 @@ interface LogExerciseCardProps {
     onDelete: (exerciseOrder: number) => void;
     onGpxChange?: (exerciseOrder: number, gpxData: string | null) => void;
     autoFocus?: boolean;
+    autoOpenMap?: boolean;
 }
 
-function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, onGpxChange, autoFocus }: LogExerciseCardProps) {
+function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, onGpxChange, autoFocus, autoOpenMap }: LogExerciseCardProps) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
     const cardRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,7 +37,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
     const [gpxStats, setGpxStats] = useState<GpxStats | null>(() =>
         exercise.gpxData ? parseGpx(exercise.gpxData) : null
     );
-    const [mapOpen, setMapOpen] = useState(false);
+    const [mapOpen, setMapOpen] = useState(() => !!(autoOpenMap && exercise.gpxData));
 
     const [items, setItems] = useState<LogRowItem[]>(() =>
         [...exercise.sets]

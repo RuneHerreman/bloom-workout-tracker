@@ -39,7 +39,12 @@ const LogbookPage = () => {
 
     const blocker = useBlocker(() => dirtyInfo !== null);
 
-    useEffect(() => { setSelectedId(null); }, [location.key]);
+    useEffect(() => {
+        const state = location.state as { selectedLogId?: string; openMap?: boolean } | null;
+        setSelectedId(state?.selectedLogId ?? null);
+    }, [location.key]);
+
+    const openMap = !!(location.state as { openMap?: boolean } | null)?.openMap;
     const [loading, setLoading] = useState(true);
     const [startOpen, setStartOpen] = useState(() => !!(location.state as { openStart?: boolean } | null)?.openStart);
     const [newlyCreatedId, setNewlyCreatedId] = useState<string | null>(null);
@@ -233,6 +238,7 @@ const LogbookPage = () => {
                             onCreateTemplate={handleCreateTemplate}
                             onDirtyChange={handleDirtyChange}
                             autoFocusTitle={selectedLog.id === newlyCreatedId}
+                            openMap={openMap}
                         />
                     ) : (
                         <div className="panel-empty">

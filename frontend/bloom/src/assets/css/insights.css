@@ -15,7 +15,7 @@
 /* ── Period bar ──────────────────────────────────────────────────────────────── */
 
 .insights-period-bar {
-    padding: 0.75rem 2rem;
+    padding: 0.875rem 2.5rem;
     border-bottom: 0.0625rem solid var(--border);
     background: var(--surface-lighter);
 }
@@ -23,10 +23,10 @@
 /* ── Body ────────────────────────────────────────────────────────────────────── */
 
 .insights-body {
-    padding: 1.5rem 2rem;
+    padding: 2rem 2.5rem;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 2.5rem;
     flex: 1;
 }
 
@@ -35,24 +35,28 @@
 .insights-section {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 
 .insights-section-header {
     display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.65rem;
 }
 
 .insights-section-title {
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--ink-muted);
-    white-space: nowrap;
-    padding-top: 0.38rem;
+    font-family: var(--serif), serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--dark-text);
+    letter-spacing: 0;
+}
+
+.insights-filter-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
 .insights-filters {
@@ -67,13 +71,13 @@
 .insights-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 1.25rem;
 }
 
 /* ── Chart containers ────────────────────────────────────────────────────────── */
 
 .insights-chart-area {
-    height: 14rem;
+    height: 16rem;
 }
 
 .insights-pr-chart {
@@ -323,7 +327,7 @@
     color: var(--ink-muted);
     cursor: pointer;
     backdrop-filter: blur(6px);
-    transition: background 0.15s ease, color 0.15s ease;
+    transition: background var(--transition), color var(--transition);
 }
 
 .insights-heatmap-locate:hover {
@@ -364,7 +368,7 @@
     color: var(--ink);
     cursor: pointer;
     backdrop-filter: blur(6px);
-    transition: background 0.15s ease;
+    transition: background var(--transition);
     white-space: nowrap;
     max-width: 14rem;
 }
@@ -392,7 +396,7 @@
     cursor: pointer;
     color: var(--ink-muted);
     backdrop-filter: blur(6px);
-    transition: background 0.15s ease, color 0.15s ease;
+    transition: background var(--transition), color var(--transition);
     flex-shrink: 0;
 }
 
@@ -405,7 +409,7 @@
     background: var(--surface-lighter);
     border: 0.0625rem solid var(--border);
     border-radius: var(--radius-md);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-widget);
     backdrop-filter: blur(8px);
     overflow-y: auto;
     max-height: 14rem;
@@ -427,11 +431,11 @@
     cursor: pointer;
     text-align: left;
     font-family: var(--sans), sans-serif;
-    transition: background 0.12s ease;
+    transition: background var(--transition);
 }
 
 .insights-heatmap-picker-item:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: var(--surface-less-light);
 }
 
 .insights-heatmap-picker-item.selected {
@@ -450,6 +454,31 @@
 .insights-heatmap-picker-meta {
     font-size: 0.7rem;
     color: var(--ink-muted);
+}
+
+.insights-heatmap-picker-goto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.4rem;
+    height: 1.4rem;
+    border: none;
+    background: none;
+    border-radius: var(--radius-sm);
+    color: var(--ink-muted);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--transition), background var(--transition), color var(--transition);
+}
+
+.insights-heatmap-picker-item:hover .insights-heatmap-picker-goto {
+    opacity: 1;
+}
+
+.insights-heatmap-picker-goto:hover {
+    background: var(--surface-less-light);
+    color: var(--primary);
 }
 
 /* ── ATL / CTL chart ─────────────────────────────────────────────────────────── */
@@ -511,7 +540,15 @@
 @media (max-width: 768px) {
     .insights-period-bar {
         padding: 0.75rem 1.25rem;
-        overflow-x: auto;
+    }
+
+    .insights-period-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .insights-period-bar .filter-chips {
+        flex-wrap: nowrap;
+        width: max-content;
     }
 
     .insights-body {

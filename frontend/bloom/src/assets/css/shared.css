@@ -7,7 +7,7 @@
     --primary:             #003E1F;
     --primary-transparent: rgb(0 62 31 / 0.85);
     --primary-muted:       #1C4B33;
-    --primary-light:       #2D8055;
+    --primary-light: #3b7352;
     --primary-glow:        rgba(132, 224, 178, 0.50);
     --primary-faded:       rgba(148, 209, 179, 0.50);
     --accent:              #E9762B;
@@ -16,7 +16,7 @@
 
 
     /* Neutrals */
-    --border: #6a8f54;
+    --border:        #c5bfb4;
     --grey-light:    oklch(0.89 0.012 90);
     --grey:          #CCCCCC;
 
@@ -102,6 +102,16 @@
    LAYOUT — OVERLAY
    ============================================================================= */
 
+@keyframes overlay-backdrop-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes overlay-panel-in {
+    from { opacity: 0; transform: scale(0.96) translateY(0.5rem); }
+    to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
 .overlay-backdrop {
     position: fixed;
     inset: 0;
@@ -111,6 +121,7 @@
     align-items: center;
     justify-content: center;
     z-index: 200;
+    animation: overlay-backdrop-in 0.15s ease both;
 }
 
 .overlay-panel {
@@ -123,6 +134,7 @@
     max-width: 40vw;
     max-height: 85vh;
     box-shadow: 0 8px 32px rgb(0 0 0 / 0.12);
+    animation: overlay-panel-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .overlay-panel-wide {
@@ -461,7 +473,14 @@
     cursor: pointer;
     font-family: inherit;
     font-size: 0.7rem;
-    transition: background var(--transition), border-color var(--transition), color var(--transition);
+    transition: background var(--transition), border-color var(--transition), color var(--transition), transform var(--transition-spring);
+}
+
+.filter-chip:active,
+.exercise-library-chip:active,
+.focus-chip:active {
+    transform: scale(0.93);
+    transition-duration: 0.08s;
 }
 
 .filter-chip:not(.active):hover,
@@ -474,9 +493,11 @@
 /* focus-chip size override */
 .focus-chip { padding: 0.2rem 0.65rem; line-height: 1.5; }
 
+/* Active states — generic (no type class) */
+.filter-chip.active            { background: color-mix(in srgb, var(--primary-light) 8%, transparent); border-color: var(--primary-light); color: var(--primary-light); }
+
 /* Active states by type */
-.filter-chip.strength.active,
-.exercise-library-chip.active  { background: color-mix(in srgb, var(--primary)       8%, transparent); border-color: var(--primary);       color: var(--primary); }
+.filter-chip.strength.active, .exercise-library-chip.active  { background: color-mix(in srgb, var(--primary)       8%, transparent); border-color: var(--primary);       color: var(--primary); }
 .filter-chip.cardio.active     { background: color-mix(in srgb, var(--accent)        8%, transparent); border-color: var(--accent);        color: var(--accent); }
 .filter-chip.plyometric.active,
 .focus-chip.active             { background: color-mix(in srgb, var(--primary-light) 8%, transparent); border-color: var(--primary-light); color: var(--primary-light); }
@@ -590,9 +611,17 @@
     align-items: center;
 }
 
+.exercise-library-search-icon {
+    position: absolute;
+    left: 0.65rem;
+    color: var(--ink-muted);
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
 .exercise-library-search {
     flex: 1;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.75rem 0.5rem 2rem;
     border: 0.0625rem solid var(--border);
     border-radius: var(--radius-md);
     background: var(--surface-lighter);
@@ -1297,6 +1326,12 @@
         overflow: hidden;
         border-radius: var(--widget-border-radius) var(--widget-border-radius) 0 0;
         border-bottom: none;
+        animation: overlay-slide-up 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes overlay-slide-up {
+        from { opacity: 0; transform: translateY(2rem); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 
     .panel-body {

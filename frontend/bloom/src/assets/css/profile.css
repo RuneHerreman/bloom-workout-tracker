@@ -83,7 +83,6 @@
 
 .profile-field input:focus {
     border-color: var(--primary-light);
-    background: var(--surface-light);
 }
 
 /* ── Password wrapper ────────────────────────────────────────────────────────── */

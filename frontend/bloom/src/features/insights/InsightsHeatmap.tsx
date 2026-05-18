@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Polyline, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import type { LatLngTuple } from "leaflet";
-import { List, X, LocateFixed } from "lucide-react";
+import { List, X, LocateFixed, ArrowUpRight } from "lucide-react";
 import type { RoutePolyline } from "./cardioTransforms.ts";
 import { useDarkModeContext } from "../../context/DarkModeContext.tsx";
 
@@ -57,6 +58,7 @@ function fmtDist(km: number): string {
 
 export default function InsightsHeatmap({ routes }: InsightsHeatmapProps) {
     const { dark } = useDarkModeContext();
+    const navigate = useNavigate();
     const [geoCenter, setGeoCenter] = useState<LatLngTuple | null>(null);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [pickerOpen, setPickerOpen] = useState(false);
@@ -163,22 +165,41 @@ export default function InsightsHeatmap({ routes }: InsightsHeatmapProps) {
                             : <span>Jump to run</span>
                         }
                     </button>
+                    {selectedRoute && (
+                        <button
+                            className="insights-heatmap-picker-btn"
+                            onClick={() => navigate("/logbook", { state: { selectedLogId: selectedRoute.logId, openMap: true } })}
+                            title="View this log"
+                        >
+                            <ArrowUpRight size={13} />
+                        </button>
+                    )}
                 </div>
 
                 {pickerOpen && (
                     <div className="insights-heatmap-picker-dropdown">
                         {routes.map(r => (
-                            <button
+                            <div
                                 key={r.id}
                                 className={`insights-heatmap-picker-item${r.id === selectedId ? " selected" : ""}`}
                                 onClick={() => handleSelect(r)}
+                                style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "0.25rem" }}
                             >
-                                <span className="insights-heatmap-picker-name">{r.name}</span>
-                                <span className="insights-heatmap-picker-meta">
-                                    {fmtDate(r.date)}
-                                    {r.distanceKm > 0 && <> · {fmtDist(r.distanceKm)}</>}
-                                </span>
-                            </button>
+                                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+                                    <span className="insights-heatmap-picker-name">{r.name}</span>
+                                    <span className="insights-heatmap-picker-meta">
+                                        {fmtDate(r.date)}
+                                        {r.distanceKm > 0 && <> · {fmtDist(r.distanceKm)}</>}
+                                    </span>
+                                </div>
+                                <button
+                                    className="insights-heatmap-picker-goto"
+                                    title="Open log"
+                                    onClick={e => { e.stopPropagation(); navigate("/logbook", { state: { selectedLogId: r.logId, openMap: true } }); }}
+                                >
+                                    <ArrowUpRight size={12} />
+                                </button>
+                            </div>
                         ))}
                     </div>
                 )}

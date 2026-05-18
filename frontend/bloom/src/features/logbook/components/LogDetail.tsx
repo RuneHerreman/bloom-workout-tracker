@@ -21,9 +21,10 @@ interface LogDetailProps {
     onCreateTemplate: (name: string, exercises: LoggedExercise[]) => void;
     onDirtyChange?: (isDirty: boolean, save: () => Promise<void>) => void;
     autoFocusTitle?: boolean;
+    openMap?: boolean;
 }
 
-function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirtyChange, autoFocusTitle }: LogDetailProps) {
+function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirtyChange, autoFocusTitle, openMap }: LogDetailProps) {
     const initialDate = toDateInputValue(log.loggedAt);
 
     const [logExercises, setLogExercises] = useState<LoggedExercise[]>(() =>
@@ -227,7 +228,7 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
 
             <DndContext collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={onDragCancel}>
                 <SortableContext items={logExercises.map(ex => String(ex.order))} strategy={verticalListSortingStrategy}>
-                    {logExercises.map(ex => (
+                    {logExercises.map((ex, i) => (
                         <LogExerciseCard
                             key={ex.order}
                             id={String(ex.order)}
@@ -237,6 +238,7 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
                             onDelete={handleDeleteExercise}
                             onGpxChange={handleGpxChange}
                             autoFocus={ex.order === lastAddedOrder}
+                            autoOpenMap={openMap && i === logExercises.findIndex(e => !!e.gpxData)}
                         />
                     ))}
                 </SortableContext>

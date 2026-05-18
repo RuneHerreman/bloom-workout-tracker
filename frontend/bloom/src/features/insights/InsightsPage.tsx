@@ -58,9 +58,21 @@ const STRENGTH_TYPES: ExerciseType[] = ["Strength", "Plyometric"];
 const FIXED_PERIODS = ["1m", "3m", "6m", "1y"];
 const PERIOD_LABELS: Record<string, string> = { "1m": "1M", "3m": "3M", "6m": "6M", "1y": "1Y", "max": "All" };
 const PALETTE = [
-    "#558B6E", "#528B8D", "#7DB5A0", "#4A6E75", "#3E544B",
-    "#6B8F71", "#5E7B9E", "#7A9E87", "#3D7A6E", "#8B7355",
-    "#6B7A8B", "#9E7A5C", "#4A7C6E", "#7B6B8B", "#5C8B7A",
+    "#2D8055", // brand green
+    "#E9762B", // amber-orange
+    "#528B8D", // teal
+    "#7B6B9E", // violet
+    "#C4734A", // terracotta
+    "#4A8FAE", // steel blue
+    "#9E6B7A", // dusty rose
+    "#6B9E3E", // lime
+    "#8B6B3E", // warm brown
+    "#5B7FAE", // periwinkle
+    "#B08B3E", // gold
+    "#7A4F9E", // plum
+    "#3D9E7A", // emerald
+    "#AE5B5B", // muted red
+    "#5B8B6E", // sage
 ];
 
 const TOOLTIP_STYLE = {
@@ -71,6 +83,15 @@ const TOOLTIP_STYLE = {
     borderWidth: 1,
     padding: 10,
 };
+
+function desaturate(hex: string, amount: number): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const lum = Math.round(r * 0.299 + g * 0.587 + b * 0.114);
+    const mix = (c: number) => Math.round(c + (lum - c) * amount);
+    return `#${mix(r).toString(16).padStart(2, "0")}${mix(g).toString(16).padStart(2, "0")}${mix(b).toString(16).padStart(2, "0")}`;
+}
 
 function fmtZoneTime(seconds: number): string {
     const h = Math.floor(seconds / 3600);
@@ -211,29 +232,43 @@ function InsightsPage() {
         return all.filter(n => n.toLowerCase().includes(q));
     }, [volumeChart, exerciseSearch]);
 
-    const prLineData = useMemo(() => ({
-        labels: volumeChart.labels,
-        datasets: volumeChart.series
-            .filter(s => selectedExercises.size === 0 || selectedExercises.has(s.name))
-            .map(s => {
-                const color = exerciseColorMap.get(s.name) ?? PALETTE[0];
-                return {
-                    label: s.name,
-                    data: s.data,
-                    spanGaps: false,
-                    borderColor: color,
-                    backgroundColor: `${color}22`,
-                    borderWidth: 2,
-                    fill: false,
-                    tension: 0.3,
-                    pointRadius: 4,
-                    pointHoverRadius: 7,
-                    pointBackgroundColor: color,
-                    pointBorderWidth: 0,
-                    hitRadius: 20,
-                };
-            }),
-    }), [volumeChart, selectedExercises, exerciseColorMap]);
+    const prLineData = useMemo(() => {
+        const filtered = volumeChart.series
+            .filter(s => selectedExercises.size === 0 || selectedExercises.has(s.name));
+
+        // volumeChart.series is pre-sorted by most recent PR date — take the first 5
+        const featured = new Set(volumeChart.series.slice(0, 5).map(s => s.name));
+
+        const datasets = filtered.map(s => {
+            const color = exerciseColorMap.get(s.name) ?? PALETTE[0];
+            const full = featured.has(s.name);
+            const dimColor = `${desaturate(color, 0.8)}20`;
+            return {
+                label: s.name,
+                data: s.data,
+                spanGaps: false,
+                borderColor: full ? color : dimColor,
+                backgroundColor: `${color}22`,
+                borderWidth: full ? 2 : 1.5,
+                fill: false,
+                tension: 0.3,
+                pointRadius: full ? 4 : 2,
+                pointHoverRadius: 7,
+                pointBackgroundColor: full ? color : dimColor,
+                pointBorderWidth: 0,
+                hitRadius: 20,
+            };
+        });
+
+        // Render dimmed lines first so featured lines draw on top
+        datasets.sort((a, b) => {
+            const fa = featured.has(a.label ?? "");
+            const fb = featured.has(b.label ?? "");
+            return fa === fb ? 0 : fa ? 1 : -1;
+        });
+
+        return { labels: volumeChart.labels, datasets };
+    }, [volumeChart, selectedExercises, exerciseColorMap]);
 
     // ── Cardio base ────────────────────────────────────────────────────────────
     const cardioMonths = useMemo(() => extractCardioMonthly(filteredLogs), [filteredLogs]);
@@ -472,7 +507,7 @@ function InsightsPage() {
                     {periods.map(p => (
                         <button
                             key={p}
-                            className={`filter-chip strength${period === p ? " active" : ""}`}
+                            className={`filter-chip${period === p ? " active" : ""}`}
                             onClick={() => setPeriod(p)}
                         >
                             {PERIOD_LABELS[p] ?? p}
@@ -489,34 +524,35 @@ function InsightsPage() {
                     <section className="insights-section">
                         <div className="insights-section-header">
                             <span className="insights-section-title">PR History</span>
-                            <div className="insights-filters">
-                                <div className="filter-chips">
-                                    {STRENGTH_TYPES.map(t => (
-                                        <button
-                                            key={t}
-                                            className={`filter-chip strength${typeFilters.includes(t) ? " active" : ""}`}
-                                            onClick={() => toggleType(t)}
-                                        >
-                                            {t}
-                                        </button>
-                                    ))}
-                                </div>
-                                {allMuscles.length > 0 && (
-                                    <div className="filter-chips" style={{ flexWrap: "wrap" }}>
-                                        {allMuscles.map(m => (
+                            <div className="insights-filter-row">
+                                <div className="insights-filters">
+                                    <div className="filter-chips">
+                                        {STRENGTH_TYPES.map(t => (
                                             <button
-                                                key={m}
-                                                className={`filter-chip strength${muscleFilters.includes(m) ? " active" : ""}`}
-                                                onClick={() => toggleMuscle(m)}
+                                                key={t}
+                                                className={`filter-chip${typeFilters.includes(t) ? " active" : ""}`}
+                                                onClick={() => toggleType(t)}
                                             >
-                                                {m}
+                                                {t}
                                             </button>
                                         ))}
                                     </div>
-                                )}
-                            </div>
+                                    {allMuscles.length > 0 && (
+                                        <div className="filter-chips" style={{ flexWrap: "wrap" }}>
+                                            {allMuscles.map(m => (
+                                                <button
+                                                    key={m}
+                                                    className={`filter-chip${muscleFilters.includes(m) ? " active" : ""}`}
+                                                    onClick={() => toggleMuscle(m)}
+                                                >
+                                                    {m}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
 
-                            <div className="insights-exercise-picker" ref={pickerRef}>
+                                <div className="insights-exercise-picker" ref={pickerRef}>
                                 <button
                                     className={`insights-picker-trigger${selectedExercises.size > 0 ? " has-selection" : ""}`}
                                     onClick={() => setExercisePickerOpen(o => !o)}
@@ -567,6 +603,7 @@ function InsightsPage() {
                                         )}
                                     </div>
                                 )}
+                            </div>
                             </div>
                         </div>
 

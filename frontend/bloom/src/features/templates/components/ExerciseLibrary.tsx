@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import type { Exercise } from "../../exercises/api.ts";
-import { X, Info } from "lucide-react";
+import { X, Info, Search } from "lucide-react";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import { useRecentExercises } from "../hooks/useRecentExercises.ts";
 
@@ -130,6 +130,7 @@ function ExerciseLibrary({ exercises, onSelect }: { exercises: Exercise[]; onSel
     return (
         <div className="exercise-library">
             <div className="exercise-library-search-wrap">
+                <Search className="exercise-library-search-icon" size={14} />
                 <input
                     ref={searchRef}
                     className="exercise-library-search"

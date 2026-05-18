@@ -68,7 +68,7 @@
         transform: translateY(-0.5rem);
         opacity: 0;
         pointer-events: none;
-        transition: transform var(--transition-spring), opacity 0.15s ease;
+        transition: transform var(--transition-spring), opacity var(--transition);
     }
 
     .mobile-nav-dropdown.open {
@@ -101,10 +101,11 @@
         align-items: center;
         gap: 0.6rem;
         padding: 0.55rem 0.75rem;
-        border-radius: 0.4rem;
+        border-radius: var(--radius-md);
         font-size: 0.9rem;
         color: var(--ink);
         transition: background var(--transition);
+        position: relative;
     }
 
     .mobile-nav-item:hover {
@@ -115,6 +116,18 @@
         background: color-mix(in srgb, var(--primary-faded) 80%, transparent);
         color: var(--primary-transparent);
         font-weight: 550;
+    }
+
+    .mobile-nav-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0.2rem;
+        height: 55%;
+        background: var(--primary);
+        border-radius: 0 0.5rem 0.5rem 0;
     }
 
     .mobile-nav-item svg {

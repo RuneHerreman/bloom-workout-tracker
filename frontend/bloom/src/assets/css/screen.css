@@ -31,6 +31,11 @@ html, body {
     opacity: 0.45;
 }
 
+.button-component:active:not(:disabled) {
+    transform: scale(0.96);
+    transition: transform 0.08s ease;
+}
+
 .button-component.white {
     color: black;
     background: white;
@@ -63,7 +68,7 @@ html, body {
     border: 0.12rem solid var(--primary-muted);
     border-bottom-width: 0.2rem;
     border-left-width: 0.2rem;
-    border-radius: 0.495rem;
+    border-radius: var(--widget-border-radius);
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--transition);
@@ -81,6 +86,12 @@ html, body {
 .button-component.green {
     color: white;
     background: var(--primary-light);
+    transition: background var(--transition), transform var(--transition-spring), box-shadow var(--transition);
+}
+
+.button-component.green:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
 .button-component.grey {

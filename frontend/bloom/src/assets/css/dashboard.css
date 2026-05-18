@@ -1,3 +1,21 @@
+/* ── Entry animations ────────────────────────────────────────────────────────── */
+
+@keyframes fade-up {
+    from { opacity: 0; transform: translateY(0.6rem); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-stats .stat-widget:nth-child(1) { animation: fade-up 0.35s ease both 0.05s; }
+.dashboard-stats .stat-widget:nth-child(2) { animation: fade-up 0.35s ease both 0.1s; }
+.dashboard-stats .stat-widget:nth-child(3) { animation: fade-up 0.35s ease both 0.15s; }
+.dashboard-stats .stat-widget:nth-child(4) { animation: fade-up 0.35s ease both 0.2s; }
+
+.dash-activity  { animation: fade-up 0.4s ease both 0.15s; }
+.dash-training  { animation: fade-up 0.4s ease both 0.2s; }
+.dash-notes     { animation: fade-up 0.4s ease both 0.25s; }
+.dash-logs      { animation: fade-up 0.4s ease both 0.3s; }
+.dash-volume    { animation: fade-up 0.4s ease both 0.25s; }
+
 /* ── Layout ──────────────────────────────────────────────────────────────────── */
 
 .dashboard {
@@ -108,8 +126,17 @@
 }
 
 .activity-cell {
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     background: var(--grey-light);
+    transition: transform var(--transition-spring), opacity var(--transition);
+    position: relative;
+}
+
+.activity-cell:hover:not([data-level="0"]) {
+    transform: scale(1.2);
+    z-index: 1;
+    opacity: 1 !important;
+    box-shadow: var(--shadow-sm);
 }
 
 .activity-cell[data-level="1"] { background: var(--accent); opacity: 0.9; }
@@ -219,7 +246,7 @@
     font-size: 0.75rem;
     padding: 0.2rem 0.5rem;
     border: 0.0625rem solid var(--border);
-    border-radius: 0.375rem;
+    border-radius: var(--radius-md);
     background: var(--surface-lighter);
     color: var(--ink);
     cursor: pointer;
@@ -258,11 +285,20 @@
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
-    padding: 0.75rem 0;
+    padding: 0.75rem 0.35rem;
     border-bottom: 0.0625rem solid var(--border);
+    border-radius: var(--radius-sm);
+    margin: 0 -0.35rem;
+    cursor: pointer;
+    transition: background var(--transition), padding-left var(--transition);
 }
 
 .log-entry:last-child { border-bottom: none; }
+
+.log-entry:hover {
+    background: var(--surface-less-light);
+    padding-left: 0.65rem;
+}
 
 .log-entry-header {
     display: flex;
@@ -298,7 +334,7 @@
 
 .log-bar {
     height: 0.35rem;
-    border-radius: 0.2rem;
+    border-radius: var(--radius-sm);
 }
 
 .log-bar.cardio    { background: var(--accent); }

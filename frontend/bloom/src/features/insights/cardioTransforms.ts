@@ -185,6 +185,7 @@ export function buildAtlCtlSeries(logs: LoggedWorkout[], maxHr: number, cache: G
 
 export interface RoutePolyline {
     id: string;
+    logId: string;
     name: string;
     positions: [number, number][];
     date: string;
@@ -203,6 +204,7 @@ export function extractRoutePolylines(logs: LoggedWorkout[], cache: GpxCache): R
             const distanceKm = pts[pts.length - 1].distanceKm;
             routes.push({
                 id: `${log.id}-${ei}`,
+                logId: log.id,
                 name: log.name || "Run",
                 positions: pts.map(p => [p.lat, p.lon]),
                 date: log.loggedAt,
