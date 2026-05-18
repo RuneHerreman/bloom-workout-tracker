@@ -45,4 +45,46 @@ jobs:
           /p:CoverletOutputFormat=opencover \
           /p:Threshold=97 \
           /p:ThresholdType=line \
-          '/p:Include="[Bloom.Application]*,[Bloom.Domain]*"' 
+          '/p:Include="[Bloom.Application]*,[Bloom.Domain]*"'
+
+  migration-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: bloom_ci
+          POSTGRES_PASSWORD: bloom_ci_pass
+          POSTGRES_DB: bloom_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install EF tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Run migrations
+        run: dotnet ef database update --project src/Bloom.Infrastructure --startup-project src/Bloom.Main
+        env:
+          Database__Provider: PostgreSQL
+          Database__ConnectionString: "Host=localhost;Port=5432;Database=bloom_test;Username=bloom_ci;Password=bloom_ci_pass"
+          Database__Username: bloom_ci
+          Database__Password: bloom_ci_pass
+          Jwt__Issuer: bloom
+          Jwt__Audience: bloom-client
+          Jwt__Key: "ci-only-key-not-used-in-prod-must-be-32chars!"
+          Jwt__ExpiryMinutes: "60"
