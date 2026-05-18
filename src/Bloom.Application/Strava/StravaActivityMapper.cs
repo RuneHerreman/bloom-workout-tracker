@@ -116,7 +116,19 @@ public class StravaActivityMapper(IExerciseRepository exerciseRepository, ILogge
         if (exercise.Value.Type == ExerciseType.Cardio)
         {
             var durationSeconds = activity.MovingTime > 0 ? activity.MovingTime : activity.ElapsedTime;
-            var distanceKm = Math.Max(0.001m, Math.Round((decimal)activity.Distance / 1000m, 2));
+            if (durationSeconds <= 0)
+            {
+                logger.LogWarning("Strava activity {ActivityId} has non-positive duration ({DurationSeconds}s). Skipping.", activity.Id, durationSeconds);
+                return null;
+            }
+
+            var distanceKm = Math.Round((decimal)activity.Distance / 1000m, 2);
+            if (distanceKm <= 0m)
+            {
+                logger.LogWarning("Strava activity {ActivityId} has non-positive distance ({DistanceKm}km). Clamping to 0.01km.", activity.Id, distanceKm);
+                distanceKm = 0.001m;
+            }
+
             set = new LoggedSetInput("Cardio", 0, TimeSpan.FromSeconds(durationSeconds), distanceKm, "Km", null, null, null, null);
 
             if (streams is not null)

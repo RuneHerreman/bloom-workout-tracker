@@ -76,7 +76,17 @@ public class StravaImportService(
                 var workoutInput = await mapper.Map(activity, streams, ct);
                 if (workoutInput is null) continue;
 
-                var exercises = workoutInput.Exercises.Select(e => e.ToLoggedExercise()).ToList();
+                List<LoggedExercise> exercises;
+                try
+                {
+                    exercises = workoutInput.Exercises.Select(e => e.ToLoggedExercise()).ToList();
+                }
+                catch (ArgumentException ex)
+                {
+                    logger.LogWarning(ex, "Skipping Strava activity {ActivityId} due to invalid workout input.", activity.Id);
+                    continue;
+                }
+
                 var log = LoggedWorkout.Create(userId, workoutInput.Name, exercises, workoutInput.Note, workoutInput.LoggedAt, workoutInput.ExternalId);
                 logsThisPage.Add(log);
                 imported++;

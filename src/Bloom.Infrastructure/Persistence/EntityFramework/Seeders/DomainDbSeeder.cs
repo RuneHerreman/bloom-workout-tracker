@@ -164,6 +164,7 @@ Exercise.Create("Decline Dumbbell Press", "A dumbbell press performed on a decli
 Exercise.Create("Smith Machine Bench Press", "A horizontal press on the Smith machine, which constrains the bar to a vertical path, reducing stabiliser demand and allowing focus on chest activation — useful for training to failure without a spotter.", ExerciseType.Strength, ["Chest"], EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490308"))),
 Exercise.Create("Incline Cable Fly", "A cable fly with an incline bench positioned between two pulleys set low, combining the constant tension of cables with an upward pressing arc that biases the upper pectorals.", ExerciseType.Strength, ["Chest"], EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490309"))),
 Exercise.Create("Dumbbell Pullover", "A single-joint movement lying perpendicular on a bench, lowering a dumbbell behind the head in an arc, stretching and loading the pecs and lats through a long range of motion while expanding the ribcage.", ExerciseType.Strength, ["Chest"], EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490310"))),
+Exercise.Create("Weight Training", "Place holder for strava weight training", ExerciseType.Strength, ["Full Body"], EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490311"))),
 
 // ——————————————————————————————————————————————
 // SHOULDERS — machine / dumbbell / cable / barbell variants
