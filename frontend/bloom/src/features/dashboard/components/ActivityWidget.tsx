@@ -1,10 +1,12 @@
 // Each cell represents one day. Level 0 = no activity, 1–3 = increasing intensity.
+import { useNavigate } from "react-router-dom";
 import GeneralWidget from "./GeneralWidget.tsx";
 import WidgetHeader from "./WidgetHeader.tsx";
 
 export interface ActivityDay {
     date: string;   // ISO date string
     level: 0 | 1 | 2 | 3;
+    logId?: string;
 }
 
 interface ActivityWidgetProps {
@@ -29,6 +31,7 @@ function generatePlaceholder(): ActivityDay[] {
 
 function ActivityWidget({ data }: ActivityWidgetProps) {
     const cells = data ?? generatePlaceholder();
+    const navigate = useNavigate();
 
     return (
         <GeneralWidget
@@ -46,6 +49,7 @@ function ActivityWidget({ data }: ActivityWidgetProps) {
                             className="activity-cell"
                             data-level={cell.level}
                             title={new Date(cell.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                            onClick={() => cell.logId && navigate("/logbook", { state: { selectedLogId: cell.logId } })}
                         />
                     ))}
                 </div>

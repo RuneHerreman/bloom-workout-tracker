@@ -15,7 +15,7 @@ function LogSidebarCard({ log, colorClass, isActive, onSelect }: LogSidebarCardP
     const setCount = log.exercises.reduce((n, ex) => n + ex.sets.length, 0);
 
     return (
-        <div className={`sidebar-card ${colorClass}${isActive ? " active" : ""}`} onClick={onSelect}>
+        <div className={`sidebar-card ${colorClass}${isActive ? " active" : ""}`} data-id={log.id} onClick={onSelect}>
             <span className={`type-dot ${colorClass}`} data-label={TYPE_LABELS[colorClass]} />
             <p className="sidebar-card-name">{log.name}</p>
             <span className="sidebar-card-meta">

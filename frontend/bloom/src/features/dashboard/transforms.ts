@@ -381,7 +381,7 @@ export function transformLogsForActivityCalendar(workouts: LoggedWorkout[]): Act
                 }
             }
 
-            days.push({ date: dateStr, level });
+            days.push({ date: dateStr, level, logId: workout?.id });
         }
     }
 

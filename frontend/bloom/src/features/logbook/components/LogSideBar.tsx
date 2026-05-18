@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Search } from "lucide-react";
 import type { LoggedWorkout } from "../api.ts";
 import { type LogFilterType, dominantTypeFromLog, matchesLogFilter } from "../logbookUtils.ts";
 import LogSidebarCard from "./LogSidebarCard.tsx";
@@ -15,6 +16,13 @@ interface LogSideBarProps {
 function LogSideBar({ logs, selectedId, loading, onSelect }: LogSideBarProps) {
     const [activeFilters, setActiveFilters] = useState<Set<LogFilterType>>(new Set());
     const [query, setQuery] = useState("");
+    const listRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!selectedId || !listRef.current) return;
+        const el = listRef.current.querySelector<HTMLElement>(`[data-id="${selectedId}"]`);
+        el?.scrollIntoView({ block: "center", behavior: "smooth" });
+    }, [selectedId]);
 
     function toggleFilter(type: LogFilterType) {
         setActiveFilters(prev => {
@@ -38,6 +46,7 @@ function LogSideBar({ logs, selectedId, loading, onSelect }: LogSideBarProps) {
                     {!loading && <span className="feature-sidebar-count">{logs.length}</span>}
                 </div>
                 <div className="exercise-library-search-wrap">
+                    <Search className="exercise-library-search-icon" size={14} />
                     <input
                         className="exercise-library-search"
                         placeholder="Search logs…"
@@ -57,7 +66,7 @@ function LogSideBar({ logs, selectedId, loading, onSelect }: LogSideBarProps) {
                     ))}
                 </div>
             </div>
-            <div className="feature-sidebar-list">
+            <div className="feature-sidebar-list" ref={listRef}>
                 {loading ? (
                     <p className="feature-sidebar-loading">Loading…</p>
                 ) : visible.length === 0 ? (

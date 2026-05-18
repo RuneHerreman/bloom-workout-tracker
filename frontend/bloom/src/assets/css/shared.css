@@ -49,6 +49,7 @@
     --widget-border-radius: 0.5rem;
     --radius-md:            0.375rem;
     --radius-sm:            0.25rem;
+    --radius-extra-sm:      0.15rem;
 
     /* Typography */
     --serif: 'Newsreader', 'Source Serif Pro', Georgia, serif;
@@ -413,7 +414,12 @@
 .type-dot.strength   { background: color-mix(in srgb, var(--primary)       80%, transparent); }
 .type-dot.cardio     { background: color-mix(in srgb, var(--accent)        80%, transparent); }
 .type-dot.plyometric { background: color-mix(in srgb, var(--primary-light) 80%, transparent); }
-.type-dot.mix        { background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 80%, transparent), var(--accent)); }
+.type-dot.mix        { background:
+    linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--primary) 75%, transparent),
+            var(--accent));
+}
 
 .type-dot::after {
     content: attr(data-label);
