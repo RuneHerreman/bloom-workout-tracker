@@ -588,10 +588,8 @@ Exercise.Create("Sprint Bound", "A maximal-effort bounding drill performed at sp
 
     private async Task SeedLogs()
     {
-        var allLogs = await context.LoggedWorkouts.ToListAsync();
-        var existingLogs = allLogs.Where(w => w.UserId.Value == SeededUserId.Value).ToList();
-        context.LoggedWorkouts.RemoveRange(existingLogs);
-        await context.SaveChangesAsync();
+        if (await context.LoggedWorkouts.AnyAsync(w => w.UserId.Value == SeededUserId.Value))
+            return;
 
         // Exercise IDs
         var benchPress          = EntityId.New<ExerciseId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490001"));
