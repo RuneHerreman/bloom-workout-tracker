@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale-gateway
+    hostname: bloom-app
+    env_file:
+      - .tailscale.env
+    volumes:
+      - tailscale-data:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    restart: unless-stopped
+    networks:
+      - bloom-network
+
+  bloom-api:
+    build:
+      context: ../../ # Looks up two levels to find the root folder Dockerfile
+    network_mode: "service:tailscale" # Routes traffic through the tailscale container
+    env_file:
+      - .tailscale.env
+    depends_on:
+      bloom-db:
+        condition: service_healthy
+      tailscale:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "1.0"
+
+  bloom-db:
+    image: postgres:16
+    env_file:
+      - .tailscale.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - bloom-network
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.5"
+
+  frontend:
+    build:
+      context: ../../frontend # Looks up two levels to find the frontend folder
+    network_mode: "service:tailscale" # Routes traffic through the tailscale container
+    depends_on:
+      bloom-api:
+        condition: service_healthy
+      tailscale:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+          cpus: "0.25"
+
+volumes:
+  postgres_data:
+  tailscale-data:
+
+networks:
+  bloom-network:
+    driver: bridge
