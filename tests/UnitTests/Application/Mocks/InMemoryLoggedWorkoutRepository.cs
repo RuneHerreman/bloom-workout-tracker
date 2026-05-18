@@ -1,5 +1,6 @@
 using Aornis;
 using Bloom.Domain.LoggedWorkouts;
+using Bloom.Domain.Users;
 
 namespace UnitTests.Application.Mocks;
 
@@ -27,4 +28,7 @@ public sealed class InMemoryLoggedWorkoutRepository : ILoggedWorkoutRepository
         _store.Remove(aggregateRoot.Id);
         return Task.CompletedTask;
     }
+
+    public Task<bool> ExistsWithExternalId(UserId userId, string externalId, CancellationToken ct = default)
+        => Task.FromResult(_store.Values.Any(lw => lw.UserId == userId && lw.ExternalId == externalId));
 }

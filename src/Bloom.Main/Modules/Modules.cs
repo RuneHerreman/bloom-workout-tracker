@@ -1,6 +1,7 @@
 ﻿using Bloom.Main.Modules.Application;
 using Bloom.Main.Modules.Auth;
 using Bloom.Main.Modules.Persistence.EntityFramework;
+using Bloom.Main.Modules.Strava;
 using Bloom.Main.Modules.WebApi;
 
 namespace Bloom.Main.Modules;
@@ -17,6 +18,7 @@ public static class Modules
             .AddApplicationModule(configuration)
             .AddAuthModule(configuration)
             .AddEFCoreModule(configuration)
+            .AddStravaModule(configuration)
             .AddWebApiModule(configuration);
     }
 

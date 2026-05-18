@@ -25,15 +25,15 @@ public sealed record LoggedSetInput(
     int? Rir
 );
 
-internal static class LoggedExerciseInputExtensions
+public static class LoggedExerciseInputExtensions
 {
-    internal static LoggedExercise ToLoggedExercise(this LoggedExerciseInput input)
+    public static LoggedExercise ToLoggedExercise(this LoggedExerciseInput input)
     {
         var sets = input.Sets.Select(s => s.ToLoggedSet()).ToList();
         return LoggedExercise.Create(EntityId.New<ExerciseId>(input.ExerciseId), input.Order, sets, input.GpxData);
     }
 
-    internal static LoggedSet ToLoggedSet(this LoggedSetInput input)
+    public static LoggedSet ToLoggedSet(this LoggedSetInput input)
     {
         var type = Enum.Parse<ExerciseType>(input.Type, ignoreCase: true);
 

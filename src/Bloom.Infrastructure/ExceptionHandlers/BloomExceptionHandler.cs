@@ -25,7 +25,8 @@ public sealed class BloomExceptionHandler : IExceptionHandler
                 or LoggedWorkoutNotFoundException
                 or LoggedWorkoutAccessDeniedException
                 or WorkoutTemplateNotFoundException
-                or WorkoutTemplateAccessDeniedException => (StatusCodes.Status404NotFound, "Resource not found."),
+                or WorkoutTemplateAccessDeniedException
+                or StravaConnectionNotFoundException => (StatusCodes.Status404NotFound, "Resource not found."),
 
             BloomGeneralException e => (StatusCodes.Status400BadRequest, e.Message),
 

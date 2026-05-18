@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { Save, Trash2, Eye, EyeOff, KeyRound, X } from "lucide-react";
+import { Save, Trash2, Eye, EyeOff, KeyRound, X, Download } from "lucide-react";
 import { getMe, updateMe, changePassword, deleteMe } from "../auth/api.ts";
 import type { User } from "../auth/api.ts";
 import { useAuth } from "../../context/AuthContext.tsx";
 import { useShortcut } from "../../hooks/useShortcut.ts";
 import Button from "../../components/general/ButtonComponent.tsx";
+import { getStravaStatus, getStravaAuthUrl, disconnectStrava, importStravaHistory } from "../strava/api.ts";
+import type { StravaStatus } from "../strava/api.ts";
 import "../../assets/css/profile.css";
 
 function ProfilePage() {
@@ -36,11 +38,19 @@ function ProfilePage() {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
+    const [strava, setStrava] = useState<StravaStatus | null>(null);
+    const [stravaImporting, setStravaImporting] = useState(false);
+    const [stravaImportResult, setStravaImportResult] = useState<number | null>(null);
+    const [stravaError, setStravaError] = useState<string | null>(null);
+
     const actionsRef = useRef<HTMLDivElement>(null);
     const panelTopRef = useRef(0);
 
     useEffect(() => {
-        getMe().then(u => {
+        Promise.all([
+            getMe(),
+            getStravaStatus().catch(() => null),
+        ]).then(([u, s]) => {
             setUser(u);
             setFirstName(u.firstName);
             setLastName(u.lastName);
@@ -50,6 +60,12 @@ function ProfilePage() {
             setWeight(u.weight);
             setHeight(u.height);
             setActiveDays(u.activeDays);
+            if (s) setStrava(s);
+            // Show success message if redirected back from Strava OAuth
+            const params = new URLSearchParams(window.location.search);
+            if (params.get("strava") === "connected") {
+                window.history.replaceState({}, "", window.location.pathname);
+            }
         }).finally(() => setLoading(false));
     }, []);
 
@@ -122,6 +138,41 @@ function ProfilePage() {
         } catch (e) {
             setError(e instanceof Error ? e.message : "Failed to delete account");
             setShowDeleteConfirm(false);
+        }
+    }
+
+    async function handleStravaConnect() {
+        setStravaError(null);
+        try {
+            const url = await getStravaAuthUrl();
+            window.location.href = url;
+        } catch {
+            setStravaError("Failed to connect to Strava");
+        }
+    }
+
+    async function handleStravaDisconnect() {
+        setStravaError(null);
+        try {
+            await disconnectStrava();
+            setStrava({ connected: false, athleteName: null, connectedAt: null });
+            setStravaImportResult(null);
+        } catch {
+            setStravaError("Failed to disconnect Strava");
+        }
+    }
+
+    async function handleStravaImport() {
+        setStravaImporting(true);
+        setStravaError(null);
+        setStravaImportResult(null);
+        try {
+            const result = await importStravaHistory();
+            setStravaImportResult(result.imported);
+        } catch {
+            setStravaError("Import failed — check your connection and try again");
+        } finally {
+            setStravaImporting(false);
         }
     }
 
@@ -332,6 +383,68 @@ function ProfilePage() {
                             </button>
                         </div>
                     </form>
+                </section>
+
+                <section className="profile-section">
+                    <h2 className="profile-section-title">Connected Apps</h2>
+
+                    {stravaError && <div className="error-banner">{stravaError}</div>}
+
+                    <div className="strava-connection">
+                        <div className="strava-connection-info">
+                            <div className="strava-logo">STR</div>
+                            <div className="strava-connection-text">
+                                {strava?.connected ? (
+                                    <>
+                                        <span className="strava-connection-name">{strava.athleteName ?? "Strava"}</span>
+                                        <span className="strava-connection-date">
+                                            Connected {strava.connectedAt ? new Date(strava.connectedAt).toLocaleDateString() : ""}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="strava-connection-name">Strava</span>
+                                        <span className="strava-connection-date">Not connected</span>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="strava-connection-actions">
+                            {strava?.connected ? (
+                                <>
+                                    <Button
+                                        text={stravaImporting ? "Importing…" : "Import history"}
+                                        style="white"
+                                        icon={<Download size={14} />}
+                                        disabled={stravaImporting}
+                                        onClick={handleStravaImport}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="button-component red"
+                                        onClick={handleStravaDisconnect}
+                                    >
+                                        Disconnect
+                                    </button>
+                                </>
+                            ) : (
+                                <Button
+                                    text="Connect Strava"
+                                    style="white"
+                                    onClick={handleStravaConnect}
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                    {stravaImportResult !== null && (
+                        <p className="strava-import-success">
+                            {stravaImportResult === 0
+                                ? "No new activities to import."
+                                : `Imported ${stravaImportResult} activit${stravaImportResult === 1 ? "y" : "ies"} from Strava.`}
+                        </p>
+                    )}
                 </section>
 
                 <section className="profile-section profile-danger-section">

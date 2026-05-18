@@ -10,7 +10,8 @@ public sealed record CreateLoggedWorkoutInput(
     string Name,
     List<LoggedExerciseInput> Exercises,
     string? Note = null,
-    DateTime? LoggedAt = null
+    DateTime? LoggedAt = null,
+    string? ExternalId = null
 );
 
 public sealed record CreateLoggedWorkoutOutput(Guid LoggedWorkoutId);
@@ -39,7 +40,8 @@ public class CreateLoggedWorkout(
             input.Name,
             exercises,
             input.Note,
-            input.LoggedAt
+            input.LoggedAt,
+            input.ExternalId
         );
 
         await logRepo.Save(log);

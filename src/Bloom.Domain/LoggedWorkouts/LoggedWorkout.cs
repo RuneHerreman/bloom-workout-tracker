@@ -33,12 +33,15 @@ public class LoggedWorkout : AggregateRoot<LoggedWorkoutId>
         _loggedExercises = loggedExercises;
     }
 
+    public string? ExternalId { get; private set; }
+
     public static LoggedWorkout Create(
         UserId userId,
         string name,
         List<LoggedExercise> loggedExercises,
         string? note = null,
-        DateTime? loggedAt = null)
+        DateTime? loggedAt = null,
+        string? externalId = null)
     {
         var loggedWorkout = new LoggedWorkout(
             EntityId.New<LoggedWorkoutId>(),
@@ -48,6 +51,7 @@ public class LoggedWorkout : AggregateRoot<LoggedWorkoutId>
             loggedAt ?? DateTime.UtcNow,
             loggedExercises
         );
+        loggedWorkout.ExternalId = externalId;
 
         loggedWorkout.ValidateState();
         loggedWorkout.RaiseDomainEvent(new WorkoutLogged(loggedWorkout.Id));

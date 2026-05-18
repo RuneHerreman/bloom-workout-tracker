@@ -1,6 +1,7 @@
 ﻿using Bloom.Domain.Exercises;
 using Bloom.Domain.LoggedWorkouts;
 using Bloom.Domain.Shared.DomainEvents;
+using Bloom.Domain.Strava;
 using Bloom.Domain.Users;
 using Bloom.Domain.WorkoutTemplates;
 using Bloom.Infrastructure.Persistence.EntityFramework.Configuration.Domain;
@@ -16,6 +17,7 @@ public abstract class DomainDbContext : DbContext
     public DbSet<LoggedWorkout> LoggedWorkouts { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<WorkoutTemplate> WorkoutTemplates { get; set; }
+    public DbSet<StravaConnection> StravaConnections { get; set; }
     
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -31,7 +33,8 @@ public abstract class DomainDbContext : DbContext
             .ApplyConfiguration(new ExerciseConfiguration())
             .ApplyConfiguration(new LoggedWorkoutConfiguration())
             .ApplyConfiguration(new WorkoutTemplateConfiguration())
-            .ApplyConfiguration(new UserConfiguration());
+            .ApplyConfiguration(new UserConfiguration())
+            .ApplyConfiguration(new StravaConnectionConfiguration());
         
         base.OnModelCreating(modelBuilder);
     }

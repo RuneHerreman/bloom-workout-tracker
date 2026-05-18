@@ -1,5 +1,6 @@
 using Bloom.Infrastructure.WebApi.Controllers.Exercises;
 using Bloom.Infrastructure.WebApi.Controllers.LoggedWorkouts;
+using Bloom.Infrastructure.WebApi.Controllers.Strava;
 using Bloom.Infrastructure.WebApi.Controllers.Users;
 using Bloom.Infrastructure.WebApi.Controllers.WorkoutTemplates;
 using Microsoft.AspNetCore.Builder;
@@ -19,6 +20,7 @@ public static class Routes
         webApi.MapExerciseRoutes();
         webApi.MapTemplateRoutes();
         webApi.MapLogRoutes();
+        webApi.MapStravaRoutes();
 
         return app;
     }
@@ -155,5 +157,43 @@ public static class Routes
             .WithDescription("Get monthly max weight per exercise for all logged exercises. Optionally filter by name, type, target muscle group, and date range.");
 
         return logGroup;
+    }
+
+    private static RouteGroupBuilder MapStravaRoutes(this IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder stravaGroup = app.MapGroup("/strava")
+            .WithTags("Strava");
+
+        stravaGroup.MapGet("/status", GetStravaStatusController.Invoke)
+            .WithName(nameof(GetStravaStatusController))
+            .WithDescription("Get the current user's Strava connection status.")
+            .RequireAuthorization();
+
+        stravaGroup.MapGet("/auth-url", GetStravaAuthUrlController.Invoke)
+            .WithName(nameof(GetStravaAuthUrlController))
+            .WithDescription("Get the Strava OAuth authorization URL.")
+            .RequireAuthorization();
+
+        stravaGroup.MapGet("/callback", StravaCallbackController.Invoke)
+            .WithName(nameof(StravaCallbackController))
+            .WithDescription("Handle the Strava OAuth callback and store tokens.")
+            .RequireAuthorization();
+
+        stravaGroup.MapDelete("/disconnect", DisconnectStravaController.Invoke)
+            .WithName(nameof(DisconnectStravaController))
+            .WithDescription("Disconnect Strava from the current user's account.")
+            .RequireAuthorization();
+
+        stravaGroup.MapPost("/import", ImportStravaHistoryController.Invoke)
+            .WithName(nameof(ImportStravaHistoryController))
+            .WithDescription("Import all historical Strava activities as workout logs.")
+            .RequireAuthorization();
+
+        stravaGroup.MapPost("/sync", SyncStravaController.Invoke)
+            .WithName(nameof(SyncStravaController))
+            .WithDescription("Sync new Strava activities since the last sync.")
+            .RequireAuthorization();
+
+return stravaGroup;
     }
 }

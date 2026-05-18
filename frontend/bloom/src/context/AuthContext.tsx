@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { getMe, logout as logoutApi } from "../features/auth/api.ts";
 import { getLogs, getVolume } from "../features/logbook/api.ts";
 import { searchExercises } from "../features/exercises/api.ts";
+import { syncStrava } from "../features/strava/api.ts";
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -39,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     getLogs();
                     getVolume();
                     searchExercises();
+                    syncStrava().catch(() => {});
                 }
             } catch {
                 if (isMounted) setIsAuthenticated(false);

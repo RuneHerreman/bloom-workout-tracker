@@ -181,6 +181,73 @@
     border-color: var(--danger-base);
 }
 
+/* ── Strava connection ───────────────────────────────────────────────────────── */
+
+.strava-connection {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--widget-border-radius);
+    background: var(--surface-lighter);
+}
+
+.strava-connection-info {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+}
+
+.strava-logo {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #FC4C02;
+    color: white;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+}
+
+.strava-connection-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.strava-connection-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink);
+}
+
+.strava-connection-date {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+}
+
+.strava-connection-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.strava-import-success {
+    font-size: 0.8rem;
+    color: var(--primary-muted);
+    background: color-mix(in srgb, var(--primary) 8%, transparent);
+    border: 0.0625rem solid color-mix(in srgb, var(--primary-light) 35%, transparent);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.875rem;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {

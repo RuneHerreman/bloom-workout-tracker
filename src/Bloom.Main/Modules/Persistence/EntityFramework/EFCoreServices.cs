@@ -1,6 +1,7 @@
 ﻿using Bloom.Application.Contracts.Ports;
 using Bloom.Domain.Exercises;
 using Bloom.Domain.LoggedWorkouts;
+using Bloom.Domain.Strava;
 using Bloom.Domain.Users;
 using Bloom.Domain.WorkoutTemplates;
 using Bloom.Infrastructure.Persistence;
@@ -12,6 +13,7 @@ using Bloom.Infrastructure.Persistence.EntityFramework.Interceptors;
 using Bloom.Infrastructure.Persistence.EntityFramework.Queries;
 using Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
 using Bloom.Infrastructure.Persistence.EntityFramework.Seeders;
+using Bloom.Infrastructure.Strava;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bloom.Main.Modules.Persistence.EntityFramework;
@@ -44,13 +46,16 @@ public static class EFCoreServices
                 IExerciseRepository exerciseRepository = sp.GetRequiredService<IExerciseRepository>();
                 ILoggedWorkoutRepository loggedWorkoutRepository = sp.GetRequiredService<ILoggedWorkoutRepository>();
 
+                IStravaConnectionRepository stravaConnectionRepository = sp.GetRequiredService<IStravaConnectionRepository>();
+
                 EfCoreUnitOfWork uow = new(context, logger);
-                
+
                 // Register repositories with the unit of work
                 uow.RegisterRepository(userRepository);
                 uow.RegisterRepository(workoutTemplateRepository);
                 uow.RegisterRepository(exerciseRepository);
                 uow.RegisterRepository(loggedWorkoutRepository);
+                uow.RegisterRepository(stravaConnectionRepository);
 
                 return uow;
             });
@@ -62,7 +67,8 @@ public static class EFCoreServices
             .AddScoped<IUserRepository, UserRepository>()
             .AddScoped<IWorkoutTemplateRepository, WorkoutTemplateRepository>()
             .AddScoped<IExerciseRepository, ExerciseRepository>()
-            .AddScoped<ILoggedWorkoutRepository, LoggedWorkoutRepository>();
+            .AddScoped<ILoggedWorkoutRepository, LoggedWorkoutRepository>()
+            .AddScoped<IStravaConnectionRepository, StravaConnectionRepository>();
     }
 
     public static IServiceCollection AddQueries(this IServiceCollection services)
