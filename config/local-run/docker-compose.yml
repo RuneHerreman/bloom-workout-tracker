@@ -1,13 +1,10 @@
 services:
   bloom-api:
-    build: .
+    build: ../../
     ports:
       - "8080:5000"
-    environment:
-      - Database__Username=${POSTGRES_USER}
-      - Database__Password=${POSTGRES_PASSWORD}
     env_file:
-      - .env
+      - .local.env
     depends_on:
       bloom-db:
         condition: service_healthy
@@ -28,11 +25,11 @@ services:
   bloom-db:
     image: postgres:16
     env_file:
-      - .env
+      - .local.env
     # Port 5432 is intentionally not exposed to the host — only the API container
     # needs direct DB access and it communicates over the internal bridge network.
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - local-run-postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -q -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -48,7 +45,9 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ../../frontend
+      args:
+        VITE_API_BASE_URL: /api/
     ports:
       - "3000:80"
     depends_on:
@@ -69,7 +68,7 @@ services:
           cpus: "0.25"
 
 volumes:
-  postgres_data:
+  local-run-postgres-data:
 
 networks:
   bloom-network:

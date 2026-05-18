@@ -78,7 +78,7 @@ The fastest way to get Bloom running is with Docker Compose. You'll have the app
 ```bash
 git clone https://github.com/RuneHerreman/bloom-workout-tracker.git
 cd bloom-workout-tracker
-cp .env.example .env
+cp .local.env.example .local.env
 ```
 
 Edit `.env` and set a strong random value for `Jwt__Key` (you can generate one with `openssl rand -hex 32`). Then:
@@ -156,7 +156,7 @@ Use the username and password from your `.env` file. This override is needed bec
 
 ```bash
 cd frontend/bloom
-cp .env.example .env
+cp .local.env.example .local.env
 npm install
 npm run dev
 ```

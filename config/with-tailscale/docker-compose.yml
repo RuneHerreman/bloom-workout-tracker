@@ -1,28 +1,32 @@
-version: '3.8'
-
 services:
   tailscale:
     image: tailscale/tailscale:latest
     container_name: tailscale-gateway
     hostname: bloom-app
+    restart: unless-stopped
     env_file:
-      - .tailscale.env
+      - ./.tailscale.env
+    environment:
+      - TS_USERSPACE=false
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/config/ts-serve-config.json
     volumes:
       - tailscale-data:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun
+      - ./ts-serve-config.json:/config/ts-serve-config.json:ro
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
-    restart: unless-stopped
     networks:
       - bloom-network
 
   bloom-api:
     build:
-      context: ../../ # Looks up two levels to find the root folder Dockerfile
-    network_mode: "service:tailscale" # Routes traffic through the tailscale container
+      context: ../../
+    network_mode: "service:tailscale"
+    restart: unless-stopped
     env_file:
-      - .tailscale.env
+      - ./.tailscale.env
     depends_on:
       bloom-db:
         condition: service_healthy
@@ -42,10 +46,11 @@ services:
 
   bloom-db:
     image: postgres:16
+    restart: unless-stopped
     env_file:
-      - .tailscale.env
+      - ./.tailscale.env
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - tailscale-postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -q -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -61,8 +66,13 @@ services:
 
   frontend:
     build:
-      context: ../../frontend # Looks up two levels to find the frontend folder
-    network_mode: "service:tailscale" # Routes traffic through the tailscale container
+      context: ../../frontend
+      args:
+        VITE_API_BASE_URL: /api/
+    network_mode: "service:tailscale"
+    restart: unless-stopped
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       bloom-api:
         condition: service_healthy
@@ -81,7 +91,7 @@ services:
           cpus: "0.25"
 
 volumes:
-  postgres_data:
+  tailscale-postgres-data:
   tailscale-data:
 
 networks:

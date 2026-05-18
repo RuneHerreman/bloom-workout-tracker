@@ -4,6 +4,7 @@ COPY bloom/package.json ./
 COPY bloom/package-lock.json ./
 RUN npm install
 COPY bloom/ .
+ARG VITE_API_BASE_URL=/api/
 RUN npm run build
 
 FROM nginx:alpine AS final
