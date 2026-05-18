@@ -29,6 +29,13 @@ public sealed class InMemoryLoggedWorkoutRepository : ILoggedWorkoutRepository
         return Task.CompletedTask;
     }
 
-    public Task<bool> ExistsWithExternalId(UserId userId, string externalId, CancellationToken ct = default)
-        => Task.FromResult(_store.Values.Any(lw => lw.UserId == userId && lw.ExternalId == externalId));
+    public Task<IReadOnlySet<string>> GetExistingExternalIds(UserId userId, IEnumerable<string> externalIds, CancellationToken ct = default)
+    {
+        var idSet = externalIds.ToHashSet();
+        var existing = _store.Values
+            .Where(lw => lw.UserId == userId && lw.ExternalId != null && idSet.Contains(lw.ExternalId))
+            .Select(lw => lw.ExternalId!)
+            .ToHashSet();
+        return Task.FromResult<IReadOnlySet<string>>(existing);
+    }
 }

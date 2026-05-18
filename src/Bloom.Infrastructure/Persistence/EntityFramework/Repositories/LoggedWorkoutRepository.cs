@@ -7,7 +7,13 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Repositories;
 
 public class LoggedWorkoutRepository(DomainDbContext context) : EfCoreGenericRepository<LoggedWorkout, LoggedWorkoutId>(context), ILoggedWorkoutRepository
 {
-    public Task<bool> ExistsWithExternalId(UserId userId, string externalId, CancellationToken ct = default)
-        => _context.LoggedWorkouts
-            .AnyAsync(lw => lw.UserId == userId && lw.ExternalId == externalId, ct);
+    public async Task<IReadOnlySet<string>> GetExistingExternalIds(UserId userId, IEnumerable<string> externalIds, CancellationToken ct = default)
+    {
+        var ids = externalIds.ToList();
+        var existing = await _context.LoggedWorkouts
+            .Where(lw => lw.UserId == userId && lw.ExternalId != null && ids.Contains(lw.ExternalId))
+            .Select(lw => lw.ExternalId!)
+            .ToListAsync(ct);
+        return existing.ToHashSet();
+    }
 }

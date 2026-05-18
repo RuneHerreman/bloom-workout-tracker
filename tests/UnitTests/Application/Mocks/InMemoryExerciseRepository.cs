@@ -27,4 +27,10 @@ public sealed class InMemoryExerciseRepository : IExerciseRepository
         _store.Remove(aggregateRoot.Id);
         return Task.CompletedTask;
     }
+
+    public Task<Optional<Exercise>> ByName(string name, CancellationToken ct = default)
+    {
+        var match = _store.Values.FirstOrDefault(e => e.Name.Value == name);
+        return Task.FromResult(Optional.Of(match));
+    }
 }

@@ -10,30 +10,33 @@ public sealed record SyncStravaActivitiesOutput(int Imported);
 public class SyncStravaActivities(
     IUnitOfWork uow,
     ICurrentUser currentUser,
-    IStravaActivityImporter importer,
+    StravaImportService importService,
     ILogger<SyncStravaActivities> logger
 ) : IUseCase<SyncStravaActivitiesInput, SyncStravaActivitiesOutput>
 {
     public async Task<SyncStravaActivitiesOutput> Execute(SyncStravaActivitiesInput input, CancellationToken ct = default)
     {
-        var connection = await uow.Repo<IStravaConnectionRepository>().ByUserId(currentUser.UserId, ct);
-
-        if (!connection.HasValue)
-            return new SyncStravaActivitiesOutput(0);
+        var connRepo = uow.Repo<IStravaConnectionRepository>();
+        var connection = await connRepo.ByUserId(currentUser.UserId, ct);
+        if (!connection.HasValue) return new SyncStravaActivitiesOutput(0);
 
         var conn = connection.Value;
+        var token = await importService.EnsureValidToken(conn, connRepo, uow, ct);
+
         var after = conn.LastSyncedAt;
+        var afterUnix = after.HasValue ? (long?)new DateTimeOffset(after.Value, TimeSpan.Zero).ToUnixTimeSeconds() : null;
 
         logger.LogInformation("Syncing Strava activities for user {UserId} since {After}", currentUser.UserId, after);
 
-        var imported = await importer.ImportAll(conn, currentUser.UserId, after, ct);
+        var result = await importService.ImportLoop(token, afterUnix, currentUser.UserId, uow, ct);
 
-        conn.UpdateLastSyncedAt(DateTime.UtcNow);
-        await uow.Repo<IStravaConnectionRepository>().Save(conn);
+        // Use the latest seen activity date as the sync cursor so activities uploaded late
+        // by Strava aren't missed on the next run.
+        conn.UpdateLastSyncedAt(result.LatestActivityAt ?? DateTime.UtcNow);
+        await connRepo.Save(conn);
         await uow.Do(ct);
 
-        logger.LogInformation("Strava sync complete: {Count} new activities", imported);
-
-        return new SyncStravaActivitiesOutput(imported);
+        logger.LogInformation("Strava sync complete: {Count} new activities", result.Imported);
+        return new SyncStravaActivitiesOutput(result.Imported);
     }
 }

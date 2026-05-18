@@ -5,5 +5,5 @@ namespace Bloom.Domain.LoggedWorkouts;
 
 public interface ILoggedWorkoutRepository: IRepository<LoggedWorkout, LoggedWorkoutId>
 {
-    Task<bool> ExistsWithExternalId(UserId userId, string externalId, CancellationToken ct = default);
+    Task<IReadOnlySet<string>> GetExistingExternalIds(UserId userId, IEnumerable<string> externalIds, CancellationToken ct = default);
 }
