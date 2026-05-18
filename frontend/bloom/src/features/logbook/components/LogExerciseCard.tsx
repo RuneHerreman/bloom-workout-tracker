@@ -171,8 +171,8 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
                         </>
                     ) : (
                         <>
-                            <input ref={fileInputRef} type="file" accept=".gpx" style={{ display: "none" }} onChange={handleGpxFile} />
-                            <Button text="Attach GPX" style="modern" icon={<MapPin size={14} />} onClick={() => fileInputRef.current?.click()} />
+                            <input ref={fileInputRef} type="file" accept=".gpx,.tcx" style={{ display: "none" }} onChange={handleGpxFile} />
+                            <Button text="Attach GPX/TCX" style="modern" icon={<MapPin size={14} />} onClick={() => fileInputRef.current?.click()} />
                         </>
                     )
                 )}

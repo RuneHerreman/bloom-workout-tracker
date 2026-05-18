@@ -36,10 +36,105 @@ function haversineM(lat1: number, lon1: number, lat2: number, lon2: number): num
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+function isTcx(doc: Document): boolean {
+    return doc.documentElement.tagName === "TrainingCenterDatabase";
+}
+
+function parseTcxStats(doc: Document): GpxStats | null {
+    const points = Array.from(doc.getElementsByTagName("Trackpoint"));
+    if (points.length < 2) return null;
+
+    let distanceM = 0, elevationGainM = 0;
+    let prevLat: number | null = null, prevLon: number | null = null, prevEle: number | null = null;
+
+    for (const pt of points) {
+        const lat = parseFloat(pt.getElementsByTagName("LatitudeDegrees")[0]?.textContent ?? "");
+        const lon = parseFloat(pt.getElementsByTagName("LongitudeDegrees")[0]?.textContent ?? "");
+        const ele = parseFloat(pt.getElementsByTagName("AltitudeMeters")[0]?.textContent ?? "");
+        if (prevLat !== null && prevLon !== null && !isNaN(lat) && !isNaN(lon))
+            distanceM += haversineM(prevLat, prevLon, lat, lon);
+        if (prevEle !== null && !isNaN(ele) && ele - prevEle > 0)
+            elevationGainM += ele - prevEle;
+        if (!isNaN(lat)) prevLat = lat;
+        if (!isNaN(lon)) prevLon = lon;
+        if (!isNaN(ele)) prevEle = ele;
+    }
+
+    const firstTime = points[0].getElementsByTagName("Time")[0]?.textContent;
+    const lastTime  = points[points.length - 1].getElementsByTagName("Time")[0]?.textContent;
+    const durationMs = firstTime && lastTime
+        ? new Date(lastTime).getTime() - new Date(firstTime).getTime() : 0;
+
+    return { distanceKm: distanceM / 1000, elevationGainM, durationMs };
+}
+
+function parseTcxTrackPointsFromDoc(doc: Document): GpxTrackPoint[] {
+    const rawPts = Array.from(doc.getElementsByTagName("Trackpoint"));
+    const points: GpxTrackPoint[] = [];
+    let cumDist = 0;
+    let firstTimeMs: number | null = null;
+    let prev: { lat: number; lon: number; ele: number | undefined; timeMs: number | null } | null = null;
+
+    for (const pt of rawPts) {
+        const lat = parseFloat(pt.getElementsByTagName("LatitudeDegrees")[0]?.textContent ?? "");
+        const lon = parseFloat(pt.getElementsByTagName("LongitudeDegrees")[0]?.textContent ?? "");
+        if (isNaN(lat) || isNaN(lon)) continue;
+
+        const timeText = pt.getElementsByTagName("Time")[0]?.textContent;
+        const timeMs   = timeText ? new Date(timeText).getTime() : null;
+        if (timeMs !== null && firstTimeMs === null) firstTimeMs = timeMs;
+
+        const eleRaw = pt.getElementsByTagName("AltitudeMeters")[0]?.textContent;
+        const ele    = eleRaw != null ? parseFloat(eleRaw) : undefined;
+
+        let segDistKm = 0;
+        if (prev) { segDistKm = haversineM(prev.lat, prev.lon, lat, lon) / 1000; cumDist += segDistKm; }
+
+        // TCX speed is m/s in extensions
+        const speedMps = parseFloat(pt.getElementsByTagNameNS("*", "Speed")[0]?.textContent ?? "");
+        const speedKph = !isNaN(speedMps) ? speedMps * 3.6 : (() => {
+            if (prev?.timeMs != null && timeMs != null) {
+                const dtH = (timeMs - prev.timeMs) / 3_600_000;
+                return dtH > 0 ? segDistKm / dtH : undefined;
+            }
+            return undefined;
+        })();
+
+        let grade: number | undefined;
+        if (prev?.ele !== undefined && ele !== undefined && !isNaN(ele) && segDistKm > 0)
+            grade = ((ele - prev.ele) / (segDistKm * 1000)) * 100;
+
+        const elapsedMs = firstTimeMs !== null && timeMs !== null ? timeMs - firstTimeMs : undefined;
+
+        const hrVal = parseFloat(pt.getElementsByTagName("HeartRateBpm")[0]?.getElementsByTagName("Value")[0]?.textContent ?? "");
+        const cadVal = parseFloat(pt.getElementsByTagName("Cadence")[0]?.textContent ?? "");
+        const powerVal = parseFloat(pt.getElementsByTagNameNS("*", "Watts")[0]?.textContent ?? "");
+
+        points.push({
+            lat, lon, distanceKm: cumDist,
+            ...(elapsedMs !== undefined              ? { elapsedMs }          : {}),
+            ...(ele !== undefined && !isNaN(ele)     ? { ele }                : {}),
+            ...(speedKph !== undefined               ? { speedKph }           : {}),
+            ...(grade !== undefined                  ? { grade }              : {}),
+            ...(!isNaN(hrVal)                        ? { hr: hrVal }          : {}),
+            ...(!isNaN(cadVal)                       ? { cad: cadVal }        : {}),
+            ...(!isNaN(powerVal)                     ? { power: powerVal }    : {}),
+        });
+
+        const prevEle: number | undefined = prev == null ? undefined : prev.ele;
+        prev = { lat, lon, ele: ele !== undefined && !isNaN(ele) ? ele : prevEle, timeMs };
+    }
+
+    smooth(points, "speedKph", 5);
+    smooth(points, "grade",    15);
+    return points;
+}
+
 export function parseGpx(xml: string): GpxStats | null {
     try {
         const doc = new DOMParser().parseFromString(xml, "application/xml");
         if (doc.querySelector("parsererror")) return null;
+        if (isTcx(doc)) return parseTcxStats(doc);
 
         const points = Array.from(doc.querySelectorAll("trkpt"));
         if (points.length < 2) return null;
@@ -94,6 +189,7 @@ export function parseGpxTrackPoints(xml: string): GpxTrackPoint[] {
     try {
         const doc = new DOMParser().parseFromString(xml, "application/xml");
         if (doc.querySelector("parsererror")) return [];
+        if (isTcx(doc)) return parseTcxTrackPointsFromDoc(doc);
         const rawPts = Array.from(doc.querySelectorAll("trkpt"));
         const points: GpxTrackPoint[] = [];
         let cumDist = 0;
