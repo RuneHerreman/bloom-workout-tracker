@@ -302,6 +302,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
         responsive: true,
         maintainAspectRatio: false,
         animation: false as const,
+        transitions: { active: { animation: { duration: 150 } } },
         interaction: { mode: "index" as const, intersect: false },
         onHover: (_: ChartEvent, els: ActiveElement[]) => {
             setHoverDistKm(els.length > 0 ? (cfg.points[els[0].index]?.distanceKm ?? null) : null);

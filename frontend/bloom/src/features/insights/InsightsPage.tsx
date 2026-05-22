@@ -161,6 +161,7 @@ function InsightsPage() {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false }, tooltip: tooltipStyle },
+        transitions: { active: { animation: { duration: 150 } } },
         scales: {
             x: { border: { display: false }, grid: { color: gridColor }, ticks: { color: tickColor } },
             y: { beginAtZero: true, border: { display: false }, grid: { color: gridColor }, ticks: { color: tickColor } },
@@ -193,6 +194,7 @@ function InsightsPage() {
     const prLineOptions = useMemo((): ChartOptions<"line"> => ({
         responsive: true,
         maintainAspectRatio: false,
+        transitions: { active: { animation: { duration: 150 } } },
         plugins: {
             legend: { display: false },
             tooltip: {
@@ -434,6 +436,7 @@ function InsightsPage() {
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: "index", intersect: false },
+        transitions: { active: { animation: { duration: 150 } } },
         plugins: {
             legend: { display: true, position: "top", align: "end", labels: { color: tickColor, font: { size: 11 }, boxWidth: 12, padding: 16, usePointStyle: true } },
             tooltip: {

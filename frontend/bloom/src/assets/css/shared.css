@@ -12,7 +12,7 @@
     --primary-faded:       rgba(148, 209, 179, 0.50);
     --accent:              #E9762B;
     --surface-dark:        #01110A;
-    --dark-text:           #00261a;
+    --dark-text: #004d32;
 
 
     /* Neutrals */
@@ -74,7 +74,7 @@
     /* Text */
     --ink:       #f2efe8;
     --ink-muted: #a8a49c;
-    --dark-text: #d9e1de;
+    --dark-text: #c2ccc4;
 
     /* Borders — visible against all surface levels */
     --border:       #46463e;

@@ -71,6 +71,7 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
     const options = useMemo(() => ({
         responsive: true,
         maintainAspectRatio: false,
+        transitions: { active: { animation: { duration: 150 } } },
         plugins: {
             legend: {
                 display: true,
