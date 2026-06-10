@@ -1,4 +1,5 @@
 using Bloom.Application.LoggedWorkouts;
+using Bloom.Domain.LoggedWorkouts.Enums;
 using Bloom.Domain.Users;
 using UnitTests.Application.Mocks;
 using UnitTests.Application.Shared;
@@ -125,5 +126,59 @@ public sealed class LoggedWorkoutInputsTests : ApplicationTestBase
         var input = WithSet(new LoggedSetInput("99", 0, null, null, null, 1, 1m, "Kg", 0));
 
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _useCase.Execute(input));
+    }
+
+    [Theory]
+    [InlineData("W", SetMarker.WarmUp)]
+    [InlineData("w", SetMarker.WarmUp)]
+    [InlineData("WarmUp", SetMarker.WarmUp)]
+    [InlineData("warmup", SetMarker.WarmUp)]
+    [InlineData("D", SetMarker.DropSet)]
+    [InlineData("d", SetMarker.DropSet)]
+    [InlineData("DropSet", SetMarker.DropSet)]
+    [InlineData("dropset", SetMarker.DropSet)]
+    public void ParseMarker_WithValidValues_ShouldMap(string raw, SetMarker expected)
+    {
+        Assert.Equal(expected, LoggedExerciseInputExtensions.ParseMarker(raw));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void ParseMarker_WithEmptyValues_ShouldReturnNull(string? raw)
+    {
+        Assert.Null(LoggedExerciseInputExtensions.ParseMarker(raw));
+    }
+
+    [Fact]
+    public void ParseMarker_WithInvalidValue_ShouldThrow()
+    {
+        Assert.ThrowsAny<ArgumentException>(() => LoggedExerciseInputExtensions.ParseMarker("SuperSet"));
+    }
+
+    [Fact]
+    public void ToLoggedSet_WithMarker_ShouldSetMarker()
+    {
+        var set = new LoggedSetInput("Strength", 0, null, null, null, 5, 50m, "Kg", 1, "W").ToLoggedSet();
+
+        Assert.Equal(SetMarker.WarmUp, set.Marker);
+    }
+
+    [Fact]
+    public void ToLoggedExercise_WithNoteAndGear_ShouldMap()
+    {
+        var input = new LoggedExerciseInput(
+            Guid.NewGuid(),
+            0,
+            [new LoggedSetInput("Strength", 0, null, null, null, 5, 50m, "Kg", 1)],
+            Note: "Felt strong today",
+            Gear: ["Nike Vaporfly", "Garmin Forerunner"]
+        );
+
+        var exercise = input.ToLoggedExercise();
+
+        Assert.Equal("Felt strong today", exercise.Note);
+        Assert.Equal(["Nike Vaporfly", "Garmin Forerunner"], exercise.Gear);
     }
 }

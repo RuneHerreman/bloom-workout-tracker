@@ -1,5 +1,6 @@
 using Aornis;
 using Bloom.Domain.Exercises;
+using Bloom.Domain.Users;
 
 namespace UnitTests.Application.Mocks;
 
@@ -31,6 +32,13 @@ public sealed class InMemoryExerciseRepository : IExerciseRepository
     public Task<Optional<Exercise>> ByName(string name, CancellationToken ct = default)
     {
         var match = _store.Values.FirstOrDefault(e => e.Name.Value == name);
+        return Task.FromResult(Optional.Of(match));
+    }
+
+    public Task<Optional<Exercise>> ByNameForUser(string name, UserId ownerUserId, CancellationToken ct = default)
+    {
+        var match = _store.Values.FirstOrDefault(
+            e => e.Name.Value == name && (e.OwnerUserId == null || e.OwnerUserId == ownerUserId));
         return Task.FromResult(Optional.Of(match));
     }
 }

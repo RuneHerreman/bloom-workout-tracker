@@ -1,6 +1,7 @@
 using System.Reflection;
 using Bloom.Domain.Exercises.Enums;
 using Bloom.Domain.LoggedWorkouts;
+using Bloom.Domain.LoggedWorkouts.Enums;
 using Bloom.Domain.LoggedWorkouts.ValueObjects;
 
 namespace UnitTests.Domain.LoggedWorkouts;
@@ -52,6 +53,28 @@ public sealed class LoggedSetTests
     }
 
     [Fact]
+    public void Create_WithoutMarker_ShouldLeaveMarkerNull()
+    {
+        LoggedSet strength = LoggedSet.CreateStrength(0, 10, 80m, WeightUnit.Kg, 2);
+        LoggedSet cardio = LoggedSet.CreateCardio(0, TimeSpan.FromMinutes(20), 5m, DistanceUnit.Km);
+
+        Assert.Null(strength.Marker);
+        Assert.Null(cardio.Marker);
+    }
+
+    [Fact]
+    public void Create_WithMarker_ShouldSetMarker()
+    {
+        LoggedSet warmUp = LoggedSet.CreateStrength(0, 10, 40m, WeightUnit.Kg, null, SetMarker.WarmUp);
+        LoggedSet dropSet = LoggedSet.CreatePlyometric(1, 8, 20m, WeightUnit.Kg, 1, SetMarker.DropSet);
+        LoggedSet cardio = LoggedSet.CreateCardio(0, TimeSpan.FromMinutes(10), 2m, DistanceUnit.Km, SetMarker.WarmUp);
+
+        Assert.Equal(SetMarker.WarmUp, warmUp.Marker);
+        Assert.Equal(SetMarker.DropSet, dropSet.Marker);
+        Assert.Equal(SetMarker.WarmUp, cardio.Marker);
+    }
+
+    [Fact]
     public void CreateCardio_WithNegativeOrder_ShouldThrow()
     {
         Assert.Throws<ArgumentException>(
@@ -73,7 +96,7 @@ public sealed class LoggedSetTests
             BindingFlags.NonPublic | BindingFlags.Static)!;
 
         TargetInvocationException ex = Assert.Throws<TargetInvocationException>(() =>
-            method.Invoke(null, [ExerciseType.Cardio, 0, 1, 1m, WeightUnit.Kg, 1]));
+            method.Invoke(null, [ExerciseType.Cardio, 0, 1, 1m, WeightUnit.Kg, 1, null]));
 
         Assert.IsType<ArgumentOutOfRangeException>(ex.InnerException);
     }

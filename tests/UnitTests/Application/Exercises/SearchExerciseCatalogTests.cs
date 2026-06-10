@@ -1,7 +1,8 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using Bloom.Application.Contracts;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Application.Exercises;
+using UnitTests.Application.Mocks;
 
 namespace UnitTests.Application.Exercises;
 
@@ -33,7 +34,7 @@ public sealed class SearchExerciseCatalogTests
     [Fact]
     public async Task Execute_WithNoFilters_ShouldReturnAll()
     {
-        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(Sample()));
+        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(Sample()), StubCurrentUser.Random());
 
         var result = await useCase.Execute(new SearchExerciseCatalogInput(null, null, null));
 
@@ -43,7 +44,7 @@ public sealed class SearchExerciseCatalogTests
     [Fact]
     public async Task Execute_WithName_ShouldFilter()
     {
-        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(Sample()));
+        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(Sample()), StubCurrentUser.Random());
 
         var result = await useCase.Execute(new SearchExerciseCatalogInput("bench", null, null));
 
@@ -53,7 +54,7 @@ public sealed class SearchExerciseCatalogTests
     [Fact]
     public async Task Execute_WithMuscleGroups_ShouldFilter()
     {
-        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(Sample()));
+        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(Sample()), StubCurrentUser.Random());
 
         var result = await useCase.Execute(new SearchExerciseCatalogInput(null, ["Legs"], null));
 
@@ -64,7 +65,7 @@ public sealed class SearchExerciseCatalogTests
     [Fact]
     public async Task Execute_WithExerciseTypes_ShouldFilter()
     {
-        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(Sample()));
+        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(Sample()), StubCurrentUser.Random());
 
         var result = await useCase.Execute(new SearchExerciseCatalogInput(null, null, ["Strength"]));
 
@@ -75,7 +76,7 @@ public sealed class SearchExerciseCatalogTests
     [Fact]
     public async Task Execute_WithUnknownType_ShouldIgnore()
     {
-        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(Sample()));
+        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(Sample()), StubCurrentUser.Random());
 
         var result = await useCase.Execute(new SearchExerciseCatalogInput(null, null, ["NotARealType"]));
 
@@ -85,11 +86,44 @@ public sealed class SearchExerciseCatalogTests
     [Fact]
     public async Task Execute_WithEmptyTypeList_ShouldBeIgnored()
     {
-        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(Sample()));
+        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(Sample()), StubCurrentUser.Random());
 
         var result = await useCase.Execute(new SearchExerciseCatalogInput(null, null, []));
 
         Assert.Equal(2, result.Exercises.Count);
+    }
+
+    [Fact]
+    public async Task Execute_ShouldIncludeOwnCustomExercises_AndExcludeOthers()
+    {
+        var userId = Guid.NewGuid();
+        var data = Sample();
+        data.Add(new ExerciseData
+        {
+            Id = Guid.NewGuid(),
+            Name = "My Custom Exercise",
+            Description = "Mine.",
+            Type = "Strength",
+            OwnerUserId = userId,
+            TargetMuscles = [new TargetMuscleData("Chest")]
+        });
+        data.Add(new ExerciseData
+        {
+            Id = Guid.NewGuid(),
+            Name = "Someone Elses Exercise",
+            Description = "Not mine.",
+            Type = "Strength",
+            OwnerUserId = Guid.NewGuid(),
+            TargetMuscles = [new TargetMuscleData("Chest")]
+        });
+
+        var useCase = new SearchExerciseCatalog(new MockSearchExerciseCatalogQuery(data), StubCurrentUser.With(userId));
+
+        var result = await useCase.Execute(new SearchExerciseCatalogInput(null, null, null));
+
+        Assert.Equal(3, result.Exercises.Count);
+        Assert.Contains(result.Exercises, e => e.Name == "My Custom Exercise");
+        Assert.DoesNotContain(result.Exercises, e => e.Name == "Someone Elses Exercise");
     }
 }
 
@@ -103,3 +137,5 @@ public sealed class MockSearchExerciseCatalogQuery(IEnumerable<ExerciseData> dat
         return Task.FromResult(filtered);
     }
 }
+
+
