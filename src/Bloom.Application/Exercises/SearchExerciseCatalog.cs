@@ -14,7 +14,8 @@ public sealed record SearchExerciseCatalogInput(
 public sealed record SearchExerciseCatalogOutput(IReadOnlyList<ExerciseData> Exercises);
 
 public class SearchExerciseCatalog(
-    ISearchExerciseCatalogQuery searchExerciseCatalogQuery  
+    ISearchExerciseCatalogQuery searchExerciseCatalogQuery,
+    ICurrentUser currentUser
 ): IUseCase<SearchExerciseCatalogInput, SearchExerciseCatalogOutput>
 {
     public async Task<SearchExerciseCatalogOutput> Execute(SearchExerciseCatalogInput input, CancellationToken ct = default)
@@ -23,10 +24,11 @@ public class SearchExerciseCatalog(
             ExerciseDataFilters.ByProperty(
                 name: input.Name,
                 muscleGroups: MapTargetMuscleGroups(input.TargetMuscleGroups),
-                types: MapExerciseTypes(input.ExerciseTypes)
+                types: MapExerciseTypes(input.ExerciseTypes),
+                userId: currentUser.UserId.Value
             ), ct
         );
-        
+
         return new SearchExerciseCatalogOutput(exercises);
     }
 
