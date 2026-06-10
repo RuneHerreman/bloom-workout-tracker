@@ -5,3 +5,23 @@
 GET {{baseUrl}}
 Authorization: Bearer {{token}}
 Accept: application/json
+
+### Filter logs by name
+GET {{baseUrl}}?name=push
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Filter logs by date range
+GET {{baseUrl}}?from=2026-01-01&to=2026-03-31
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Filter logs by gear used (for stats: which workouts used these shoes)
+GET {{baseUrl}}?gear=Nike Vaporfly
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Combine filters
+GET {{baseUrl}}?name=run&from=2026-01-01&to=2026-06-30&gear=Nike Vaporfly
+Authorization: Bearer {{token}}
+Accept: application/json

@@ -1,0 +1,15 @@
+@baseUrl = http://localhost:8080/api/exercises
+@token = REPLACE_AFTER_LOGIN
+@exerciseId = REPLACE_WITH_CUSTOM_EXERCISE_ID
+
+### Update a custom exercise (full overwrite, must be owned by the authenticated user)
+PUT {{baseUrl}}/{{exerciseId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Weighted Pistol Squat (Dumbbell)",
+  "description": "A unilateral squat performed holding a dumbbell at the chest.",
+  "type": "Strength",
+  "targetMuscles": ["Quadriceps", "Glutes", "Core"]
+}

@@ -1,0 +1,7 @@
+@baseUrl = http://localhost:8080/api/exercises
+@token = REPLACE_AFTER_LOGIN
+@exerciseId = REPLACE_WITH_CUSTOM_EXERCISE_ID
+
+### Delete a custom exercise (must be owned by the authenticated user)
+DELETE {{baseUrl}}/{{exerciseId}}
+Authorization: Bearer {{token}}

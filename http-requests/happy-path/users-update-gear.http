@@ -1,0 +1,11 @@
+@baseUrl = http://localhost:8080/api/users
+@token = REPLACE_AFTER_LOGIN
+
+### Update gear list (full overwrite)
+PUT {{baseUrl}}/me/gear
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "gear": ["Nike Vaporfly", "Canyon Ultimate CF SL", "Garmin Forerunner 965", "Lifting Belt"]
+}

@@ -1,0 +1,14 @@
+@baseUrl = http://localhost:8080/api/exercises
+@token = REPLACE_AFTER_LOGIN
+
+### Create a custom exercise (owned by the authenticated user)
+POST {{baseUrl}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Weighted Pistol Squat",
+  "description": "A unilateral squat performed with added load, targeting the quads and balance.",
+  "type": "Strength",
+  "targetMuscles": ["Quadriceps", "Glutes"]
+}
