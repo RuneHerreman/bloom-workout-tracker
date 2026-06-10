@@ -15,6 +15,8 @@ public record LoggedExercise(
     Guid ExerciseId,
     int Order,
     string? GpxData,
+    string? Note,
+    IReadOnlyList<string> Gear,
     IReadOnlyList<LoggedSet> Sets
 );
 
@@ -27,7 +29,8 @@ public record LoggedSet(
     int? Reps,
     decimal? Weight,
     string? WeightUnit,
-    int? Rir
+    int? Rir,
+    string? Marker
 );
 
 public static class LoggedWorkoutExtensions
@@ -47,6 +50,8 @@ public static class LoggedWorkoutExtensions
             data.ExerciseId,
             data.Order,
             data.GpxData,
+            data.Note,
+            data.Gear,
             data.Sets.Select(s => s.ToResponse()).ToList()
         );
 
@@ -60,6 +65,7 @@ public static class LoggedWorkoutExtensions
             data.Reps,
             data.Weight?.Value,
             data.Weight?.Unit.ToString(),
-            data.Rir
+            data.Rir,
+            data.Marker?.ToString()
         );
 }

@@ -72,6 +72,11 @@ public static class Routes
             .WithDescription("Update the authenticated user's technical points notes.")
             .RequireAuthorization();
 
+        userGroup.MapPut("/me/gear", UpdateUserGearController.Invoke)
+            .WithName(nameof(UpdateUserGearController))
+            .WithDescription("Update the authenticated user's gear list (full overwrite).")
+            .RequireAuthorization();
+
         return userGroup;
     }
 
@@ -88,6 +93,18 @@ public static class Routes
         exerciseGroup.MapGet("", SearchExerciseCatalogController.Invoke)
             .WithName(nameof(SearchExerciseCatalogController))
             .WithDescription("Search for exercises based on specified criteria.");
+
+        exerciseGroup.MapPost("", CreateCustomExerciseController.Invoke)
+            .WithName(nameof(CreateCustomExerciseController))
+            .WithDescription("Create a custom exercise owned by the authenticated user.");
+
+        exerciseGroup.MapPut("/{ExerciseId:guid}", UpdateCustomExerciseController.Invoke)
+            .WithName(nameof(UpdateCustomExerciseController))
+            .WithDescription("Update a custom exercise owned by the authenticated user (full overwrite).");
+
+        exerciseGroup.MapDelete("/{ExerciseId:guid}", DeleteCustomExerciseController.Invoke)
+            .WithName(nameof(DeleteCustomExerciseController))
+            .WithDescription("Delete a custom exercise owned by the authenticated user.");
 
         return exerciseGroup;
     }
@@ -130,7 +147,7 @@ public static class Routes
 
         logGroup.MapGet("", GetUserLoggedWorkoutsController.Invoke)
             .WithName(nameof(GetUserLoggedWorkoutsController))
-            .WithDescription("Get workout logs for the authenticated user.");
+            .WithDescription("Get workout logs for the authenticated user. Optionally filter by name, date range (from/to), and gear used.");
 
         logGroup.MapGet("/{LoggedWorkoutId:guid}", FindLoggedWorkoutByIdController.Invoke)
             .WithName(nameof(FindLoggedWorkoutByIdController))

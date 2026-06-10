@@ -14,7 +14,12 @@ public sealed record LoggedExerciseBody(
     [MinLength(1, ErrorMessage = "At least one set is required")]
     List<LoggedSetBody> Sets,
 
-    string? GpxData = null
+    string? GpxData = null,
+
+    [MaxLength(2000)]
+    string? Note = null,
+
+    List<string>? Gear = null
 );
 
 public sealed record LoggedSetBody(
@@ -43,7 +48,10 @@ public sealed record LoggedSetBody(
     string? WeightUnit,
 
     [Range(0, 10, ErrorMessage = "RIR must be between 0 and 10")]
-    int? Rir
+    int? Rir,
+
+    [RegularExpression("^(?i)(W|WarmUp|D|DropSet)$", ErrorMessage = "Marker must be W, WarmUp, D or DropSet")]
+    string? Marker = null
 );
 
 internal static class LoggedWorkoutBodyExtensions
@@ -53,7 +61,9 @@ internal static class LoggedWorkoutBodyExtensions
             body.ExerciseId,
             body.Order,
             body.Sets.Select(s => s.ToInput()).ToList(),
-            body.GpxData
+            body.GpxData,
+            body.Note,
+            body.Gear
         );
 
     internal static LoggedSetInput ToInput(this LoggedSetBody body) =>
@@ -66,6 +76,7 @@ internal static class LoggedWorkoutBodyExtensions
             body.Reps,
             body.Weight,
             body.WeightUnit,
-            body.Rir
+            body.Rir,
+            body.Marker
         );
 }

@@ -7,6 +7,7 @@ public record Exercise (
      string Name,
      string Description,
      string Type,
+     bool IsCustom,
      IReadOnlyList<string> TargetMuscles
 );
 
@@ -18,6 +19,7 @@ public static class ExerciseExtensions {
             data.Name,
             data.Description,
             data.Type,
+            data.OwnerUserId is not null,
             data.TargetMuscles.Select(mg => mg.Value).ToList()
         );
     }

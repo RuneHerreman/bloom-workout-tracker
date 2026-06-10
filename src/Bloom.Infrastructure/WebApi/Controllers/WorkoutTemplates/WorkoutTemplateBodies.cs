@@ -12,7 +12,12 @@ public sealed record TemplateExerciseBody(
 
     [Required]
     [MinLength(1, ErrorMessage = "At least one set is required")]
-    List<PlannedSetBody> Sets
+    List<PlannedSetBody> Sets,
+
+    [MaxLength(2000)]
+    string? Note = null,
+
+    List<string>? Gear = null
 );
 
 public sealed record PlannedSetBody(
@@ -41,7 +46,9 @@ internal static class WorkoutTemplateBodyExtensions
         new(
             body.ExerciseId,
             body.Order,
-            body.Sets.Select(s => s.ToInput()).ToList()
+            body.Sets.Select(s => s.ToInput()).ToList(),
+            body.Note,
+            body.Gear
         );
 
     internal static PlannedSetInput ToInput(this PlannedSetBody body) =>

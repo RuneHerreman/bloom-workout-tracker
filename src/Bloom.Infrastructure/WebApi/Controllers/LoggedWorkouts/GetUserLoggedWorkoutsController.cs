@@ -8,6 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bloom.Infrastructure.WebApi.Controllers.LoggedWorkouts;
 
 public sealed record GetUserLoggedWorkoutsRequest(
+    [FromQuery] string? Name,
+    [FromQuery] DateTime? From,
+    [FromQuery] DateTime? To,
+    [FromQuery] string? Gear,
     [FromServices] IUseCase<FindUserLoggedWorkoutsInput, FindUserLoggedWorkoutsOutput> UseCase
 );
 
@@ -18,7 +22,12 @@ public static class GetUserLoggedWorkoutsController
         CancellationToken ct
     )
     {
-        var output = await request.UseCase.Execute(new FindUserLoggedWorkoutsInput(), ct);
+        var output = await request.UseCase.Execute(new FindUserLoggedWorkoutsInput(
+            request.Name,
+            request.From,
+            request.To,
+            request.Gear
+        ), ct);
 
         return TypedResults.Ok(
             output.Logs

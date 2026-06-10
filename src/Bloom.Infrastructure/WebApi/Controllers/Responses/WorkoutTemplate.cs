@@ -12,6 +12,8 @@ public record WorkoutTemplate(
 public record TemplateExercise(
     Guid ExerciseId,
     int Order,
+    string? Note,
+    IReadOnlyList<string> Gear,
     IReadOnlyList<PlannedSet> Sets
 );
 
@@ -38,6 +40,8 @@ public static class WorkoutTemplateExtensions
         new(
             data.ExerciseId,
             data.Order,
+            data.Note,
+            data.Gear,
             data.Sets.Select(s => s.ToResponse()).ToList()
         );
 
