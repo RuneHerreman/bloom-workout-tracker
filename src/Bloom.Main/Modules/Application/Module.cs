@@ -24,8 +24,32 @@ public static class ApplicationModule
         services.AddScoped<IUseCase<LoginUserInput, LoginUserOutput>, LoginUser>();
         services.AddScoped<IUseCase<UpdateUserInfoInput, UpdateUserInfoOutput>, UpdateUserInfo>();
         services.AddScoped<IUseCase<UpdateTechnicalPointsInput, UpdateTechnicalPointsOutput>, UpdateTechnicalPoints>();
+        services.AddScoped<IUseCase<UpdateUserGearInput, UpdateUserGearOutput>, UpdateUserGear>();
         services.AddScoped<IUseCase<DeleteUserInput>, DeleteUser>();
         services.AddScoped<IUseCase<ChangeUserPasswordInput>, ChangeUserPassword>();
+        //      EXERCISES
+        services.AddSingleton<ExerciseCatalogCacheVersion>();
+        services.AddScoped<CreateCustomExercise>();
+        services.AddScoped<IUseCase<CreateCustomExerciseInput, CreateCustomExerciseOutput>>(sp =>
+            new CacheInvalidatingCreateCustomExerciseUseCase(
+                sp.GetRequiredService<CreateCustomExercise>(),
+                sp.GetRequiredService<ExerciseCatalogCacheVersion>(),
+                sp.GetRequiredService<ICurrentUser>()
+            ));
+        services.AddScoped<UpdateCustomExercise>();
+        services.AddScoped<IUseCase<UpdateCustomExerciseInput, UpdateCustomExerciseOutput>>(sp =>
+            new CacheInvalidatingUpdateCustomExerciseUseCase(
+                sp.GetRequiredService<UpdateCustomExercise>(),
+                sp.GetRequiredService<ExerciseCatalogCacheVersion>(),
+                sp.GetRequiredService<ICurrentUser>()
+            ));
+        services.AddScoped<DeleteCustomExercise>();
+        services.AddScoped<IUseCase<DeleteCustomExerciseInput>>(sp =>
+            new CacheInvalidatingDeleteCustomExerciseUseCase(
+                sp.GetRequiredService<DeleteCustomExercise>(),
+                sp.GetRequiredService<ExerciseCatalogCacheVersion>(),
+                sp.GetRequiredService<ICurrentUser>()
+            ));
         //      TEMPLATES
         services.AddScoped<IUseCase<CreateWorkoutTemplateInput, CreateWorkoutTemplateOutput>, CreateWorkoutTemplate>();
         services.AddScoped<IUseCase<UpdateWorkoutTemplateInput, UpdateWorkoutTemplateOutput>, UpdateWorkoutTemplate>();
@@ -48,7 +72,9 @@ public static class ApplicationModule
         services.AddScoped<IUseCase<SearchExerciseCatalogInput, SearchExerciseCatalogOutput>>(sp =>
             new CachedSearchExerciseCatalogUseCase(
                 sp.GetRequiredService<SearchExerciseCatalog>(),
-                sp.GetRequiredService<IMemoryCache>()
+                sp.GetRequiredService<IMemoryCache>(),
+                sp.GetRequiredService<ICurrentUser>(),
+                sp.GetRequiredService<ExerciseCatalogCacheVersion>()
             ));
         //      TEMPLATES
         services.AddScoped<IUseCase<FindUserWorkoutTemplatesInput, FindUserWorkoutTemplatesOutput>, FindUserWorkoutTemplates>();
