@@ -18,6 +18,7 @@ public class User : AggregateRoot<UserId>
     public int ActiveDays { get; private set; }
     public DateOnly BirthDate { get; private set; }
     public string? TechnicalPoints { get; private set; }
+    public List<string> Gear { get; private set; } = [];
 
     private User() { }
 
@@ -77,6 +78,13 @@ public class User : AggregateRoot<UserId>
     public void UpdateTechnicalPoints(string? technicalPoints)
     {
         TechnicalPoints = technicalPoints;
+    }
+
+    public void UpdateGear(List<string> gear)
+    {
+        Asserts.EnsureTrue(gear.All(g => !string.IsNullOrWhiteSpace(g)));
+        Gear = gear;
+        RaiseDomainEvent(new UserUpdated(Id));
     }
 
     public void ChangePassword(string newHashedPassword)

@@ -14,6 +14,8 @@ public class LoggedExercise : Entity<LoggedExerciseId>
     public ExerciseId ExerciseId { get; private set; }
     public int Order { get; private set; }
     public string? GpxData { get; private set; }
+    public string? Note { get; private set; }
+    public List<string> Gear { get; private set; } = [];
 
     public IReadOnlyList<LoggedSet> Sets => _sets.AsReadOnly();
 
@@ -31,21 +33,33 @@ public class LoggedExercise : Entity<LoggedExerciseId>
         ExerciseId exerciseId,
         int order,
         string? gpxData,
+        string? note,
+        List<string> gear,
         List<LoggedSet> sets) : base(id)
     {
         ExerciseId = exerciseId;
         Order = order;
         GpxData = gpxData;
+        Note = note;
+        Gear = gear;
         _sets = sets;
     }
 
-    public static LoggedExercise Create(ExerciseId exerciseId, int order, List<LoggedSet> sets, string? gpxData = null)
+    public static LoggedExercise Create(
+        ExerciseId exerciseId,
+        int order,
+        List<LoggedSet> sets,
+        string? gpxData = null,
+        string? note = null,
+        List<string>? gear = null)
     {
         var loggedExercise = new LoggedExercise(
             EntityId.New<LoggedExerciseId>(),
             exerciseId,
             order,
             gpxData,
+            note,
+            gear ?? [],
             sets);
 
         loggedExercise.ValidateState();
