@@ -22,5 +22,6 @@ public class UserDataConfiguration: IEntityTypeConfiguration<UserData>
         builder.Property(u => u.ActiveDays).IsRequired();
         builder.Property(u => u.BirthDate).IsRequired();
         builder.Property(u => u.TechnicalPoints);
+        builder.Property(u => u.Gear).HasColumnType("jsonb");
     }
 }

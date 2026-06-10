@@ -16,6 +16,7 @@ public class ExerciseDataConfiguration: IEntityTypeConfiguration<ExerciseData>
         builder.Property(e => e.Name).IsRequired();
         builder.Property(e => e.Description).IsRequired();
         builder.Property(e => e.Type).IsRequired().HasConversion<string>();
+        builder.Property(e => e.OwnerUserId).IsRequired(false);
         builder.OwnsMany(e => e.TargetMuscles, tmBuilder =>
         {
             tmBuilder.ToJson();

@@ -26,12 +26,15 @@ public class LoggedWorkoutDataConfiguration : IEntityTypeConfiguration<LoggedWor
             exercises.Property(e => e.ExerciseId).IsRequired();
             exercises.Property(e => e.Order).IsRequired();
             exercises.Property(e => e.GpxData).IsRequired(false);
+            exercises.Property(e => e.Note).IsRequired(false);
+            exercises.Property(e => e.Gear);
 
             exercises.OwnsMany(e => e.Sets, sets =>
             {
                 sets.Property(s => s.Id).IsRequired();
                 sets.Property(s => s.Type).HasConversion<string>().IsRequired();
                 sets.Property(s => s.Order).IsRequired();
+                sets.Property(s => s.Marker).HasConversion<string>().IsRequired(false);
 
                 sets.Property(s => s.Duration).IsRequired(false);
                 sets.Property(s => s.Reps).IsRequired(false);

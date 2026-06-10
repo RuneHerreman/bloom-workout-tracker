@@ -28,6 +28,8 @@ public class WorkoutTemplateConfiguration: IEntityTypeConfiguration<WorkoutTempl
             exercises.Property(x => x.Id).IsRequired();
             exercises.Property(x => x.ExerciseId).IsRequired();
             exercises.Property(x => x.Order).IsRequired();
+            exercises.Property(x => x.Note).IsRequired(false);
+            exercises.Property(x => x.Gear);
 
             exercises.OwnsMany(x => x.Sets, sets =>
             {

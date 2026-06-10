@@ -1,4 +1,5 @@
 using Bloom.Domain.Exercises;
+using Bloom.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,6 +17,15 @@ public class ExerciseConfiguration : IEntityTypeConfiguration<Exercise>
         builder.Property(e => e.Name).IsRequired();
         builder.Property(e => e.Description).IsRequired();
         builder.Property(e => e.Type).IsRequired().HasConversion<string>();
+        builder.Property(e => e.OwnerUserId).IsRequired(false);
+        builder.Ignore(e => e.IsCustom);
+
+        builder.HasIndex(e => e.OwnerUserId);
+
+        builder.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(e => e.OwnerUserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.OwnsMany(e => e.TargetMuscles, tmBuilder =>
         {
