@@ -12,4 +12,5 @@ public sealed record UserData
     public int ActiveDays { get; init; }
     public DateOnly BirthDate { get; init; }
     public string? TechnicalPoints { get; init; }
+    public List<string> Gear { get; init; } = [];
 }

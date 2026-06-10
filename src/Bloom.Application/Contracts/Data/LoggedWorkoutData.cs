@@ -1,4 +1,5 @@
 using Bloom.Domain.Exercises.Enums;
+using Bloom.Domain.LoggedWorkouts.Enums;
 using Bloom.Domain.LoggedWorkouts.ValueObjects;
 
 namespace Bloom.Application.Contracts;
@@ -19,6 +20,8 @@ public sealed record LoggedExerciseData
     public Guid ExerciseId { get; init; }
     public int Order { get; init; }
     public string? GpxData { get; init; }
+    public string? Note { get; init; }
+    public List<string> Gear { get; init; } = [];
     public List<LoggedSetData> Sets { get; init; } = [];
 }
 
@@ -27,6 +30,7 @@ public sealed record LoggedSetData
     public Guid Id { get; init; }
     public ExerciseType Type { get; init; }
     public int Order { get; init; }
+    public SetMarker? Marker { get; init; }
     public TimeSpan? Duration { get; init; }
     public DistanceData? Distance { get; init; }
     public int? Reps { get; init; }

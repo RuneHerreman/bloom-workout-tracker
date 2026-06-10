@@ -16,6 +16,8 @@ public sealed record TemplateExerciseData
     public Guid Id { get; init; }
     public Guid ExerciseId { get; init; }
     public int Order { get; init; }
+    public string? Note { get; init; }
+    public List<string> Gear { get; init; } = [];
     public List<PlannedSetData> Sets { get; init; } = [];
 }
 

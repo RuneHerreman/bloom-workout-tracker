@@ -9,7 +9,8 @@ public static class ExerciseDataFilters
     public static Expression<Func<ExerciseData, bool>> ByProperty(
         string? name,
         IReadOnlyList<TargetMuscleData>? muscleGroups,
-        IReadOnlyList<ExerciseType>? types)
+        IReadOnlyList<ExerciseType>? types,
+        Guid userId)
     {
         var cleanName = string.IsNullOrWhiteSpace(name) ? null : name.ToLower();
         var cleanMuscleGroups = muscleGroups is { Count: > 0 }
@@ -19,20 +20,20 @@ public static class ExerciseDataFilters
             ? types.Select(t => t.ToString()).ToList()
             : null;
 
-        if (cleanName == null && cleanMuscleGroups == null && cleanTypeStrings == null)
-            return exercise => true;
-
         return exercise =>
+            (exercise.OwnerUserId == null || exercise.OwnerUserId == userId) &&
             (cleanName == null || exercise.Name.ToLower().Contains(cleanName)) &&
             (cleanMuscleGroups == null || exercise.TargetMuscles.Any(mg => cleanMuscleGroups.Contains(mg.Value.ToLower()))) &&
             (cleanTypeStrings == null || cleanTypeStrings.Contains(exercise.Type));
     }
 
-    public static Expression<Func<ExerciseData, bool>> ById(ExerciseId inputId)
+    public static Expression<Func<ExerciseData, bool>> ById(ExerciseId inputId, Guid userId)
     {
         if (inputId.Value == Guid.Empty)
             return exercise => false;
 
-        return exercise => exercise.Id == inputId.Value;
+        return exercise =>
+            exercise.Id == inputId.Value &&
+            (exercise.OwnerUserId == null || exercise.OwnerUserId == userId);
     }
 }

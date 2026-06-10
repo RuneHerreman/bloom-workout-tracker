@@ -9,7 +9,9 @@ namespace Bloom.Application.WorkoutTemplates;
 public sealed record TemplateExerciseInput(
     Guid ExerciseId,
     int Order,
-    List<PlannedSetInput> Sets
+    List<PlannedSetInput> Sets,
+    string? Note = null,
+    List<string>? Gear = null
 );
 
 public sealed record PlannedSetInput(
@@ -26,7 +28,13 @@ internal static class TemplateExerciseInputExtensions
     internal static TemplateExercise ToTemplateExercise(this TemplateExerciseInput input)
     {
         var sets = input.Sets.Select(s => s.ToPlannedSet()).ToList();
-        return TemplateExercise.Create(EntityId.New<ExerciseId>(input.ExerciseId), input.Order, sets);
+        return TemplateExercise.Create(
+            EntityId.New<ExerciseId>(input.ExerciseId),
+            input.Order,
+            sets,
+            note: input.Note,
+            gear: input.Gear
+        );
     }
 
     internal static PlannedSet ToPlannedSet(this PlannedSetInput input)

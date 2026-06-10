@@ -8,6 +8,7 @@ public sealed record ExerciseData
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
     public string Type { get; init; } = string.Empty;
+    public Guid? OwnerUserId { get; init; }
     public IReadOnlyList<TargetMuscleData> TargetMuscles { get; init; } = new List<TargetMuscleData>();
 }
 

@@ -47,7 +47,8 @@ public class GetLoggedExercisePrs(
             ExerciseDataFilters.ByProperty(
                 name: input.Name,
                 muscleGroups: MapMuscleGroups(input.TargetMuscleGroups),
-                types: MapExerciseTypes(input.ExerciseTypes)
+                types: MapExerciseTypes(input.ExerciseTypes),
+                userId: currentUser.UserId.Value
             ), ct
         );
 
