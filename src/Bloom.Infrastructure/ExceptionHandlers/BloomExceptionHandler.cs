@@ -15,6 +15,7 @@ public sealed class BloomExceptionHandler : IExceptionHandler
         var (status, detail) = exception switch
         {
             UserAlreadyExistsException e => (StatusCodes.Status409Conflict, e.Message),
+            ExerciseAlreadyExistsException e => (StatusCodes.Status409Conflict, e.Message),
             InvalidCredentialsException e => (StatusCodes.Status401Unauthorized, e.Message),
             InvalidWorkoutTemplateException e => (StatusCodes.Status400BadRequest, e.Message),
 
@@ -22,6 +23,7 @@ public sealed class BloomExceptionHandler : IExceptionHandler
             UserNotFoundException
                 or UserAccessDeniedException
                 or ExerciseNotFoundException
+                or ExerciseAccessDeniedException
                 or LoggedWorkoutNotFoundException
                 or LoggedWorkoutAccessDeniedException
                 or WorkoutTemplateNotFoundException

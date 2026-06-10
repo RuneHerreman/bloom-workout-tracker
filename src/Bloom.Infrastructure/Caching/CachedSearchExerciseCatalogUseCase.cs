@@ -6,14 +6,19 @@ namespace Bloom.Infrastructure.Caching;
 
 public sealed class CachedSearchExerciseCatalogUseCase(
     IUseCase<SearchExerciseCatalogInput, SearchExerciseCatalogOutput> inner,
-    IMemoryCache cache
+    IMemoryCache cache,
+    ICurrentUser currentUser,
+    ExerciseCatalogCacheVersion cacheVersion
 ) : IUseCase<SearchExerciseCatalogInput, SearchExerciseCatalogOutput>
 {
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
 
     public Task<SearchExerciseCatalogOutput> Execute(SearchExerciseCatalogInput input, CancellationToken ct = default)
     {
-        var cacheKey = BuildCacheKey(input);
+        // Results are scoped per user (custom exercises), so the key must be too.
+        // The version token invalidates a user's entries when their custom exercises change.
+        var userId = currentUser.UserId.Value;
+        var cacheKey = $"{userId}:v{cacheVersion.Get(userId)}:{BuildCacheKey(input)}";
         return cache.GetOrCreateAsync(cacheKey, entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = CacheDuration;
