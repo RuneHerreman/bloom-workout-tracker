@@ -6,6 +6,7 @@ using Bloom.Infrastructure.Persistence;
 using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 using Bloom.Infrastructure.WebApi;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -29,6 +30,17 @@ public static class Module
 
         services.AddHttpContextAccessor();
         services.AddControllers();
+
+        // The app runs behind nginx (and Tailscale serve in production), which terminate
+        // TLS and proxy plain HTTP. Honor their X-Forwarded-* headers so Request.IsHttps
+        // and the client IP reflect the original request.
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.ForwardLimit = null;
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
 
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
             ?? throw new InvalidOperationException($"Missing '{JwtOptions.SectionName}' configuration section.");
@@ -153,6 +165,8 @@ public static class Module
                 };
             });
         }
+
+        app.UseForwardedHeaders();
 
         app.Use(async (ctx, next) =>
         {
