@@ -2,6 +2,8 @@ using Bloom.Shared.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Bloom.Infrastructure.ExceptionHandlers;
 
@@ -15,6 +17,11 @@ public sealed class BloomExceptionHandler : IExceptionHandler
         var (status, detail) = exception switch
         {
             UserAlreadyExistsException e => (StatusCodes.Status409Conflict, e.Message),
+
+            // Unique constraint violation (e.g. two concurrent registrations racing past the exists-check)
+            DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } }
+                => (StatusCodes.Status409Conflict, "Resource already exists."),
+
             ExerciseAlreadyExistsException e => (StatusCodes.Status409Conflict, e.Message),
             InvalidCredentialsException e => (StatusCodes.Status401Unauthorized, e.Message),
             InvalidWorkoutTemplateException e => (StatusCodes.Status400BadRequest, e.Message),

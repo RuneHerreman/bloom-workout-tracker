@@ -30,7 +30,12 @@ public class LoginUser(
         var maybeUser = await userRepo.ByEmail(email);
 
         if (!maybeUser.HasValue)
+        {
+            // Burn the same bcrypt cost as a real verify so response timing
+            // doesn't reveal whether the email exists.
+            passwordHasher.HashPassword(input.Password);
             throw new InvalidCredentialsException("Invalid email or password.");
+        }
 
         var user = maybeUser.Value;
 

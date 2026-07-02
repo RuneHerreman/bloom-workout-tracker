@@ -35,7 +35,7 @@ public class RegisterUser(
         var email = Email.Create(input.Email);
 
         if (await userRepo.ExistsByEmail(email))
-            throw new UserAlreadyExistsException($"User already exists | Email: {email.Value}");
+            throw new UserAlreadyExistsException("An account with this email already exists.");
 
         var hashedPassword = passwordHasher.HashPassword(input.Password);
 
