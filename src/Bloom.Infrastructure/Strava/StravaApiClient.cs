@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Bloom.Application.Contracts.Ports;
+using Bloom.Shared.Exceptions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -125,6 +126,9 @@ public class StravaApiClient(
         return new StravaActivityStreamsResult(latLng, raw.Altitude?.Data, times);
     }
 
+    // Longest we're willing to stall the calling HTTP request on a Strava 429.
+    private static readonly TimeSpan MaxRetryDelay = TimeSpan.FromSeconds(10);
+
     private async Task<HttpResponseMessage> SendWithRateLimitRetry(Func<HttpRequestMessage> requestFactory, CancellationToken ct)
     {
         for (var attempt = 1; attempt <= 3; attempt++)
@@ -135,12 +139,16 @@ public class StravaApiClient(
             if (resp.StatusCode != HttpStatusCode.TooManyRequests)
                 return resp;
 
-            var delay = resp.Headers.RetryAfter?.Delta ?? TimeSpan.FromSeconds(60);
+            var delay = resp.Headers.RetryAfter?.Delta ?? MaxRetryDelay;
+            if (delay > MaxRetryDelay || attempt == 3)
+                throw new StravaRateLimitedException(
+                    $"Strava rate limit hit; retry suggested after {delay.TotalSeconds}s.");
+
             logger.LogWarning("Strava rate limit hit. Waiting {Delay}s before retry (attempt {Attempt}/3)", delay.TotalSeconds, attempt);
             await Task.Delay(delay, ct);
         }
 
-        throw new HttpRequestException("Strava rate limit exceeded after 3 retries");
+        throw new StravaRateLimitedException("Strava rate limit exceeded after retries.");
     }
 
     private static HttpRequestMessage AuthorizedGet(string accessToken, string url) =>

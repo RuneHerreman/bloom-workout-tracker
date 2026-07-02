@@ -37,6 +37,8 @@ public sealed class BloomExceptionHandler : IExceptionHandler
                 or WorkoutTemplateAccessDeniedException
                 or StravaConnectionNotFoundException => (StatusCodes.Status404NotFound, "Resource not found."),
 
+            StravaRateLimitedException => (StatusCodes.Status429TooManyRequests, "Strava rate limit reached; try again later."),
+
             BloomGeneralException e => (StatusCodes.Status400BadRequest, e.Message),
 
             _ => (0, null)

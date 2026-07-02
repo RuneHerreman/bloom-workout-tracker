@@ -14,6 +14,10 @@ public class SyncStravaActivities(
     ILogger<SyncStravaActivities> logger
 ) : IUseCase<SyncStravaActivitiesInput, SyncStravaActivitiesOutput>
 {
+    // The frontend triggers a sync on every app load; skip when we synced recently
+    // so those loads stay cheap and we don't burn Strava's API quota.
+    private static readonly TimeSpan SyncCooldown = TimeSpan.FromMinutes(5);
+
     public async Task<SyncStravaActivitiesOutput> Execute(SyncStravaActivitiesInput input, CancellationToken ct = default)
     {
         var connRepo = uow.Repo<IStravaConnectionRepository>();
@@ -21,6 +25,12 @@ public class SyncStravaActivities(
         if (!connection.HasValue) return new SyncStravaActivitiesOutput(0);
 
         var conn = connection.Value;
+
+        if (conn.LastSyncedAt.HasValue && DateTime.UtcNow - conn.LastSyncedAt.Value < SyncCooldown)
+        {
+            logger.LogDebug("Skipping Strava sync for user {UserId}; last sync was {LastSyncedAt}", currentUser.UserId, conn.LastSyncedAt);
+            return new SyncStravaActivitiesOutput(0);
+        }
         var token = await importService.EnsureValidToken(conn, connRepo, uow, ct);
 
         var after = conn.LastSyncedAt;
