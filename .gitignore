@@ -64,3 +64,6 @@ nunit-*.xml
 
 # Stray root lockfile (frontend has its own)
 /package-lock.json
+
+# Coverage output
+coverage.opencover.xml
