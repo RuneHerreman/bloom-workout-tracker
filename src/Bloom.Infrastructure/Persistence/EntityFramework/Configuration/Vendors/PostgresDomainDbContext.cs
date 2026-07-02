@@ -1,4 +1,5 @@
 ﻿using Bloom.Infrastructure.Persistence.EntityFramework.Interceptors;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +9,7 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Configuration.Vendors
 public sealed class PostgresDomainDbContext(
     IServiceProvider serviceProvider,
     IConfiguration configuration
-) : DomainDbContext
+) : DomainDbContext(serviceProvider.GetService<IDataProtectionProvider>())
 {
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

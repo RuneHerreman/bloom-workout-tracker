@@ -5,6 +5,10 @@ services:
       - "8080:5000"
     env_file:
       - .local.env
+    environment:
+      - DataProtection__KeysPath=/keys
+    volumes:
+      - local-run-dataprotection-keys:/keys
     depends_on:
       bloom-db:
         condition: service_healthy
@@ -69,6 +73,7 @@ services:
 
 volumes:
   local-run-postgres-data:
+  local-run-dataprotection-keys:
 
 networks:
   bloom-network:

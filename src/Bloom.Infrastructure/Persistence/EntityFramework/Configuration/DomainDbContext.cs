@@ -6,11 +6,12 @@ using Bloom.Domain.Users;
 using Bloom.Domain.WorkoutTemplates;
 using Bloom.Infrastructure.Persistence.EntityFramework.Configuration.Domain;
 using Howestprime.Movies.Infrastructure.Persistence.EntityFramework.Configuration.Converters;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 
-public abstract class DomainDbContext : DbContext
+public abstract class DomainDbContext(IDataProtectionProvider? dataProtectionProvider = null) : DbContext
 {
     private readonly Queue<IDomainEvent> _queuedDomainEvents = new();
     public DbSet<Exercise> Exercises { get; set; }
@@ -34,7 +35,8 @@ public abstract class DomainDbContext : DbContext
             .ApplyConfiguration(new LoggedWorkoutConfiguration())
             .ApplyConfiguration(new WorkoutTemplateConfiguration())
             .ApplyConfiguration(new UserConfiguration())
-            .ApplyConfiguration(new StravaConnectionConfiguration());
+            .ApplyConfiguration(new StravaConnectionConfiguration(
+                dataProtectionProvider?.CreateProtector("Strava.Tokens")));
         
         base.OnModelCreating(modelBuilder);
     }

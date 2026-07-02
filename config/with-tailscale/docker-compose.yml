@@ -27,6 +27,10 @@ services:
     restart: unless-stopped
     env_file:
       - ./.tailscale.env
+    environment:
+      - DataProtection__KeysPath=/keys
+    volumes:
+      - tailscale-dataprotection-keys:/keys
     depends_on:
       bloom-db:
         condition: service_healthy
@@ -93,6 +97,7 @@ services:
 volumes:
   tailscale-postgres-data:
   tailscale-data:
+  tailscale-dataprotection-keys:
 
 networks:
   bloom-network:

@@ -6,6 +6,7 @@ using Bloom.Infrastructure.Persistence;
 using Bloom.Infrastructure.Persistence.EntityFramework.Configuration;
 using Bloom.Infrastructure.WebApi;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
@@ -30,6 +31,13 @@ public static class Module
 
         services.AddHttpContextAccessor();
         services.AddControllers();
+
+        // Persist DataProtection keys so encrypted-at-rest data (Strava tokens) and
+        // in-flight OAuth state survive container restarts.
+        var dataProtection = services.AddDataProtection().SetApplicationName("bloom");
+        var keysPath = configuration["DataProtection:KeysPath"];
+        if (!string.IsNullOrWhiteSpace(keysPath))
+            dataProtection.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
 
         // The app runs behind nginx (and Tailscale serve in production), which terminate
         // TLS and proxy plain HTTP. Honor their X-Forwarded-* headers so Request.IsHttps
