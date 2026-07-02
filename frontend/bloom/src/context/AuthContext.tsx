@@ -1,8 +1,6 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import type { ReactNode } from "react";
 import { getMe, logout as logoutApi } from "../features/auth/api.ts";
-import { getLogs, getVolume } from "../features/logbook/api.ts";
-import { searchExercises } from "../features/exercises/api.ts";
 import { syncStrava } from "../features/strava/api.ts";
 
 interface AuthContextType {
@@ -37,9 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 await getMe();
                 if (isMounted) {
                     setIsAuthenticated(true);
-                    getLogs();
-                    getVolume();
-                    searchExercises();
+                    // Fire-and-forget: pull in any new Strava activities.
+                    // The backend throttles repeat syncs, so this stays cheap.
                     syncStrava().catch(() => {});
                 }
             } catch {
