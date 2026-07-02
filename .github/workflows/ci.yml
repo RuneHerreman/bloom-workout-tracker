@@ -91,7 +91,7 @@ jobs:
         run: dotnet restore
 
       - name: Run migrations
-        run: dotnet ef database update --project src/Bloom.Infrastructure --startup-project src/Bloom.Main
+        run: dotnet ef database update --project src/Bloom.Infrastructure --startup-project src/Bloom.Main --context PostgresDomainDbContext
         env:
           Database__Provider: PostgreSQL
           Database__ConnectionString: "Host=localhost;Port=5432;Database=bloom_test;Username=bloom_ci;Password=bloom_ci_pass"
