@@ -84,8 +84,11 @@ public static class EFCoreServices
     {
         using var scope = app.Services.CreateScope();
         DomainDbSeeder seeder = scope.ServiceProvider.GetRequiredService<DomainDbSeeder>();
-        
-        await seeder.Seed();
+
+        await seeder.SeedProductionData();
+
+        if (app.Environment.IsDevelopment())
+            await seeder.SeedDevelopmentData();
 
         return app;
     }

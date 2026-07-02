@@ -20,9 +20,15 @@ public class DomainDbSeeder(DomainDbContext context, ILogger<DomainDbSeeder> log
 {
     private static readonly UserId SeededUserId = EntityId.New<UserId>(Guid.Parse("019d059e-d220-71db-8a1a-ec7569490000"));
 
-    public async Task Seed()
+    /// <summary>Seeds data required in every environment: the exercise catalog.</summary>
+    public async Task SeedProductionData()
     {
         await SeedExercises();
+    }
+
+    /// <summary>Seeds development-only test data: users, templates and logs.</summary>
+    public async Task SeedDevelopmentData()
+    {
         await SeedUsers();
         await SeedTemplates();
         await SeedLogs();
