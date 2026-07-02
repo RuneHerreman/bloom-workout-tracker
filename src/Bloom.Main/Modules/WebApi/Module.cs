@@ -87,14 +87,19 @@ public static class Module
 
         services.AddRateLimiter(options =>
         {
-            options.AddSlidingWindowLimiter("auth", policy =>
-            {
-                policy.PermitLimit = 10;
-                policy.Window = TimeSpan.FromMinutes(1);
-                policy.SegmentsPerWindow = 6;
-                policy.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                policy.QueueLimit = 0;
-            });
+            // Partition per client IP (resolved via forwarded headers) so one client
+            // hammering login can't lock everyone else out.
+            options.AddPolicy("auth", context =>
+                RateLimitPartition.GetSlidingWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new SlidingWindowRateLimiterOptions
+                    {
+                        PermitLimit = 10,
+                        Window = TimeSpan.FromMinutes(1),
+                        SegmentsPerWindow = 6,
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0
+                    }));
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
         });
 
