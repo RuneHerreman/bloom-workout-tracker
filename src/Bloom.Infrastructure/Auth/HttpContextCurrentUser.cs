@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Domain.Shared;
 using Bloom.Domain.Users;
+using Bloom.Shared.Exceptions;
 using Microsoft.AspNetCore.Http;
 
 namespace Bloom.Infrastructure.Auth;
@@ -14,14 +15,14 @@ public sealed class HttpContextCurrentUser(IHttpContextAccessor httpContextAcces
         get
         {
             var principal = httpContextAccessor.HttpContext?.User
-                ?? throw new InvalidOperationException("No HTTP context available; request is not authenticated.");
+                ?? throw new UnauthenticatedException("No HTTP context available; request is not authenticated.");
 
             var sub = principal.FindFirstValue(JwtRegisteredClaimNames.Sub)
                 ?? principal.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? throw new InvalidOperationException("Authenticated principal has no subject claim.");
+                ?? throw new UnauthenticatedException("Authenticated principal has no subject claim.");
 
             if (!Guid.TryParse(sub, out var id))
-                throw new InvalidOperationException($"Subject claim '{sub}' is not a valid Guid.");
+                throw new UnauthenticatedException("Subject claim is not a valid user id.");
 
             return EntityId.New<UserId>(id);
         }

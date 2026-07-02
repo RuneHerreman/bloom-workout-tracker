@@ -24,6 +24,7 @@ public sealed class BloomExceptionHandler : IExceptionHandler
 
             ExerciseAlreadyExistsException e => (StatusCodes.Status409Conflict, e.Message),
             InvalidCredentialsException e => (StatusCodes.Status401Unauthorized, e.Message),
+            UnauthenticatedException => (StatusCodes.Status401Unauthorized, "Not authenticated."),
             InvalidWorkoutTemplateException e => (StatusCodes.Status400BadRequest, e.Message),
 
             // Unify not-found and access-denied → same 404 to prevent resource enumeration
