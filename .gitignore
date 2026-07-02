@@ -59,3 +59,8 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+# Per-user IDE settings
+*.DotSettings.user
+
+# Stray root lockfile (frontend has its own)
+/package-lock.json
