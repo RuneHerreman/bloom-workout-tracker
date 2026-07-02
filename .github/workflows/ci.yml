@@ -87,6 +87,9 @@ jobs:
       - name: Install EF tools
         run: dotnet tool install --global dotnet-ef
 
+      - name: Restore dependencies
+        run: dotnet restore
+
       - name: Run migrations
         run: dotnet ef database update --project src/Bloom.Infrastructure --startup-project src/Bloom.Main
         env:
