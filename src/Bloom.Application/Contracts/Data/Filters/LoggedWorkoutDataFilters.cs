@@ -23,6 +23,10 @@ public static class LoggedWorkoutDataFilters
             (cleanGear == null || log.LoggedExercises.Any(e => e.Gear.Contains(cleanGear)));
     }
 
+    /// <summary>All users' logs strictly before <paramref name="end"/> (used for cross-user aggregates).</summary>
+    public static Expression<Func<LoggedWorkoutData, bool>> LoggedBefore(DateTime end) =>
+        log => log.LoggedAt < end;
+
     public static Expression<Func<LoggedWorkoutData, bool>> ById(LoggedWorkoutId inputId)
     {
         if (inputId.Value == Guid.Empty)

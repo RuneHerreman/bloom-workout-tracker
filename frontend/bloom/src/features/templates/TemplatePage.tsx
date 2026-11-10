@@ -4,6 +4,7 @@ import "../../assets/css/templates.css";
 import { getTemplates, getTemplate, createTemplate, deleteTemplate } from "./api.ts";
 import type { WorkoutTemplate, TemplateExercise } from "./api.ts";
 import { searchExercises } from "../exercises/api.ts";
+import { getMe } from "../auth/api.ts";
 import type { Exercise } from "../exercises/api.ts";
 import TemplateSideBar from "./components/TemplateSideBar.tsx";
 import TemplateDetail from "./components/TemplateDetail.tsx";
@@ -34,6 +35,7 @@ const TemplatePage = () => {
     const [creating, setCreating] = useState(false);
     const [pendingExerciseId, setPendingExerciseId] = useState<string | null>(null);
     const [newlyCreatedId, setNewlyCreatedId] = useState<string | null>(null);
+    const [userGear, setUserGear] = useState<string[]>([]);
 
     useEffect(() => {
         getTemplates().then(tpls => {
@@ -43,6 +45,7 @@ const TemplatePage = () => {
         searchExercises().then(exs => {
             setExercises(Object.fromEntries(exs.map(e => [e.id, e])));
         });
+        getMe().then(u => setUserGear(u.gear ?? [])).catch(() => null);
     }, []);
 
     const selectedTemplate = useMemo(() => templates.find(t => t.id === selectedId) ?? null, [templates, selectedId]);
@@ -169,6 +172,7 @@ const TemplatePage = () => {
                             setPendingExerciseId(e.id);
                             setAddExerciseOpen(false);
                         }}
+                        onSaved={e => setExercises(prev => ({ ...prev, [e.id]: e }))}
                     />
                 </Overlay>
             )}
@@ -183,7 +187,7 @@ const TemplatePage = () => {
                     <button className="panel-back-btn" onClick={handleBack}>
                         <ChevronLeft size={16} /> Templates
                     </button>
-                    {selectedTemplate ? (<> <TemplateDetail key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} pendingExerciseId={pendingExerciseId} onExerciseAdded={() => setPendingExerciseId(null)} onDirtyChange={handleDirtyChange} autoFocusTitle={selectedTemplate.id === newlyCreatedId} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)
+                    {selectedTemplate ? (<> <TemplateDetail key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} pendingExerciseId={pendingExerciseId} onExerciseAdded={() => setPendingExerciseId(null)} onDirtyChange={handleDirtyChange} userGear={userGear} autoFocusTitle={selectedTemplate.id === newlyCreatedId} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)
                         : (
                             <div className="panel-empty">
                                 <p>Select a template to see details</p>

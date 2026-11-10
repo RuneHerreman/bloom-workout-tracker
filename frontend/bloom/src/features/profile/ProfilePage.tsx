@@ -7,6 +7,9 @@ import { useShortcut } from "../../hooks/useShortcut.ts";
 import Button from "../../components/general/ButtonComponent.tsx";
 import { getStravaStatus, getStravaAuthUrl, disconnectStrava, importStravaHistory } from "../strava/api.ts";
 import type { StravaStatus } from "../strava/api.ts";
+import GearSection from "./GearSection.tsx";
+import ExportOverlay from "../export/ExportOverlay.tsx";
+import Skeleton from "../../components/general/Skeleton.tsx";
 import "../../assets/css/profile.css";
 
 function ProfilePage() {
@@ -42,6 +45,7 @@ function ProfilePage() {
     const [stravaImporting, setStravaImporting] = useState(false);
     const [stravaImportResult, setStravaImportResult] = useState<number | null>(null);
     const [stravaError, setStravaError] = useState<string | null>(null);
+    const [exportOpen, setExportOpen] = useState(false);
 
     const actionsRef = useRef<HTMLDivElement>(null);
     const panelTopRef = useRef(0);
@@ -184,8 +188,17 @@ function ProfilePage() {
                 <header className="page-header">
                     <div><p>Settings</p><h1>Profile</h1></div>
                 </header>
-                <div className="profile-detail">
-                    <p className="profile-loading">Loading…</p>
+                <div className="profile-detail" role="status" aria-label="Loading profile">
+                    {[0, 1, 2].map(i => (
+                        <div key={i} className="profile-section profile-skeleton">
+                            <Skeleton width="11rem" height="1.35rem" />
+                            <div className="profile-row-2">
+                                <Skeleton height="2.4rem" radius="var(--radius-md)" />
+                                <Skeleton height="2.4rem" radius="var(--radius-md)" />
+                            </div>
+                            <Skeleton height="2.4rem" radius="var(--radius-md)" />
+                        </div>
+                    ))}
                 </div>
             </div>
         );
@@ -447,6 +460,20 @@ function ProfilePage() {
                     )}
                 </section>
 
+                <GearSection initialGear={user?.gear ?? []} />
+
+                <section className="profile-section">
+                    <div className="profile-section-head">
+                        <h2 className="profile-section-title">Your Data</h2>
+                        <p className="profile-section-desc">
+                            Download your workouts as an Excel workbook, CSV, or a full JSON backup.
+                        </p>
+                    </div>
+                    <div className="profile-section-actions">
+                        <Button text="Export data" style="white" icon={<Download size={14} />} onClick={() => setExportOpen(true)} />
+                    </div>
+                </section>
+
                 <section className="profile-section profile-danger-section">
                     <h2 className="profile-section-title profile-danger-title">Danger Zone</h2>
                     <p className="profile-danger-desc">
@@ -462,6 +489,8 @@ function ProfilePage() {
                     </button>
                 </section>
             </div>
+
+            {exportOpen && <ExportOverlay onClose={() => setExportOpen(false)} />}
 
             {showDeleteConfirm && (
                 <div className="overlay-backdrop" onClick={() => setShowDeleteConfirm(false)}>

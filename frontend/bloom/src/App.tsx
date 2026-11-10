@@ -6,6 +6,7 @@ import AppLayout from "./components/AppLayout.tsx";
 import HomePage from "./features/home/HomePage.tsx";
 import LoginPage from "./features/auth/LoginPage.tsx";
 import SignUpPage from "./features/auth/SignUpPage.tsx";
+import PageLoader from "./components/general/PageLoader.tsx";
 
 const DashboardPage  = lazy(() => import("./features/dashboard/DashboardPage.tsx"));
 const TemplatePage   = lazy(() => import("./features/templates/TemplatePage.tsx"));
@@ -14,12 +15,13 @@ const MacroPage      = lazy(() => import("./features/tool-pages/macros/MacroPage
 const OneRepMaxPage  = lazy(() => import("./features/tool-pages/1-RM/1RmPage.tsx"));
 const ProfilePage    = lazy(() => import("./features/profile/ProfilePage.tsx"));
 const InsightsPage   = lazy(() => import("./features/insights/InsightsPage.tsx"));
+const LeaderboardPage = lazy(() => import("./features/leaderboard/LeaderboardPage.tsx"));
 
 function ProtectedLayout() {
     return (
         <ProtectedRoute>
             <AppLayout>
-                <Suspense>
+                <Suspense fallback={<PageLoader />}>
                     <Outlet />
                 </Suspense>
             </AppLayout>
@@ -42,6 +44,7 @@ function App() {
                     <Route path="/tools/macro-calculator" element={<MacroPage/>}/>
                     <Route path="/profile" element={<ProfilePage/>}/>
                     <Route path="/insights" element={<InsightsPage/>}/>
+                    <Route path="/leaderboard" element={<LeaderboardPage/>}/>
                 </Route>
             </Routes>
         </AuthProvider>

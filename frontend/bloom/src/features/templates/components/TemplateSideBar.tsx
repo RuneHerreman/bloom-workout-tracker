@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { WorkoutTemplate } from "../api.ts";
 import { type FilterType, dominantType, matchesFilter } from "../templateUtils.ts";
 import TemplateSidebarCard from "./TemplateSidebarCard.tsx";
+import SidebarSkeleton from "../../../components/general/SidebarSkeleton.tsx";
 
 const FILTERS: FilterType[] = ["Strength", "Cardio", "Plyometric"];
 
@@ -48,9 +49,11 @@ function TemplateSideBar({ templates, selectedId, loading, onSelect }: TemplateS
             </div>
             <div className="feature-sidebar-list">
                 {loading ? (
-                    <p className="feature-sidebar-loading">Loading…</p>
+                    <SidebarSkeleton withHeader={false} />
                 ) : visible.length === 0 ? (
-                    <p className="feature-sidebar-empty">No templates found</p>
+                    <p className="feature-sidebar-empty">
+                        {templates.length === 0 ? "No templates yet — create one to plan your sessions." : "No templates match these filters."}
+                    </p>
                 ) : (
                     visible.map(t => (
                         <TemplateSidebarCard

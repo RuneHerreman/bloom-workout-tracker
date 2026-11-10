@@ -4,7 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import type { LoggedWorkout, LoggedExercise, LoggedSet } from "../api.ts";
 import { updateLog } from "../api.ts";
 import type { Exercise } from "../../exercises/api.ts";
-import { toDateInputValue } from "../logbookUtils.ts";
+import { toDateInputValue, withDate } from "../logbookUtils.ts";
 import { useExerciseDnd } from "../../templates/hooks/useExerciseDnd.ts";
 import { useShortcut } from "../../../hooks/useShortcut.ts";
 import LogExerciseCard from "./LogExerciseCard.tsx";
@@ -20,11 +20,13 @@ interface LogDetailProps {
     onDelete: (id: string) => void;
     onCreateTemplate: (name: string, exercises: LoggedExercise[]) => void;
     onDirtyChange?: (isDirty: boolean, save: () => Promise<void>) => void;
+    onExerciseCreated?: (exercise: Exercise) => void;
+    userGear?: string[];
     autoFocusTitle?: boolean;
     openMap?: boolean;
 }
 
-function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirtyChange, autoFocusTitle, openMap }: LogDetailProps) {
+function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirtyChange, onExerciseCreated, userGear, autoFocusTitle, openMap }: LogDetailProps) {
     const initialDate = toDateInputValue(log.loggedAt);
 
     const [logExercises, setLogExercises] = useState<LoggedExercise[]>(() =>
@@ -55,10 +57,21 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
         reordered => setLogExercises(reordered)
     );
 
+    // Canonical shape so optional fields (note/gear/marker) missing on freshly
+    // added items compare equal to the server's explicit null / [] values.
     const normalize = (exs: LoggedExercise[]) =>
         [...exs].sort((a, b) => a.order - b.order).map(ex => ({
-            ...ex,
-            sets: [...ex.sets].sort((a, b) => a.order - b.order),
+            exerciseId: ex.exerciseId,
+            order: ex.order,
+            gpxData: ex.gpxData ?? null,
+            note: ex.note?.trim() ? ex.note : null,
+            gear: ex.gear ?? [],
+            sets: [...ex.sets].sort((a, b) => a.order - b.order).map(s => ({
+                type: s.type, order: s.order, duration: s.duration ?? null,
+                distance: s.distance ?? null, distanceUnit: s.distanceUnit ?? null,
+                reps: s.reps ?? null, weight: s.weight ?? null, weightUnit: s.weightUnit ?? null,
+                rir: s.rir ?? null, marker: s.marker ?? null,
+            })),
         }));
 
     const hasChanges = name !== log.name
@@ -109,20 +122,32 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
         );
     }
 
+    function handleNoteChange(exerciseOrder: number, exNote: string) {
+        setLogExercises(prev =>
+            prev.map(ex => ex.order === exerciseOrder ? { ...ex, note: exNote } : ex)
+        );
+    }
+
+    function handleGearChange(exerciseOrder: number, gear: string[]) {
+        setLogExercises(prev =>
+            prev.map(ex => ex.order === exerciseOrder ? { ...ex, gear } : ex)
+        );
+    }
+
     function handleDeleteExercise(exerciseOrder: number) {
         setLogExercises(prev =>
             prev.filter(ex => ex.order !== exerciseOrder).map((ex, i) => ({ ...ex, order: i + 1 }))
         );
     }
 
-    function handleAddExercise(exerciseId: string) {
-        const type = exercises[exerciseId]?.type ?? "Strength";
+    function handleAddExercise(exerciseId: string, typeHint?: string) {
+        const type = typeHint ?? exercises[exerciseId]?.type ?? "Strength";
         const defaultSet: LoggedSet = type === "Cardio"
             ? { type: "Cardio", order: 1, reps: null, weight: null, weightUnit: null, rir: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
             : { type, order: 1, reps: 10, weight: 60, weightUnit: "kg", rir: null, duration: null, distance: null, distanceUnit: null };
         setLogExercises(prev => [
             ...prev,
-            { exerciseId, order: prev.length + 1, sets: [defaultSet], gpxData: null },
+            { exerciseId, order: prev.length + 1, sets: [defaultSet], gpxData: null, note: null, gear: [] },
         ]);
         setLastAddedOrder(logExercises.length + 1);
         setAddExerciseOpen(false);
@@ -144,9 +169,11 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
         setSaving(true);
         setError(null);
         try {
-            const loggedAt = new Date(date).toISOString();
-            await updateLog(log.id, name, loggedAt, logExercises, note || null);
-            onSave(log.id, name, loggedAt, note || null, logExercises);
+            const loggedAt = date === initialDate ? log.loggedAt : withDate(log.loggedAt, date);
+            const cleaned = logExercises.map(ex => ({ ...ex, note: ex.note?.trim() ? ex.note.trim() : null }));
+            await updateLog(log.id, name, loggedAt, cleaned, note || null);
+            setLogExercises(cleaned);
+            onSave(log.id, name, loggedAt, note || null, cleaned);
         } catch (e) {
             setError(e instanceof Error ? e.message : "Failed to save log");
         } finally {
@@ -160,7 +187,8 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
                 <Overlay title="Exercise library" subtitle="Add exercise" onClose={() => setAddExerciseOpen(false)}>
                     <ExerciseLibrary
                         exercises={Object.values(exercises)}
-                        onSelect={e => handleAddExercise(e.id)}
+                        onSelect={e => handleAddExercise(e.id, e.type)}
+                        onSaved={onExerciseCreated}
                     />
                 </Overlay>
             )}
@@ -237,6 +265,9 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
                             onSetsChange={handleSetsChange}
                             onDelete={handleDeleteExercise}
                             onGpxChange={handleGpxChange}
+                            onNoteChange={handleNoteChange}
+                            onGearChange={handleGearChange}
+                            userGear={userGear}
                             autoFocus={ex.order === lastAddedOrder}
                             autoOpenMap={openMap && i === logExercises.findIndex(e => !!e.gpxData)}
                         />

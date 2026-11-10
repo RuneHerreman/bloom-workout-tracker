@@ -18,6 +18,14 @@ export interface Exercise {
     name: string;
     description: string;
     type: string;
+    isCustom?: boolean;
+    targetMuscles: string[];
+}
+
+export interface CustomExerciseBody {
+    name: string;
+    description: string;
+    type: ExerciseType;
     targetMuscles: string[];
 }
 
@@ -50,7 +58,11 @@ export interface LoggedSet {
     weight: number | null;
     weightUnit: string | null;
     rir: number | null;
+    /** Set type marker — warm-up, drop set, failure. Null/absent for a regular working set. */
+    marker?: SetMarker | null;
 }
+
+export type SetMarker = "WarmUp" | "DropSet" | "Failure";
 
 export type LoggedSetBody = LoggedSet;
 
@@ -58,6 +70,8 @@ export interface LoggedExercise {
     exerciseId: string;
     order: number;
     gpxData: string | null;
+    note?: string | null;
+    gear?: string[];
     sets: LoggedSet[];
 }
 
@@ -66,6 +80,8 @@ export interface LoggedExerciseBody {
     order: number;
     sets: LoggedSetBody[];
     gpxData?: string | null;
+    note?: string | null;
+    gear?: string[];
 }
 
 // ── Logged workouts ───────────────────────────────────────────────────────────
@@ -117,6 +133,8 @@ export type PlannedSetBody = PlannedSet;
 export interface TemplateExercise {
     exerciseId: string;
     order: number;
+    note?: string | null;
+    gear?: string[];
     sets: PlannedSet[];
 }
 
@@ -162,6 +180,7 @@ export interface User {
     activeDays: number;
     birthDate: string;
     technicalPoints: string | null;
+    gear?: string[];
 }
 
 export interface RegisterUserBody {

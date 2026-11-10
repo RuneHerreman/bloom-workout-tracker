@@ -37,16 +37,36 @@ export function formatDate(isoString: string): string {
     });
 }
 
+// Compares calendar days in the user's local time zone rather than elapsed
+// milliseconds: a log stamped "now" by the server can sit slightly in the future
+// relative to the client clock, which used to floor to "-1d ago".
 export function relativeDate(isoString: string): string {
-    const diffDays = Math.floor((Date.now() - new Date(isoString).getTime()) / 86_400_000);
+    const then = new Date(isoString);
+    const now = new Date();
+    const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const diffDays = Math.round((startOfDay(now) - startOfDay(then)) / 86_400_000);
+    if (diffDays < 0) return formatDate(isoString);
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
     if (diffDays < 7) return `${diffDays}d ago`;
     return formatDate(isoString);
 }
 
+/** Local-time YYYY-MM-DD for an <input type="date">. */
 export function toDateInputValue(isoString: string): string {
-    return isoString.split("T")[0] ?? "";
+    const d = new Date(isoString);
+    if (Number.isNaN(d.getTime())) return isoString.split("T")[0] ?? "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** Moves `isoString` to the local calendar day `dateInput` (YYYY-MM-DD), keeping its time of day. */
+export function withDate(isoString: string, dateInput: string): string {
+    const [y, m, d] = dateInput.split("-").map(Number);
+    const result = new Date(isoString);
+    if (!y || !m || !d || Number.isNaN(result.getTime())) return new Date(dateInput).toISOString();
+    result.setFullYear(y, m - 1, d);
+    return result.toISOString();
 }
 
 export function formatWorkoutDate(date: Date): string {

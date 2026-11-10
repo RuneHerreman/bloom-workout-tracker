@@ -6,6 +6,8 @@ namespace Bloom.Application.Contracts.Data.Filters;
 
 public static class UserDataFilters
 {
+    public static Expression<Func<UserData, bool>> All() => user => true;
+
     public static Expression<Func<UserData, bool>> ById(UserId inputId)
     {
         if (inputId.Value == Guid.Empty)

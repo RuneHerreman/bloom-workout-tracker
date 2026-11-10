@@ -470,3 +470,23 @@
         box-shadow: none;
     }
 }
+/* ── Loading skeleton ─────────────────────────────────────────────────────────── */
+
+.dash-skeleton-widget {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--widget-border-radius);
+    background: var(--surface-lighter);
+    animation: none;
+}
+
+.dash-skeleton-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.25rem;
+    background: var(--surface-lighter);
+}

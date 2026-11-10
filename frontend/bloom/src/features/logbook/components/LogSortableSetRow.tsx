@@ -2,6 +2,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { LoggedSet } from "../api.ts";
 import DurationInput from "../../templates/components/DurationInput.tsx";
+import SetMarkerButton from "./SetMarkerButton.tsx";
+import { markerShort } from "../logbookUtils.ts";
 import { GripVertical, X } from "lucide-react";
 
 export interface LogRowItem {
@@ -11,24 +13,30 @@ export interface LogRowItem {
 
 interface LogSortableSetRowProps {
     item: LogRowItem;
-    index: number;
+    /** Working-set number (warm-ups are not counted). */
+    number: number;
     type: string | undefined;
     onSetChange: (id: string, set: LoggedSet) => void;
     onDelete: (id: string) => void;
 }
 
-function LogSortableSetRow({ item, index, type, onSetChange, onDelete }: LogSortableSetRowProps) {
+function LogSortableSetRow({ item, number, type, onSetChange, onDelete }: LogSortableSetRowProps) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
 
     const isCardio = type === "Cardio";
+    const short = markerShort(item.set.marker);
 
     return (
         <div
             ref={setNodeRef}
-            className="set-row"
+            className={`set-row${short ? ` has-marker marker-${short.toLowerCase()}` : ""}`}
             style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
         >
-            <p>{index + 1}</p>
+            <SetMarkerButton
+                marker={item.set.marker}
+                number={number}
+                onChange={marker => onSetChange(item.id, { ...item.set, marker })}
+            />
             {isCardio ? (
                 <>
                     <div className="distance-input">

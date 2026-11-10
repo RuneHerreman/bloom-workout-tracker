@@ -6,7 +6,9 @@ import type { TemplateExercise, PlannedSet } from "../../../assets/js/data/apiTy
 import type { Exercise } from "../../exercises/api.ts";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import SortableSetRow, { type RowItem } from "./SortableSetRow.tsx";
-import { PlusIcon, GripVertical, X } from "lucide-react";
+import ExerciseNote from "../../../components/general/ExerciseNote.tsx";
+import GearPicker from "../../../components/general/GearPicker.tsx";
+import { PlusIcon, GripVertical, X, StickyNote } from "lucide-react";
 
 interface TemplateExerciseCardProps {
     id: string;
@@ -14,10 +16,13 @@ interface TemplateExerciseCardProps {
     exerciseInfo?: Exercise;
     onSetsChange?: (exerciseId: string, sets: PlannedSet[]) => void;
     onDelete?: (exerciseId: string) => void;
+    onNoteChange?: (exerciseId: string, note: string) => void;
+    onGearChange?: (exerciseId: string, gear: string[]) => void;
+    userGear?: string[];
     autoFocus?: boolean;
 }
 
-function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, autoFocus }: TemplateExerciseCardProps) {
+function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, onNoteChange, onGearChange, userGear = [], autoFocus }: TemplateExerciseCardProps) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
     const cardRef = useRef<HTMLDivElement>(null);
 
@@ -28,6 +33,8 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
         firstInput?.select();
         cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, []);
+    const [noteOpen, setNoteOpen] = useState(() => !!exercise.note);
+    const [noteAutoFocus, setNoteAutoFocus] = useState(false);
     const [items, setItems] = useState<RowItem[]>(() =>
         [...exercise.sets]
             .sort((a, b) => a.order - b.order)
@@ -62,6 +69,9 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
 
     const exerciseType = exerciseInfo?.type ?? "Strength";
     const bodyClass = `detail-body ${exerciseType === "Cardio" ? "is-cardio" : "is-strength"}`;
+    const gear = exercise.gear ?? [];
+    // Gear is a cardio thing (shoes, bikes); other exercises only show it once something is attached.
+    const showGear = !!onGearChange && (exerciseType === "Cardio" || gear.length > 0);
 
     function handleAddSet() {
         const last = items[items.length - 1]?.set;
@@ -92,6 +102,15 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
                     <button className="exercise-delete-btn" tabIndex={-1} onClick={() => onDelete?.(exercise.exerciseId)}><X size={14} /></button>
                 </div>
             </header>
+            {noteOpen && onNoteChange && (
+                <ExerciseNote
+                    value={exercise.note ?? ""}
+                    autoFocus={noteAutoFocus}
+                    placeholder="Coaching cues, tempo, setup…"
+                    onChange={v => onNoteChange(exercise.exerciseId, v)}
+                    onClose={() => setNoteOpen(false)}
+                />
+            )}
             <section className={bodyClass}>
                 <div className="set-grid-header">
                     <p>Set</p>
@@ -119,6 +138,21 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
             </section>
             <section className="exercise-footer">
                 <Button text="Add set" style="modern" icon={<PlusIcon size={15} />} onClick={handleAddSet} />
+                {!noteOpen && onNoteChange && (
+                    <Button
+                        text="Note"
+                        style="modern"
+                        icon={<StickyNote size={14} />}
+                        onClick={() => { setNoteAutoFocus(true); setNoteOpen(true); }}
+                    />
+                )}
+                {showGear && (
+                    <GearPicker
+                        selected={gear}
+                        available={userGear}
+                        onChange={g => onGearChange?.(exercise.exerciseId, g)}
+                    />
+                )}
             </section>
         </div>
     );

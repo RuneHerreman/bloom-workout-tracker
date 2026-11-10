@@ -42,6 +42,7 @@ import {
 import GeneralWidget from "../dashboard/components/GeneralWidget.tsx";
 import WidgetHeader from "../dashboard/components/WidgetHeader.tsx";
 import { useDarkModeContext } from "../../context/DarkModeContext.tsx";
+import PageLoader from "../../components/general/PageLoader.tsx";
 import "../../assets/css/insights.css";
 
 const InsightsHeatmap = lazy(() => import("./InsightsHeatmap.tsx"));
@@ -520,7 +521,7 @@ function InsightsPage() {
             </div>
 
             <div className="insights-body">
-                {loading && <p className="insights-empty">Loading…</p>}
+                {loading && <PageLoader label="Crunching your numbers…" />}
                 {error && <div className="error-banner">{error}</div>}
 
                 {!loading && !error && tab === "strength" && (

@@ -50,7 +50,7 @@ public sealed record LoggedSetBody(
     [Range(0, 10, ErrorMessage = "RIR must be between 0 and 10")]
     int? Rir,
 
-    [RegularExpression("^(?i)(W|WarmUp|D|DropSet)$", ErrorMessage = "Marker must be W, WarmUp, D or DropSet")]
+    [RegularExpression("^(?i)(W|WarmUp|D|DropSet|F|Failure)$", ErrorMessage = "Marker must be W, WarmUp, D, DropSet, F or Failure")]
     string? Marker = null
 );
 

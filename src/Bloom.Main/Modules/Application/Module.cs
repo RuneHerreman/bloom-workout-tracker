@@ -1,5 +1,6 @@
 ﻿using Bloom.Application.Contracts.Ports;
 using Bloom.Application.Exercises;
+using Bloom.Application.Leaderboard;
 using Bloom.Application.LoggedWorkouts;
 using Bloom.Application.Strava;
 using Bloom.Application.Users;
@@ -84,6 +85,8 @@ public static class ApplicationModule
         services.AddScoped<IUseCase<FindLoggedWorkoutByIdInput, FindLoggedWorkoutByIdOutput>, FindLoggedWorkoutById>();
         services.AddScoped<IUseCase<GetLoggedExercisePrsInput, GetLoggedExercisePrsOutput>, GetLoggedExercisePrs>();
         services.AddScoped<IUseCase<GetLoggedExerciseVolumeInput, GetLoggedExerciseVolumeOutput>, GetLoggedExerciseVolume>();
+        //      LEADERBOARD
+        services.AddScoped<IUseCase<GetMonthlyLeaderboardInput, GetMonthlyLeaderboardOutput>, GetMonthlyLeaderboard>();
         //      STRAVA
         services.AddScoped<IUseCase<GetStravaStatusInput, GetStravaStatusOutput>, GetStravaStatus>();
         services.AddScoped<IUseCase<ConnectStravaInput, ConnectStravaOutput>, ConnectStrava>();

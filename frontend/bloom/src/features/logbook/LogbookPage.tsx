@@ -8,13 +8,15 @@ import { searchExercises } from "../exercises/api.ts";
 import type { Exercise } from "../exercises/api.ts";
 import type { WorkoutTemplate, PlannedSet, TemplateExercise } from "../templates/api.ts";
 import { createTemplate } from "../templates/api.ts";
+import { getMe } from "../auth/api.ts";
+import ExportOverlay from "../export/ExportOverlay.tsx";
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
 import Button from "../../components/general/ButtonComponent.tsx";
 import LogSideBar from "./components/LogSideBar.tsx";
 import LogDetail from "./components/LogDetail.tsx";
 import StartSessionOverlay from "./components/StartSessionOverlay.tsx";
 import UnsavedChangesDialog from "../../components/general/UnsavedChangesDialog.tsx";
-import { Plus, ChevronLeft } from "lucide-react";
+import { Plus, ChevronLeft, Download } from "lucide-react";
 import { useShortcut } from "../../hooks/useShortcut.ts";
 
 function plannedToLogged(s: PlannedSet, order: number): LoggedSet {
@@ -48,6 +50,8 @@ const LogbookPage = () => {
     const [loading, setLoading] = useState(true);
     const [startOpen, setStartOpen] = useState(() => !!(location.state as { openStart?: boolean } | null)?.openStart);
     const [newlyCreatedId, setNewlyCreatedId] = useState<string | null>(null);
+    const [userGear, setUserGear] = useState<string[]>([]);
+    const [exportOpen, setExportOpen] = useState(false);
 
     useEffect(() => {
         getLogs().then(fetchedLogs => {
@@ -57,6 +61,11 @@ const LogbookPage = () => {
         searchExercises().then(exs => {
             setExercises(Object.fromEntries(exs.map(e => [e.id, e])));
         });
+        getMe().then(u => setUserGear(u.gear ?? [])).catch(() => null);
+    }, []);
+
+    const handleExerciseCreated = useCallback((exercise: Exercise) => {
+        setExercises(prev => ({ ...prev, [exercise.id]: exercise }));
     }, []);
 
     const selectedLog = useMemo(() => logs.find(l => l.id === selectedId) ?? null, [logs, selectedId]);
@@ -78,6 +87,8 @@ const LogbookPage = () => {
                 exerciseId: ex.exerciseId,
                 order: i + 1,
                 gpxData: null,
+                note: ex.note ?? null,
+                gear: ex.gear ?? [],
                 sets: ex.sets.sort((a, b) => a.order - b.order).map((s, j) => plannedToLogged(s, j + 1)),
             }));
         const id = await createLog(template.name, exercises);
@@ -113,6 +124,8 @@ const LogbookPage = () => {
             .map(ex => ({
                 exerciseId: ex.exerciseId,
                 order: ex.order,
+                note: ex.note ?? null,
+                gear: ex.gear ?? [],
                 sets: ex.sets.sort((a, b) => a.order - b.order).map((s, j) => {
                     if (s.type === "Cardio") {
                         return { type: "Cardio" as const, order: j + 1, reps: null,
@@ -199,6 +212,7 @@ const LogbookPage = () => {
                     onCancel={handleDialogCancel}
                 />
             )}
+            {exportOpen && <ExportOverlay onClose={() => setExportOpen(false)} />}
             {startOpen && (
                 <StartSessionOverlay
                     onFromTemplate={handleStartFromTemplate}
@@ -209,7 +223,20 @@ const LogbookPage = () => {
             <HeaderComponent
                 title="Logbook"
                 subtitle="History"
-                action={<Button text="Log Workout" style="green" icon={<Plus size={14} />} onClick={() => setStartOpen(true)} />}
+                action={
+                    <div className="header-action-group">
+                        <button
+                            type="button"
+                            className="header-icon-btn"
+                            aria-label="Export logs"
+                            title="Export logs"
+                            onClick={() => setExportOpen(true)}
+                        >
+                            <Download size={15} />
+                        </button>
+                        <Button text="Log Workout" style="green" icon={<Plus size={14} />} onClick={() => setStartOpen(true)} />
+                    </div>
+                }
                 shortcuts={[
                     { keys: "Ctrl+K", label: "New log" },
                     { keys: "Ctrl+E", label: "Add exercise" },
@@ -237,6 +264,8 @@ const LogbookPage = () => {
                             onDelete={handleDelete}
                             onCreateTemplate={handleCreateTemplate}
                             onDirtyChange={handleDirtyChange}
+                            onExerciseCreated={handleExerciseCreated}
+                            userGear={userGear}
                             autoFocusTitle={selectedLog.id === newlyCreatedId}
                             openMap={openMap}
                         />

@@ -1,12 +1,13 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.tsx";
 import type { ReactNode } from "react";
+import PageLoader from "./general/PageLoader.tsx";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
     const { isAuthenticated, isLoading } = useAuth();
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <PageLoader fullscreen label="Waking up Bloom…" />;
     }
 
     if (!isAuthenticated) {

@@ -84,6 +84,7 @@ public static class LoggedExerciseInputExtensions
             null or "" => null,
             var m when m.Equals("W", StringComparison.OrdinalIgnoreCase) => SetMarker.WarmUp,
             var m when m.Equals("D", StringComparison.OrdinalIgnoreCase) => SetMarker.DropSet,
+            var m when m.Equals("F", StringComparison.OrdinalIgnoreCase) => SetMarker.Failure,
             var m => Enum.Parse<SetMarker>(m, ignoreCase: true)
         };
 }

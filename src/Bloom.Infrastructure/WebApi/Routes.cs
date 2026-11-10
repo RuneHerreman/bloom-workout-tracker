@@ -1,4 +1,5 @@
 using Bloom.Infrastructure.WebApi.Controllers.Exercises;
+using Bloom.Infrastructure.WebApi.Controllers.Leaderboard;
 using Bloom.Infrastructure.WebApi.Controllers.LoggedWorkouts;
 using Bloom.Infrastructure.WebApi.Controllers.Strava;
 using Bloom.Infrastructure.WebApi.Controllers.Users;
@@ -21,6 +22,7 @@ public static class Routes
         webApi.MapTemplateRoutes();
         webApi.MapLogRoutes();
         webApi.MapStravaRoutes();
+        webApi.MapLeaderboardRoutes();
 
         return app;
     }
@@ -174,6 +176,19 @@ public static class Routes
             .WithDescription("Get monthly max weight per exercise for all logged exercises. Optionally filter by name, type, target muscle group, and date range.");
 
         return logGroup;
+    }
+
+    private static RouteGroupBuilder MapLeaderboardRoutes(this IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder leaderboardGroup = app.MapGroup("/leaderboard")
+            .WithTags("Leaderboard")
+            .RequireAuthorization();
+
+        leaderboardGroup.MapGet("", GetMonthlyLeaderboardController.Invoke)
+            .WithName(nameof(GetMonthlyLeaderboardController))
+            .WithDescription("Monthly leaderboard across all users: training volume, new PRs and active days. Defaults to the current month (UTC).");
+
+        return leaderboardGroup;
     }
 
     private static RouteGroupBuilder MapStravaRoutes(this IEndpointRouteBuilder app)

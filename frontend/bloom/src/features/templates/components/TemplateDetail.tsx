@@ -19,10 +19,11 @@ interface TemplateDetailProps {
     pendingExerciseId?: string | null;
     onExerciseAdded?: () => void;
     onDirtyChange?: (isDirty: boolean, save: () => Promise<void>) => void;
+    userGear?: string[];
     autoFocusTitle?: boolean;
 }
 
-function TemplateDetail({ template, exercises, onDelete, onSave, pendingExerciseId, onExerciseAdded, onDirtyChange, autoFocusTitle }: TemplateDetailProps) {
+function TemplateDetail({ template, exercises, onDelete, onSave, pendingExerciseId, onExerciseAdded, onDirtyChange, userGear, autoFocusTitle }: TemplateDetailProps) {
     const [templateExercises, setTemplateExercises] = useState<TemplateExercise[]>(() =>
         [...template.exercises].sort((a, b) => a.order - b.order)
     );
@@ -54,7 +55,7 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
             : { type,           order: 1, reps: 10,   duration: null,       distance: null, distanceUnit: null };
         setTemplateExercises(prev => [
             ...prev,
-            { exerciseId: pendingExerciseId, order: prev.length + 1, sets: [defaultSet] },
+            { exerciseId: pendingExerciseId, order: prev.length + 1, note: null, gear: [], sets: [defaultSet] },
         ]);
         setLastAddedId(pendingExerciseId);
         onExerciseAdded?.();
@@ -66,16 +67,35 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
         );
     }
 
+    function handleNoteChange(exerciseId: string, note: string) {
+        setTemplateExercises(prev =>
+            prev.map(ex => ex.exerciseId === exerciseId ? { ...ex, note } : ex)
+        );
+    }
+
+    function handleGearChange(exerciseId: string, gear: string[]) {
+        setTemplateExercises(prev =>
+            prev.map(ex => ex.exerciseId === exerciseId ? { ...ex, gear } : ex)
+        );
+    }
+
     function handleSetsChange(exerciseId: string, sets: PlannedSet[]) {
         setTemplateExercises(prev =>
             prev.map(ex => ex.exerciseId === exerciseId ? { ...ex, sets } : ex)
         );
     }
 
+    // Canonical shape so optional fields compare equal to the server's explicit null / [] values.
     const normalize = (exs: TemplateExercise[]) =>
         [...exs].sort((a, b) => a.order - b.order).map(ex => ({
-            ...ex,
-            sets: [...ex.sets].sort((a, b) => a.order - b.order),
+            exerciseId: ex.exerciseId,
+            order: ex.order,
+            note: ex.note?.trim() ? ex.note : null,
+            gear: ex.gear ?? [],
+            sets: [...ex.sets].sort((a, b) => a.order - b.order).map(s => ({
+                type: s.type, order: s.order, reps: s.reps ?? null, duration: s.duration ?? null,
+                distance: s.distance ?? null, distanceUnit: s.distanceUnit ?? null,
+            })),
         }));
 
     const hasChanges = name !== template.name ||
@@ -116,8 +136,10 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
         setSaving(true);
         setError(null);
         try {
-            await updateTemplate(template.id, name, templateExercises);
-            onSave(template.id, name, templateExercises);
+            const cleaned = templateExercises.map(ex => ({ ...ex, note: ex.note?.trim() ? ex.note.trim() : null }));
+            await updateTemplate(template.id, name, cleaned);
+            setTemplateExercises(cleaned);
+            onSave(template.id, name, cleaned);
         } catch (e) {
             setError(e instanceof Error ? e.message : "Failed to save template");
         } finally {
@@ -156,6 +178,9 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
                             exerciseInfo={exercises[exercise.exerciseId] ?? null}
                             onSetsChange={handleSetsChange}
                             onDelete={handleDeleteExercise}
+                            onNoteChange={handleNoteChange}
+                            onGearChange={handleGearChange}
+                            userGear={userGear}
                             autoFocus={exercise.exerciseId === lastAddedId}
                         />
                     ))}

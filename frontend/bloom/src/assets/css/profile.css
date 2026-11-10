@@ -259,3 +259,99 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Section header with description ─────────────────────────────────────────── */
+
+.profile-section-head { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.profile-section-desc { font-size: 0.83rem; color: var(--ink-muted); line-height: 1.45; }
+
+.profile-skeleton { gap: 1rem; }
+
+/* ── Gear ─────────────────────────────────────────────────────────────────────── */
+
+#gear { scroll-margin-top: 1.5rem; }
+
+.gear-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.gear-item {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.75rem 0.85rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--widget-border-radius);
+    background: var(--surface-lighter);
+    animation: pop-in 0.18s ease both;
+    transition: border-color var(--transition);
+}
+
+.gear-item:hover { border-color: var(--primary-light); }
+
+.gear-item-icon {
+    width: 2.1rem;
+    height: 2.1rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--primary-light);
+    background: color-mix(in srgb, var(--primary-light) 10%, transparent);
+}
+
+.gear-item-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+.gear-item-name { font-size: 0.9rem; font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gear-item-meta { font-size: 0.75rem; color: var(--ink-muted); }
+.gear-item-meta b { color: var(--ink); font-weight: 600; }
+
+.gear-item-remove {
+    display: flex;
+    padding: 0.35rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--ink-muted);
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity var(--transition), color var(--transition), background var(--transition);
+}
+
+.gear-item:hover .gear-item-remove { opacity: 0.8; }
+.gear-item-remove:hover { opacity: 1 !important; color: var(--danger); background: var(--danger-lighter); }
+
+.gear-empty { font-size: 0.83rem; color: var(--ink-muted); font-style: italic; }
+
+.gear-add { display: flex; gap: 0.5rem; }
+
+.gear-add input {
+    flex: 1;
+    padding: 0.55rem 0.75rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-lighter);
+    color: var(--ink);
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color var(--transition);
+}
+
+.gear-add input:focus { border-color: var(--primary-light); }
+
+.gear-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+}
+
+.gear-suggestions .exercise-library-chip { display: inline-flex; align-items: center; gap: 0.25rem; }

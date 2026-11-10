@@ -9,7 +9,11 @@ import Button from "../../../components/general/ButtonComponent.tsx";
 import LogSortableSetRow, { type LogRowItem } from "./LogSortableSetRow.tsx";
 import { parseGpx, parseGpxTrackPoints, formatDuration, type GpxStats } from "../gpxUtils.ts";
 import GpxMapOverlay from "./GpxMapOverlay.tsx";
-import { PlusIcon, GripVertical, X, MapPin } from "lucide-react";
+import { workingSetNumbers } from "../logbookUtils.ts";
+import InfoHint from "../../../components/general/InfoHint.tsx";
+import ExerciseNote from "../../../components/general/ExerciseNote.tsx";
+import GearPicker from "../../../components/general/GearPicker.tsx";
+import { PlusIcon, GripVertical, X, MapPin, StickyNote } from "lucide-react";
 
 interface LogExerciseCardProps {
     id: string;
@@ -18,11 +22,48 @@ interface LogExerciseCardProps {
     onSetsChange: (exerciseOrder: number, sets: LoggedSet[]) => void;
     onDelete: (exerciseOrder: number) => void;
     onGpxChange?: (exerciseOrder: number, gpxData: string | null) => void;
+    onNoteChange?: (exerciseOrder: number, note: string) => void;
+    onGearChange?: (exerciseOrder: number, gear: string[]) => void;
+    /** The user's gear closet, offered in the gear picker. */
+    userGear?: string[];
     autoFocus?: boolean;
     autoOpenMap?: boolean;
 }
 
-function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, onGpxChange, autoFocus, autoOpenMap }: LogExerciseCardProps) {
+function RirHeader() {
+    return (
+        <p className="set-grid-header-hint">
+            RIR
+            <InfoHint title="Reps in Reserve" label="What does RIR mean?">
+                <p>How many more reps you could have done before failure.</p>
+                <ul className="info-hint-scale">
+                    <li><b>0</b> All-out — no reps left</li>
+                    <li><b>1–2</b> Hard working set</li>
+                    <li><b>3–4</b> Moderate, good for volume</li>
+                    <li><b>5+</b> Easy / warm-up territory</li>
+                </ul>
+            </InfoHint>
+        </p>
+    );
+}
+
+function SetHeader() {
+    return (
+        <p className="set-grid-header-hint">
+            Set
+            <InfoHint title="Set types" label="About set types">
+                <p>Tap a set number to mark it:</p>
+                <ul className="info-hint-scale">
+                    <li><b className="marker-w">W</b> Warm-up — not counted</li>
+                    <li><b className="marker-d">D</b> Drop set</li>
+                    <li><b className="marker-f">F</b> Taken to failure</li>
+                </ul>
+            </InfoHint>
+        </p>
+    );
+}
+
+function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, onGpxChange, onNoteChange, onGearChange, userGear = [], autoFocus, autoOpenMap }: LogExerciseCardProps) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
     const cardRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,6 +79,8 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
         exercise.gpxData ? parseGpx(exercise.gpxData) : null
     );
     const [mapOpen, setMapOpen] = useState(() => !!(autoOpenMap && exercise.gpxData));
+    const [noteOpen, setNoteOpen] = useState(() => !!exercise.note);
+    const [noteAutoFocus, setNoteAutoFocus] = useState(false);
 
     const [items, setItems] = useState<LogRowItem[]>(() =>
         [...exercise.sets]
@@ -74,6 +117,10 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
     const exerciseType = exerciseInfo?.type ?? "Strength";
     const isCardio = exerciseType === "Cardio";
     const bodyClass = `log-body ${isCardio ? "is-cardio" : "is-strength"}`;
+    const numbers = workingSetNumbers(items.map(i => i.set));
+    const gear = exercise.gear ?? [];
+    // Gear is a cardio thing (shoes, bikes); other exercises only show it once something is attached.
+    const showGear = !!onGearChange && (isCardio || gear.length > 0);
 
     function handleGpxFile(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
@@ -123,13 +170,21 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
                     <button className="exercise-delete-btn" tabIndex={-1} onClick={() => onDelete(exercise.order)}><X size={14} /></button>
                 </div>
             </header>
+            {noteOpen && onNoteChange && (
+                <ExerciseNote
+                    value={exercise.note ?? ""}
+                    autoFocus={noteAutoFocus}
+                    onChange={v => onNoteChange(exercise.order, v)}
+                    onClose={() => setNoteOpen(false)}
+                />
+            )}
             <section className={bodyClass}>
                 <div className="set-grid-header">
-                    <p>Set</p>
+                    <SetHeader />
                     {isCardio ? (
                         <><p>Distance</p><p>Duration</p></>
                     ) : (
-                        <><p>Reps</p><p>Weight</p><p>RIR</p></>
+                        <><p>Reps</p><p>Weight</p><RirHeader /></>
                     )}
                     <span />
                 </div>
@@ -139,7 +194,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
                             <LogSortableSetRow
                                 key={item.id}
                                 item={item}
-                                index={index}
+                                number={numbers[index]}
                                 type={exerciseType}
                                 onSetChange={handleSetChange}
                                 onDelete={handleDeleteSet}
@@ -150,6 +205,21 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
             </section>
             <section className="exercise-footer">
                 <Button text="Add set" style="modern" icon={<PlusIcon size={15} />} onClick={handleAddSet} />
+                {!noteOpen && onNoteChange && (
+                    <Button
+                        text="Note"
+                        style="modern"
+                        icon={<StickyNote size={14} />}
+                        onClick={() => { setNoteAutoFocus(true); setNoteOpen(true); }}
+                    />
+                )}
+                {showGear && (
+                    <GearPicker
+                        selected={gear}
+                        available={userGear}
+                        onChange={g => onGearChange?.(exercise.order, g)}
+                    />
+                )}
                 {isCardio && (
                     gpxStats ? (
                         <>

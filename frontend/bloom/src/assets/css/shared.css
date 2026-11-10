@@ -57,6 +57,15 @@
 
     --transition: 0.2s ease;
     --transition-spring: 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Set markers */
+    --marker-warmup:  #b07d1e;
+    --marker-drop:    #3b7352;
+    --marker-failure: #b91c1c;
+
+    /* Skeleton shimmer */
+    --skeleton-base:  #ece7dd;
+    --skeleton-shine: #f7f4ee;
 }
 
 
@@ -96,6 +105,13 @@
 
     /* Active sidebar item — light green readable on dark bg */
     --primary-transparent: rgb(160 220 190 / 0.95);
+
+    --marker-warmup:  #e0b45a;
+    --marker-drop:    #6fcf97;
+    --marker-failure: #f87171;
+
+    --skeleton-base:  #2c2c29;
+    --skeleton-shine: #3a3a36;
 }
 
 

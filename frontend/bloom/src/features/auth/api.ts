@@ -54,3 +54,8 @@ export async function changePassword(oldPassword: string, newPassword: string): 
 export async function updateTechnicalPoints(technicalPoints: string | null): Promise<void> {
     await fetchFromServer<unknown>("users/me/technical-points", "PUT", { technicalPoints } satisfies UpdateTechnicalPointsBody);
 }
+
+export async function updateGear(gear: string[]): Promise<void> {
+    await fetchFromServer<unknown>("users/me/gear", "PUT", { gear });
+    _meCache = null;
+}

@@ -15,6 +15,8 @@ export interface PlannedSet {
 export interface TemplateExercise {
     exerciseId: string;
     order: number;
+    note?: string | null;
+    gear?: string[];
     sets: PlannedSet[];
 }
 

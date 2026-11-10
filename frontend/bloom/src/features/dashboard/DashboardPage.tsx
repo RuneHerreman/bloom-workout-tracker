@@ -15,6 +15,7 @@ import type { LogEntryData } from "./components/LogWidget";
 import { getLogs, getVolume } from "../logbook/api.ts";
 import { searchExercises } from "../exercises/api.ts";
 import { updateTechnicalPoints } from "../auth/api.ts";
+import Skeleton from "../../components/general/Skeleton.tsx";
 import {
     transFormVolumeDataForLineGraph,
     transformWorkoutLogsForLogPanel,
@@ -70,6 +71,35 @@ function reducer(state: DashboardState, action: DashboardAction): DashboardState
     }
 }
 
+/** Mirrors the dashboard grid so the layout doesn't jump when data lands. */
+function DashboardSkeleton() {
+    const block = (area: string, height: string) => (
+        <div className={`${area} dash-skeleton-widget`}>
+            <Skeleton width="6rem" height="0.6rem" />
+            <Skeleton width="10rem" height="1rem" />
+            <Skeleton height={height} radius="var(--radius-md)" style={{ marginTop: "0.75rem", flex: 1 }} />
+        </div>
+    );
+    return (
+        <div className="dashboard-body" role="status" aria-label="Loading dashboard">
+            <div className="dashboard-stats">
+                {[0, 1, 2, 3].map(i => (
+                    <div key={i} className="stat-widget dash-skeleton-stat">
+                        <Skeleton width="7rem" height="0.6rem" />
+                        <Skeleton width="4rem" height="1.9rem" />
+                        <Skeleton width="5rem" height="0.6rem" />
+                    </div>
+                ))}
+            </div>
+            {block("dash-activity", "9rem")}
+            {block("dash-training", "9rem")}
+            {block("dash-notes", "12rem")}
+            {block("dash-logs", "16rem")}
+            {block("dash-volume", "16rem")}
+        </div>
+    );
+}
+
 function DashboardPage() {
     const [state, dispatch] = useReducer(reducer, initial);
     const navigate = useNavigate();
@@ -96,7 +126,7 @@ function DashboardPage() {
             .catch(e => dispatch({ type: "ERROR", error: e instanceof Error ? e.message : "Failed to load dashboard" }));
     }, []);
 
-    const { user, stats, activityData, focusSegments, muscleFocusSegments, volumeSeries, volumeLabels, logEntries, error } = state;
+    const { user, stats, activityData, focusSegments, muscleFocusSegments, volumeSeries, volumeLabels, logEntries, error, loading } = state;
 
     return (
         <div className="dashboard">
@@ -108,6 +138,7 @@ function DashboardPage() {
 
             {error && <div className="error-banner" style={{ margin: "0 2rem" }}>{error}</div>}
 
+            {loading ? <DashboardSkeleton /> : (
             <div className="dashboard-body">
                 <div className="dashboard-stats">
                     <StatWidget label="Workouts (this month)" value={stats?.workoutsThisMonth ?? 0} changePercent={stats?.workoutChange} subtext={`${stats?.workoutsThisYear ?? 0} this year`} unit="sessions" />
@@ -127,6 +158,7 @@ function DashboardPage() {
                 <div className="dash-logs"><LogWidget entries={logEntries} /></div>
                 <div className="dash-volume"><VolumeWidget series={volumeSeries} monthLabels={volumeLabels} /></div>
             </div>
+            )}
         </div>
     );
 }

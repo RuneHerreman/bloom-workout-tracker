@@ -137,6 +137,8 @@ public sealed class LoggedWorkoutInputsTests : ApplicationTestBase
     [InlineData("d", SetMarker.DropSet)]
     [InlineData("DropSet", SetMarker.DropSet)]
     [InlineData("dropset", SetMarker.DropSet)]
+    [InlineData("F", SetMarker.Failure)]
+    [InlineData("failure", SetMarker.Failure)]
     public void ParseMarker_WithValidValues_ShouldMap(string raw, SetMarker expected)
     {
         Assert.Equal(expected, LoggedExerciseInputExtensions.ParseMarker(raw));
