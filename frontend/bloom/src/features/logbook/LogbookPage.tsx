@@ -18,7 +18,7 @@ import StartSessionOverlay from "./components/StartSessionOverlay.tsx";
 import DetailSkeleton from "../../components/general/DetailSkeleton.tsx";
 import UnsavedChangesDialog from "../../components/general/UnsavedChangesDialog.tsx";
 import { useToast } from "../../context/ToastContext.tsx";
-import { Plus, ChevronLeft, Download } from "lucide-react";
+import { Plus, ChevronLeft, Download, Upload } from "lucide-react";
 import { useShortcut } from "../../hooks/useShortcut.ts";
 import { buildPreviousSetsLookup, defaultSet, type PreviousSetsLookup } from "./logbookUtils.ts";
 import { DRAFT_ID, createDraft, isDraftId, loadDraft, saveDraft } from "./drafts.ts";
@@ -341,6 +341,15 @@ const LogbookPage = () => {
                             onClick={() => setExportOpen(true)}
                         >
                             <Download size={15} />
+                        </button>
+                        <button
+                            type="button"
+                            className="header-icon-btn"
+                            aria-label="Import logs"
+                            title="Import logs"
+                            onClick={() => navigate("/import")}
+                        >
+                            <Upload size={15} />
                         </button>
                         <Button text="Log workout" style="green hide-on-phone" icon={<Plus size={14} />} onClick={() => setStartOpen(true)} />
                     </div>

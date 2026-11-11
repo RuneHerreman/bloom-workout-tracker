@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Save, Trash2, Eye, EyeOff, KeyRound, X, Download } from "lucide-react";
+import { Save, Trash2, Eye, EyeOff, KeyRound, X, Download, Upload } from "lucide-react";
 import { getMe, updateMe, changePassword, deleteMe, updateLeaderboardVisibility } from "../auth/api.ts";
 import { clearLeaderboardCache } from "../leaderboard/api.ts";
 import type { User } from "../auth/api.ts";
@@ -519,11 +519,12 @@ function ProfilePage() {
                     <div className="profile-section-head">
                         <h2 className="profile-section-title">Your Data</h2>
                         <p className="profile-section-desc">
-                            Download your workouts as an Excel workbook, CSV, or a full JSON backup.
+                            Download your workouts as an Excel workbook, CSV, or a full JSON backup, or import a file you exported before.
                         </p>
                     </div>
                     <div className="profile-section-actions">
                         <Button text="Export data" style="white" icon={<Download size={14} />} onClick={() => setExportOpen(true)} />
+                        <Button text="Import data" style="white" icon={<Upload size={14} />} target="/import" />
                     </div>
                 </section>
 

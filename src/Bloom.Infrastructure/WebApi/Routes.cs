@@ -164,6 +164,14 @@ public static class Routes
             .WithName(nameof(CreateLoggedWorkoutController))
             .WithDescription("Create a new workout log.");
 
+        logGroup.MapPost("/import/undo", UndoImportedWorkoutsController.Invoke)
+            .WithName(nameof(UndoImportedWorkoutsController))
+            .WithDescription("Undo an import: delete the workouts it created (the importedIds it returned). Ids of other users are ignored.");
+
+        logGroup.MapPost("/import", ImportLoggedWorkoutsController.Invoke)
+            .WithName(nameof(ImportLoggedWorkoutsController))
+            .WithDescription("Import many workout logs at once (e.g. from a Bloom export). Workouts you already have are skipped; invalid ones are reported per workout.");
+
         logGroup.MapPut("/{LoggedWorkoutId:guid}", UpdateLoggedWorkoutController.Invoke)
             .WithName(nameof(UpdateLoggedWorkoutController))
             .WithDescription("Update an existing workout log by id (full overwrite).");

@@ -183,6 +183,39 @@ export async function createLog(
     return response.loggedWorkoutId;
 }
 
+export interface ImportWorkoutBody {
+    name: string;
+    loggedAt: string;
+    note: string | null;
+    sourceId: string | null;
+    exercises: LoggedExercise[];
+}
+
+export interface ImportResult {
+    imported: number;
+    skipped: number;
+    failures: { index: number; name: string; loggedAt: string; reason: string }[];
+    /** Ids of the workouts created, for undo. */
+    importedIds: string[];
+}
+
+/** Undoes an import: deletes the workouts it created. */
+export async function undoImport(loggedWorkoutIds: string[]): Promise<number> {
+    const { deleted } = await fetchFromServer<{ deleted: number }>("logs/import/undo", "POST", { loggedWorkoutIds });
+    _logsCache = null;
+    _volumeCache = null;
+    return deleted;
+}
+
+/** Imports many workouts in one request (the server skips ones you already have). */
+export async function importLogs(workouts: ImportWorkoutBody[]): Promise<ImportResult> {
+    const encoded = await Promise.all(workouts.map(async w => ({ ...w, exercises: await encodeExercises(w.exercises) })));
+    const result = await fetchFromServer<ImportResult>("logs/import", "POST", { workouts: encoded });
+    _logsCache = null;
+    _volumeCache = null;
+    return result;
+}
+
 export async function updateLog(
     logId: string,
     name: string,

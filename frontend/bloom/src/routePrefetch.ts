@@ -17,6 +17,8 @@ export const routeLoaders = {
     "/insights":    () => import("./features/insights/InsightsPage.tsx"),
     "/leaderboard": () => import("./features/leaderboard/LeaderboardPage.tsx"),
     "/profile":     () => import("./features/profile/ProfilePage.tsx"),
+    "/docs/import": () => import("./features/docs/ImportDocsPage.tsx"),
+    "/import":      () => import("./features/import/ImportPage.tsx"),
     "/tools/macro-calculator": () => import("./features/tool-pages/macros/MacroPage.tsx"),
     "/tools/one-rep-max":      () => import("./features/tool-pages/1-RM/1RmPage.tsx"),
 } as const;

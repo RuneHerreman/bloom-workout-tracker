@@ -17,6 +17,8 @@ const OneRepMaxPage   = lazy(routeLoaders["/tools/one-rep-max"]);
 const ProfilePage     = lazy(routeLoaders["/profile"]);
 const InsightsPage    = lazy(routeLoaders["/insights"]);
 const LeaderboardPage = lazy(routeLoaders["/leaderboard"]);
+const ImportDocsPage  = lazy(routeLoaders["/docs/import"]);
+const ImportPage      = lazy(routeLoaders["/import"]);
 
 function ProtectedLayout() {
     const { pathname } = useLocation();
@@ -49,6 +51,8 @@ function App() {
                     <Route path="/profile" element={<ProfilePage/>}/>
                     <Route path="/insights" element={<InsightsPage/>}/>
                     <Route path="/leaderboard" element={<LeaderboardPage/>}/>
+                    <Route path="/docs/import" element={<ImportDocsPage/>}/>
+                    <Route path="/import" element={<ImportPage/>}/>
                 </Route>
             </Routes>
         </AuthProvider>

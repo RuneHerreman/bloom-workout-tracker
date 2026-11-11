@@ -58,6 +58,8 @@ public static class ApplicationModule
         services.AddScoped<IUseCase<DeleteWorkoutTemplateInput>, DeleteWorkoutTemplate>();
         //      LOGS
         services.AddScoped<IUseCase<CreateLoggedWorkoutInput, CreateLoggedWorkoutOutput>, CreateLoggedWorkout>();
+        services.AddScoped<IUseCase<ImportLoggedWorkoutsInput, ImportLoggedWorkoutsOutput>, ImportLoggedWorkouts>();
+        services.AddScoped<IUseCase<UndoImportedWorkoutsInput, UndoImportedWorkoutsOutput>, UndoImportedWorkouts>();
         services.AddScoped<IUseCase<UpdateLoggedWorkoutInput, UpdateLoggedWorkoutOutput>, UpdateLoggedWorkout>();
         services.AddScoped<IUseCase<DeleteLoggedWorkoutInput>, DeleteLoggedWorkout>();
 
