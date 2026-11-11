@@ -13,6 +13,8 @@ public sealed record GetMonthlyLeaderboardInput(int Year, int Month);
 /// <param name="TotalVolumeKg">Sum of reps × weight (kg) over working sets — warm-ups excluded.</param>
 /// <param name="NewPrs">Exercises where this month's best weight beat every earlier month.</param>
 /// <param name="ActiveDays">Distinct days with at least one logged workout.</param>
+/// <param name="IsHidden">The user opted out of the leaderboard. Only ever true on the current user's
+/// own entry: hidden users are left out for everyone else.</param>
 public sealed record LeaderboardEntryData(
     Guid UserId,
     string Username,
@@ -20,14 +22,16 @@ public sealed record LeaderboardEntryData(
     decimal TotalVolumeKg,
     int NewPrs,
     int ActiveDays,
-    int Workouts
+    int Workouts,
+    bool IsHidden
 );
 
 public sealed record GetMonthlyLeaderboardOutput(int Year, int Month, IReadOnlyList<LeaderboardEntryData> Entries);
 
 /// <summary>
-/// Monthly comparison across all users. Only usernames and aggregate numbers are
-/// exposed — never individual workouts, names, or emails.
+/// Monthly comparison across users who opted in. Only usernames and aggregate numbers are
+/// exposed — never individual workouts, names, or emails. A user who opted out is left out
+/// for everyone else but still sees their own (hidden) standing.
 /// </summary>
 public class GetMonthlyLeaderboard(
     ICurrentUser currentUser,
@@ -47,7 +51,7 @@ public class GetMonthlyLeaderboard(
         var monthStart = new DateTime(input.Year, input.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         var monthEnd = monthStart.AddMonths(1);
 
-        var users = await usersQuery.Fetch(UserDataFilters.All(), ct);
+        var users = await usersQuery.Fetch(UserDataFilters.OnLeaderboardFor(currentUser.UserId), ct);
         // Everything up to the end of the month: earlier history is needed to detect PRs.
         var logs = await logsQuery.Fetch(LoggedWorkoutDataFilters.LoggedBefore(monthEnd), ct);
         var logsByUser = logs.ToLookup(l => l.UserId);
@@ -87,7 +91,8 @@ public class GetMonthlyLeaderboard(
             decimal.Round(volume, 1),
             newPrs,
             activeDays,
-            inMonth.Count
+            inMonth.Count,
+            !user.ShowOnLeaderboard
         );
     }
 

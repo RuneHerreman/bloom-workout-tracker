@@ -13,4 +13,5 @@ public sealed record UserData
     public DateOnly BirthDate { get; init; }
     public string? TechnicalPoints { get; init; }
     public List<string> Gear { get; init; } = [];
+    public bool ShowOnLeaderboard { get; init; } = true;
 }

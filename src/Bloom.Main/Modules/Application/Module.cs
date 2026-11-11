@@ -26,6 +26,7 @@ public static class ApplicationModule
         services.AddScoped<IUseCase<UpdateUserInfoInput, UpdateUserInfoOutput>, UpdateUserInfo>();
         services.AddScoped<IUseCase<UpdateTechnicalPointsInput, UpdateTechnicalPointsOutput>, UpdateTechnicalPoints>();
         services.AddScoped<IUseCase<UpdateUserGearInput, UpdateUserGearOutput>, UpdateUserGear>();
+        services.AddScoped<IUseCase<UpdateLeaderboardVisibilityInput, UpdateLeaderboardVisibilityOutput>, UpdateLeaderboardVisibility>();
         services.AddScoped<IUseCase<DeleteUserInput>, DeleteUser>();
         services.AddScoped<IUseCase<ChangeUserPasswordInput>, ChangeUserPassword>();
         //      EXERCISES

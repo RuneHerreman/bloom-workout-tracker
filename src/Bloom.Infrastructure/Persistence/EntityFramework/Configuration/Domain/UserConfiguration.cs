@@ -25,5 +25,9 @@ public class UserConfiguration: IEntityTypeConfiguration<User>
         builder.Property(u => u.BirthDate).IsRequired();
         builder.Property(u => u.TechnicalPoints);
         builder.Property(u => u.Gear).HasColumnType("jsonb");
+        // No HasDefaultValue: with a bool the CLR default (false) would be treated as
+        // "unset" and silently replaced by the DB default. Existing rows are backfilled
+        // to true by the AddLeaderboardVisibility migration instead.
+        builder.Property(u => u.ShowOnLeaderboard).IsRequired();
     }
 }

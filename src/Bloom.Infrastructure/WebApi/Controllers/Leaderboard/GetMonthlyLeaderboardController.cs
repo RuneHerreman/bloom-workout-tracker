@@ -18,7 +18,8 @@ public sealed record LeaderboardEntryResponse(
     decimal TotalVolumeKg,
     int NewPrs,
     int ActiveDays,
-    int Workouts
+    int Workouts,
+    bool IsHidden
 );
 
 public sealed record LeaderboardResponse(int Year, int Month, IReadOnlyList<LeaderboardEntryResponse> Entries);
@@ -42,7 +43,7 @@ public static class GetMonthlyLeaderboardController
             output.Month,
             output.Entries
                 .Select(e => new LeaderboardEntryResponse(
-                    e.Username, e.IsCurrentUser, e.TotalVolumeKg, e.NewPrs, e.ActiveDays, e.Workouts))
+                    e.Username, e.IsCurrentUser, e.TotalVolumeKg, e.NewPrs, e.ActiveDays, e.Workouts, e.IsHidden))
                 .ToList()
         ));
     }

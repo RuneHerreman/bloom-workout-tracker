@@ -19,6 +19,8 @@ public class User : AggregateRoot<UserId>
     public DateOnly BirthDate { get; private set; }
     public string? TechnicalPoints { get; private set; }
     public List<string> Gear { get; private set; } = [];
+    /// <summary>Whether other users can see this user on the monthly leaderboard. Opt-out: visible by default.</summary>
+    public bool ShowOnLeaderboard { get; private set; } = true;
 
     private User() { }
 
@@ -84,6 +86,15 @@ public class User : AggregateRoot<UserId>
     {
         Asserts.EnsureTrue(gear.All(g => !string.IsNullOrWhiteSpace(g)));
         Gear = gear;
+        RaiseDomainEvent(new UserUpdated(Id));
+    }
+
+    public void SetLeaderboardVisibility(bool showOnLeaderboard)
+    {
+        if (ShowOnLeaderboard == showOnLeaderboard)
+            return;
+
+        ShowOnLeaderboard = showOnLeaderboard;
         RaiseDomainEvent(new UserUpdated(Id));
     }
 

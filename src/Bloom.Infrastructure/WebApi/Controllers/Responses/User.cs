@@ -13,7 +13,8 @@ public record User(
     int ActiveDays,
     DateOnly BirthDate,
     string? TechnicalPoints,
-    IReadOnlyList<string> Gear
+    IReadOnlyList<string> Gear,
+    bool ShowOnLeaderboard
 );
 
 public static class UserExtensions
@@ -31,7 +32,8 @@ public static class UserExtensions
             data.ActiveDays,
             data.BirthDate,
             data.TechnicalPoints,
-            data.Gear
+            data.Gear,
+            data.ShowOnLeaderboard
         );
     }
 }

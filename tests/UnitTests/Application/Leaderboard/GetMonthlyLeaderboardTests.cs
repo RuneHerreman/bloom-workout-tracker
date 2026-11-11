@@ -21,7 +21,8 @@ public sealed class GetMonthlyLeaderboardTests
     private static readonly DateTime February = new(2026, 2, 10, 18, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime April = new(2026, 4, 2, 18, 0, 0, DateTimeKind.Utc);
 
-    private static UserData User(Guid id, string username) => new() { Id = id, Username = username };
+    private static UserData User(Guid id, string username, bool showOnLeaderboard = true) =>
+        new() { Id = id, Username = username, ShowOnLeaderboard = showOnLeaderboard };
 
     private static LoggedSetData Set(int reps, decimal weight, WeightUnit unit = WeightUnit.Kg, SetMarker? marker = null) => new()
     {
@@ -157,6 +158,59 @@ public sealed class GetMonthlyLeaderboardTests
         Assert.Equal(["bob", "alice", "carol"], output.Entries.Select(e => e.Username));
         Assert.Equal(0m, output.Entries[2].TotalVolumeKg);
         Assert.Single(output.Entries, e => e.IsCurrentUser);
+    }
+
+    [Fact]
+    public async Task Execute_ShouldExcludeUsersWhoOptedOut()
+    {
+        var logs = new[]
+        {
+            Log(_alice, March, _bench, Set(10, 50m)),
+            Log(_bob, March, _bench, Set(10, 100m)),
+        };
+
+        var output = await BuildUseCase(_alice, logs, User(_alice, "alice"), User(_bob, "bob", showOnLeaderboard: false))
+            .Execute(new GetMonthlyLeaderboardInput(2026, 3));
+
+        var entry = Assert.Single(output.Entries);
+        Assert.Equal("alice", entry.Username);
+        Assert.False(entry.IsHidden);
+    }
+
+    [Fact]
+    public async Task Execute_WhenCurrentUserOptedOut_ShouldStillShowTheirOwnStandingMarkedHidden()
+    {
+        var carol = Guid.NewGuid();
+        var logs = new[]
+        {
+            Log(_alice, March, _bench, Set(10, 50m)),
+            Log(_bob, March, _bench, Set(10, 100m)),
+            Log(carol, March, _bench, Set(10, 200m)),
+        };
+        var users = new[] { User(_alice, "alice"), User(_bob, "bob", showOnLeaderboard: false), User(carol, "carol", showOnLeaderboard: false) };
+
+        var output = await BuildUseCase(_bob, logs, users)
+            .Execute(new GetMonthlyLeaderboardInput(2026, 3));
+
+        // Bob sees himself ranked among visible users; carol (also hidden) stays out.
+        Assert.Equal(["bob", "alice"], output.Entries.Select(e => e.Username));
+        var me = output.Entries[0];
+        Assert.True(me.IsCurrentUser);
+        Assert.True(me.IsHidden);
+        Assert.Equal(1000m, me.TotalVolumeKg);
+        Assert.False(output.Entries[1].IsHidden);
+    }
+
+    [Fact]
+    public async Task Execute_ForOtherViewer_ShouldNotLeakHiddenUser()
+    {
+        var logs = new[] { Log(_bob, March, _bench, Set(10, 100m)) };
+
+        var output = await BuildUseCase(_alice, logs, User(_alice, "alice"), User(_bob, "bob", showOnLeaderboard: false))
+            .Execute(new GetMonthlyLeaderboardInput(2026, 3));
+
+        Assert.DoesNotContain(output.Entries, e => e.Username == "bob");
+        Assert.DoesNotContain(output.Entries, e => e.IsHidden);
     }
 
     [Theory]

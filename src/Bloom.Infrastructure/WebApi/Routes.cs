@@ -79,6 +79,11 @@ public static class Routes
             .WithDescription("Update the authenticated user's gear list (full overwrite).")
             .RequireAuthorization();
 
+        userGroup.MapPut("/me/leaderboard-visibility", UpdateLeaderboardVisibilityController.Invoke)
+            .WithName(nameof(UpdateLeaderboardVisibilityController))
+            .WithDescription("Choose whether the authenticated user appears on the monthly leaderboard for other users.")
+            .RequireAuthorization();
+
         return userGroup;
     }
 

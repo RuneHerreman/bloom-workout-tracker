@@ -115,4 +115,36 @@ public sealed class UserTests
         Assert.Throws<ArgumentException>(
             () => user.UpdateInfo("not-an-email", "alice", "Alice", "Smith", 72.5m, 180, 4, new DateOnly(1990, 1, 1)));
     }
+
+    [Fact]
+    public void Create_ShouldShowOnLeaderboardByDefault()
+    {
+        User user = User.Create("user@example.com", "alice", "hashed-password", "Alice", "Smith", 72.5m, 180, 4, new DateOnly(1990, 1, 1));
+
+        Assert.True(user.ShowOnLeaderboard);
+    }
+
+    [Fact]
+    public void SetLeaderboardVisibility_WhenChanged_ShouldUpdateAndRaiseEvent()
+    {
+        User user = User.Create("user@example.com", "alice", "hashed-password", "Alice", "Smith", 72.5m, 180, 4, new DateOnly(1990, 1, 1));
+        user.ClearDomainEvents();
+
+        user.SetLeaderboardVisibility(false);
+
+        Assert.False(user.ShowOnLeaderboard);
+        Assert.IsType<UserUpdated>(Assert.Single(user.DomainEvents));
+    }
+
+    [Fact]
+    public void SetLeaderboardVisibility_WhenUnchanged_ShouldNotRaiseEvent()
+    {
+        User user = User.Create("user@example.com", "alice", "hashed-password", "Alice", "Smith", 72.5m, 180, 4, new DateOnly(1990, 1, 1));
+        user.ClearDomainEvents();
+
+        user.SetLeaderboardVisibility(true);
+
+        Assert.True(user.ShowOnLeaderboard);
+        Assert.Empty(user.DomainEvents);
+    }
 }

@@ -6,7 +6,12 @@ namespace Bloom.Application.Contracts.Data.Filters;
 
 public static class UserDataFilters
 {
-    public static Expression<Func<UserData, bool>> All() => user => true;
+    /// <summary>Users who opted in to the leaderboard, plus <paramref name="currentUserId"/> so they always see their own standing.</summary>
+    public static Expression<Func<UserData, bool>> OnLeaderboardFor(UserId currentUserId)
+    {
+        var id = currentUserId.Value;
+        return user => user.ShowOnLeaderboard || user.Id == id;
+    }
 
     public static Expression<Func<UserData, bool>> ById(UserId inputId)
     {
