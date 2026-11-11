@@ -183,6 +183,27 @@ export interface User {
     gear?: string[];
     /** Whether other users can see you on the monthly leaderboard. */
     showOnLeaderboard: boolean;
+    /** Only used for resting-energy estimates. */
+    sex?: Sex | null;
+}
+
+export type Sex = "Male" | "Female";
+
+// ── Body log ──────────────────────────────────────────────────────────────────
+
+export interface BodyEntry {
+    /** yyyy-MM-dd */
+    date: string;
+    weightKg: number;
+    bodyFatPct: number | null;
+    source: "Manual" | "Import" | "Signup";
+}
+
+export interface LogBodyBody {
+    weightKg: number;
+    /** A new reading; leave out to keep the day's existing one. */
+    bodyFatPct?: number | null;
+    clearBodyFat?: boolean;
 }
 
 export interface RegisterUserBody {

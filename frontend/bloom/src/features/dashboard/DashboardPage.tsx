@@ -12,6 +12,7 @@ import type { LoggedWorkout, WorkoutTemplate } from "../../assets/js/data/apiTyp
 import Skeleton from "../../components/general/Skeleton.tsx";
 import Button from "../../components/general/ButtonComponent.tsx";
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
+import LogWeightButton from "../body/LogWeightButton.tsx";
 import { PlusIcon } from "lucide-react";
 import { formatWorkoutDate, formatDate } from "../../utils/workoutUtils.ts";
 import StatWidget from "./components/StatWidget.tsx";
@@ -99,7 +100,12 @@ function DashboardPage() {
             <HeaderComponent
                 title={`Welcome back, ${user?.firstName ?? "Stranger"}!`}
                 subtitle={formatWorkoutDate(now)}
-                action={<Button text="Log workout" icon={<PlusIcon size={15} />} style="green hide-on-phone" onClick={startLog} />}
+                action={
+                    <>
+                        <LogWeightButton />
+                        <Button text="Log workout" icon={<PlusIcon size={15} />} style="green hide-on-phone" onClick={startLog} />
+                    </>
+                }
             />
 
             {error && <div className="error-banner" style={{ margin: "0 2rem" }}>{error}</div>}

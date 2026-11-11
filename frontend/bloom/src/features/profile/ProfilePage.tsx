@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Save, Trash2, Eye, EyeOff, KeyRound, X, Download, Upload } from "lucide-react";
-import { getMe, updateMe, changePassword, deleteMe, updateLeaderboardVisibility } from "../auth/api.ts";
+import { getMe, updateMe, updateSex, changePassword, deleteMe, updateLeaderboardVisibility } from "../auth/api.ts";
+import type { Sex } from "../../assets/js/data/apiTypes.ts";
+import { getBody, formatEntryDate, localToday, type BodyEntry } from "../body/api.ts";
+import LogWeightButton from "../body/LogWeightButton.tsx";
 import { clearLeaderboardCache } from "../leaderboard/api.ts";
 import type { User } from "../auth/api.ts";
 import { useAuth } from "../../context/AuthContext.tsx";
@@ -26,6 +29,8 @@ function ProfilePage() {
     const [weight, setWeight] = useState(0);
     const [height, setHeight] = useState(0);
     const [activeDays, setActiveDays] = useState(0);
+    const [sex, setSex] = useState<Sex | "">("");
+    const [lastWeighIn, setLastWeighIn] = useState<BodyEntry | null>(null);
 
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -57,7 +62,8 @@ function ProfilePage() {
         Promise.all([
             getMe(),
             getStravaStatus().catch(() => null),
-        ]).then(([u, s]) => {
+            getBody().catch(() => [] as BodyEntry[]),
+        ]).then(([u, s, body]) => {
             setUser(u);
             setFirstName(u.firstName);
             setLastName(u.lastName);
@@ -67,6 +73,8 @@ function ProfilePage() {
             setWeight(u.weight);
             setHeight(u.height);
             setActiveDays(u.activeDays);
+            setSex(u.sex ?? "");
+            setLastWeighIn(body.at(-1) ?? null);
             if (s) setStrava(s);
             // Show success message if redirected back from Strava OAuth
             const params = new URLSearchParams(window.location.search);
@@ -97,18 +105,29 @@ function ProfilePage() {
         username !== user.username ||
         email !== user.email ||
         birthDate !== (user.birthDate ?? "") ||
-        weight !== user.weight ||
         height !== user.height ||
-        activeDays !== user.activeDays
+        activeDays !== user.activeDays ||
+        sex !== (user.sex ?? "")
     );
+
+    /** Weight lives in the body log now; a weigh-in updates it here without making the form dirty. */
+    function handleLogged(entry: BodyEntry) {
+        setLastWeighIn(prev => (!prev || entry.date >= prev.date ? entry : prev));
+        if (!lastWeighIn || entry.date >= lastWeighIn.date) {
+            setWeight(entry.weightKg);
+            setUser(prev => prev ? { ...prev, weight: entry.weightKg } : prev);
+        }
+    }
 
     async function handleSave() {
         if (!isDirty || saving) return;
         setSaving(true);
         setError(null);
         try {
+            const sexChanged = sex !== (user?.sex ?? "");
             await updateMe({ email, username, firstName, lastName, weight, height, activeDays, birthDate });
-            setUser(prev => prev ? { ...prev, email, username, firstName, lastName, weight, height, activeDays, birthDate } : prev);
+            if (sexChanged) await updateSex(sex || null);
+            setUser(prev => prev ? { ...prev, email, username, firstName, lastName, weight, height, activeDays, birthDate, sex: sex || null } : prev);
         } catch (e) {
             setError(e instanceof Error ? e.message : "Failed to save profile");
         } finally {
@@ -289,29 +308,39 @@ function ProfilePage() {
                             />
                         </div>
 
-                        <div className="profile-field">
-                            <label htmlFor="birthDate">Date of birth</label>
-                            <input
-                                type="date"
-                                id="birthDate"
-                                value={birthDate}
-                                max={new Date().toISOString().split("T")[0]}
-                                onChange={e => setBirthDate(e.target.value)}
-                            />
+                        <div className="profile-row-2">
+                            <div className="profile-field">
+                                <label htmlFor="birthDate">Date of birth</label>
+                                <input
+                                    type="date"
+                                    id="birthDate"
+                                    value={birthDate}
+                                    max={new Date().toISOString().split("T")[0]}
+                                    onChange={e => setBirthDate(e.target.value)}
+                                />
+                            </div>
+                            <div className="profile-field">
+                                <label htmlFor="sex">Sex <span className="profile-label-hint">for calorie estimates</span></label>
+                                <select id="sex" value={sex} onChange={e => setSex(e.target.value as Sex | "")}>
+                                    <option value="">Not set</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div className="profile-row-2">
                             <div className="profile-field">
-                                <label htmlFor="weight">Weight (kg)</label>
-                                <input
-                                    type="number"
-                                    id="weight"
-                                    value={weight}
-                                    min={0.1}
-                                    max={500}
-                                    step={0.1}
-                                    onChange={e => setWeight(Number(e.target.value))}
-                                />
+                                <span className="profile-field-label">Weight</span>
+                                <div className="profile-weight">
+                                    <p className="profile-weight-value">
+                                        <b>{weight.toLocaleString("en-GB", { maximumFractionDigits: 2 })} kg</b>
+                                        {lastWeighIn && (
+                                            <span>{lastWeighIn.date === localToday() ? "logged today" : `logged ${formatEntryDate(lastWeighIn.date)}`}</span>
+                                        )}
+                                    </p>
+                                    <LogWeightButton onLogged={handleLogged} />
+                                </div>
                             </div>
                             <div className="profile-field">
                                 <label htmlFor="height">Height (cm)</label>

@@ -1,5 +1,5 @@
 import { fetchFromServer, remember, peek } from "../../assets/js/data/apiClient.ts";
-import type { User, UpdateUserInfoBody, UpdateTechnicalPointsBody } from "../../assets/js/data/apiTypes.ts";
+import type { Sex, User, UpdateUserInfoBody, UpdateTechnicalPointsBody } from "../../assets/js/data/apiTypes.ts";
 
 export type { User };
 
@@ -61,6 +61,16 @@ export async function updateTechnicalPoints(technicalPoints: string | null): Pro
 
 export async function updateGear(gear: string[]): Promise<void> {
     await fetchFromServer<unknown>("users/me/gear", "PUT", { gear });
+    _meCache = null;
+}
+
+export async function updateSex(sex: Sex | null): Promise<void> {
+    await fetchFromServer<unknown>("users/me/sex", "PUT", { sex });
+    _meCache = null;
+}
+
+/** Forget the cached profile, e.g. after the body log changed the current weight. */
+export function invalidateMe(): void {
     _meCache = null;
 }
 

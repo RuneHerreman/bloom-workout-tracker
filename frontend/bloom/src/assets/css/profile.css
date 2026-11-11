@@ -57,18 +57,20 @@
     gap: 0.35rem;
 }
 
-.profile-field label {
+.profile-field label,
+.profile-field-label {
     font-size: var(--text-xs);
     font-weight: 500;
     color: var(--ink-muted);
     letter-spacing: 0.01em;
 }
 
-.profile-field input {
+.profile-field input,
+.profile-field select {
     padding: 0.6rem 0.75rem;
     border: 0.0625rem solid var(--border);
     border-radius: var(--radius-md);
-    background: var(--surface-lighter);
+    background-color: var(--surface-lighter);
     color: var(--ink);
     font-size: var(--text-base);
     font-family: var(--sans), sans-serif;
@@ -78,11 +80,13 @@
     box-sizing: border-box;
 }
 
-.profile-field input:hover {
+.profile-field input:hover,
+.profile-field select:hover {
     border-color: var(--grey);
 }
 
-.profile-field input:focus {
+.profile-field input:focus,
+.profile-field select:focus {
     border-color: var(--primary-light);
 }
 
@@ -414,3 +418,26 @@
 @media (prefers-reduced-motion: reduce) {
     .profile-switch, .profile-switch-thumb { transition: none; }
 }
+
+/* ── Weight (read-only; it comes from the body log) ──────────────────────────── */
+
+.profile-label-hint { margin-left: 0.3rem; font-weight: 400; opacity: 0.75; }
+
+.profile-weight {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 2.6rem;
+}
+
+.profile-weight-value {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+    line-height: 1.3;
+}
+.profile-weight-value b { font-size: var(--text-base); font-weight: 550; color: var(--ink); font-variant-numeric: tabular-nums; }
+.profile-weight-value span { font-size: var(--text-xs); color: var(--ink-muted); }
+.profile-weight .log-weight-trigger { padding: 0.4rem 0.75rem; font-size: var(--text-sm); }

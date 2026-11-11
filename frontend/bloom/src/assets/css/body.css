@@ -1,0 +1,58 @@
+/* ── Log weight popover ─────────────────────────────────────────────────────
+   Reuses the tool-page fields (label above, unit inside the input). */
+@import "./tools.css";
+
+.log-weight { position: relative; display: inline-flex; }
+
+/* Secondary to "Log workout": same size, outline only. */
+.log-weight-trigger {
+    padding: 0.45rem 0.9rem;
+    border-width: 0.0625rem;
+    color: var(--ink);
+    font-size: var(--text-base);
+}
+.dark .log-weight-trigger { color: var(--ink); }
+.log-weight-trigger[aria-expanded="true"] { border-color: var(--primary-light); }
+
+.log-weight-popover {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    right: 0;
+    z-index: 60;
+    width: 19rem;
+    max-width: calc(100vw - 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--widget-border-radius);
+    background: var(--surface-lighter);
+    box-shadow: var(--shadow-widget);
+    text-align: left;
+    animation: pop-in 0.14s ease both;
+}
+
+.log-weight-head { display: flex; flex-direction: column; gap: 0.2rem; line-height: 1.3; }
+.log-weight-title { font-size: var(--text-md); font-weight: 550; color: var(--dark-text); }
+.log-weight-last { font-size: var(--text-xs); color: var(--ink-muted); }
+
+.log-weight-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.log-weight-popover .tool-field input[type="date"] { padding-right: 0.5rem; }
+
+.log-weight-note, .log-weight-error { margin: 0; font-size: var(--text-xs); line-height: 1.4; }
+.log-weight-note { color: var(--ink-muted); }
+.log-weight-error { color: var(--danger-text); }
+
+.log-weight-actions { display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; }
+.log-weight-actions .button-component { padding: 0.45rem 1rem; font-size: var(--text-sm); }
+.log-weight-cancel {
+    padding: 0.45rem 0.6rem;
+    border: none;
+    background: none;
+    color: var(--ink-muted);
+    font: inherit;
+    font-size: var(--text-sm);
+    cursor: pointer;
+}
+.log-weight-cancel:hover { color: var(--ink); }
