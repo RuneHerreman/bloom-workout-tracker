@@ -425,6 +425,19 @@
     flex-shrink: 0;
 }
 
+/* Narrow list: the meta line would squeeze the name to nothing, so it drops
+   under the name instead (lined up with it, past the type dot). */
+.feature-sidebar-list { container-type: inline-size; }
+@container (max-width: 14rem) {
+    .sidebar-card {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        column-gap: 0.55rem;
+        row-gap: 0.15rem;
+    }
+    .sidebar-card-meta { grid-column: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
 
 /* =============================================================================
    COMPONENT — TYPE SYSTEM (dot + badge)
