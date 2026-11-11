@@ -3,6 +3,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X } from "lucide-react";
 import type { PlannedSet } from "../../../assets/js/data/apiTypes.ts";
 import DurationInput from "./DurationInput.tsx";
+import { moveBetweenCells } from "../../../utils/cellNavigation.ts";
 
 export interface RowItem {
     id: string;
@@ -22,6 +23,7 @@ function SortableSetRow({ item, index, type, onSetChange, onDelete }: {
         <div
             ref={setNodeRef}
             className="set-row"
+            onKeyDown={moveBetweenCells}
             style={{
                 transform: CSS.Transform.toString(transform),
                 transition,

@@ -5,6 +5,7 @@ import DurationInput from "../../templates/components/DurationInput.tsx";
 import SetMarkerButton from "./SetMarkerButton.tsx";
 import { markerShort } from "../logbookUtils.ts";
 import { GripVertical, X } from "lucide-react";
+import { moveBetweenCells } from "../../../utils/cellNavigation.ts";
 
 export interface LogRowItem {
     id: string;
@@ -31,6 +32,7 @@ function LogSortableSetRow({ item, number, type, onSetChange, onDelete }: LogSor
             ref={setNodeRef}
             className={`set-row${short ? ` has-marker marker-${short.toLowerCase()}` : ""}`}
             style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+            onKeyDown={moveBetweenCells}
         >
             <SetMarkerButton
                 marker={item.set.marker}
