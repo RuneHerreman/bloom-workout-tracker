@@ -13,7 +13,7 @@ function UnsavedChangesDialog({ name, date, saving, onSave, onDiscard, onCancel 
     const label = date ? `${name}, ${date}` : name;
 
     return (
-        <Overlay title="Unsaved changes" subtitle="Hold on" onClose={onCancel}>
+        <Overlay title="Unsaved changes" onClose={onCancel}>
             <div className="unsaved-dialog">
                 <p className="unsaved-dialog-body">
                     You have unsaved changes for <strong>{label}</strong>

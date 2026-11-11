@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { DndContext, closestCenter, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { LoggedWorkout, LoggedExercise, LoggedSet } from "../api.ts";
-import { updateLog } from "../api.ts";
+import { updateLog, createLog } from "../api.ts";
 import type { Exercise } from "../../exercises/api.ts";
-import { toDateInputValue, withDate } from "../logbookUtils.ts";
+import { toDateInputValue, withDate, prefilledFirstSet, type PreviousSetsLookup } from "../logbookUtils.ts";
 import { useExerciseDnd } from "../../templates/hooks/useExerciseDnd.ts";
 import { useShortcut } from "../../../hooks/useShortcut.ts";
 import LogExerciseCard from "./LogExerciseCard.tsx";
@@ -12,6 +12,8 @@ import Button from "../../../components/general/ButtonComponent.tsx";
 import Overlay from "../../../components/general/OverlayComponent.tsx";
 import ExerciseLibrary from "../../templates/components/ExerciseLibrary.tsx";
 import { Save, Trash2, Plus, MoreHorizontal, BookmarkPlus } from "lucide-react";
+
+const noop = () => {};
 
 interface LogDetailProps {
     log: LoggedWorkout;
@@ -24,9 +26,20 @@ interface LogDetailProps {
     userGear?: string[];
     autoFocusTitle?: boolean;
     openMap?: boolean;
+    /** A local, not-yet-saved log: Save creates it on the server. */
+    isDraft?: boolean;
+    /** Called on every edit of a draft so it can be kept in local storage. */
+    onDraftChange?: (draft: LoggedWorkout) => void;
+    /** Called once a draft has been saved and now has a real id. */
+    onDraftSaved?: (log: LoggedWorkout) => void;
+    /** Last time's sets per exercise, used to prefill newly added exercises. */
+    previousSets?: PreviousSetsLookup;
 }
 
-function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirtyChange, onExerciseCreated, userGear, autoFocusTitle, openMap }: LogDetailProps) {
+function LogDetail({
+    log, exercises, onSave, onDelete, onCreateTemplate, onDirtyChange, onExerciseCreated,
+    userGear, autoFocusTitle, openMap, isDraft = false, onDraftChange, onDraftSaved, previousSets,
+}: LogDetailProps) {
     const initialDate = toDateInputValue(log.loggedAt);
 
     const [logExercises, setLogExercises] = useState<LoggedExercise[]>(() =>
@@ -78,12 +91,20 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
         || date !== initialDate
         || note !== (log.note ?? "")
         || JSON.stringify(normalize(logExercises)) !== JSON.stringify(normalize(log.exercises));
+    // A draft is always saveable, but never "unsaved": it is kept locally on every edit.
+    const canSave = isDraft ? logExercises.length > 0 || name.trim() !== "" : hasChanges;
+    const currentLoggedAt = () => (date === initialDate ? log.loggedAt : withDate(log.loggedAt, date));
 
     const handleSaveRef = useRef(handleSave);
     handleSaveRef.current = handleSave;
     useEffect(() => {
-        onDirtyChange?.(hasChanges, () => handleSaveRef.current());
-    }, [hasChanges]); // eslint-disable-line react-hooks/exhaustive-deps
+        onDirtyChange?.(!isDraft && hasChanges, () => handleSaveRef.current());
+    }, [hasChanges, isDraft]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        if (!isDraft) return;
+        onDraftChange?.({ ...log, name, note: note || null, loggedAt: currentLoggedAt(), exercises: logExercises });
+    }, [isDraft, name, note, date, logExercises]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         const el = actionsRef.current;
@@ -142,12 +163,11 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
 
     function handleAddExercise(exerciseId: string, typeHint?: string) {
         const type = typeHint ?? exercises[exerciseId]?.type ?? "Strength";
-        const defaultSet: LoggedSet = type === "Cardio"
-            ? { type: "Cardio", order: 1, reps: null, weight: null, weightUnit: null, rir: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
-            : { type, order: 1, reps: 10, weight: 60, weightUnit: "kg", rir: null, duration: null, distance: null, distanceUnit: null };
+        // First set = what you did first last time; "Add set" then copies the row above.
+        const firstSet = prefilledFirstSet(type, previousSets?.(exerciseId, currentLoggedAt()));
         setLogExercises(prev => [
             ...prev,
-            { exerciseId, order: prev.length + 1, sets: [defaultSet], gpxData: null, note: null, gear: [] },
+            { exerciseId, order: prev.length + 1, sets: [firstSet], gpxData: null, note: null, gear: [] },
         ]);
         setLastAddedOrder(logExercises.length + 1);
         setAddExerciseOpen(false);
@@ -166,14 +186,21 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
     }, true);
 
     async function handleSave() {
+        if (saving || !canSave) return;
         setSaving(true);
         setError(null);
         try {
-            const loggedAt = date === initialDate ? log.loggedAt : withDate(log.loggedAt, date);
+            const loggedAt = currentLoggedAt();
             const cleaned = logExercises.map(ex => ({ ...ex, note: ex.note?.trim() ? ex.note.trim() : null }));
-            await updateLog(log.id, name, loggedAt, cleaned, note || null);
+            const finalName = name.trim() || "Untitled workout";
+            if (isDraft) {
+                const id = await createLog(finalName, cleaned, note || null, loggedAt);
+                onDraftSaved?.({ ...log, id, name: finalName, loggedAt, note: note || null, exercises: cleaned });
+                return;
+            }
+            await updateLog(log.id, finalName, loggedAt, cleaned, note || null);
             setLogExercises(cleaned);
-            onSave(log.id, name, loggedAt, note || null, cleaned);
+            onSave(log.id, finalName, loggedAt, note || null, cleaned);
         } catch (e) {
             setError(e instanceof Error ? e.message : "Failed to save log");
         } finally {
@@ -184,7 +211,7 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
     return (
         <div className="detail-view">
             {addExerciseOpen && (
-                <Overlay title="Exercise library" subtitle="Add exercise" onClose={() => setAddExerciseOpen(false)}>
+                <Overlay title="Add exercise" onClose={() => setAddExerciseOpen(false)}>
                     <ExerciseLibrary
                         exercises={Object.values(exercises)}
                         onSelect={e => handleAddExercise(e.id, e.type)}
@@ -195,9 +222,9 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
 
             {error && <div className="error-banner">{error}</div>}
 
-            {showSticky && hasChanges && (
+            {showSticky && canSave && (
                 <div className="sticky-save-bar" style={{ top: panelTop }}>
-                    <Button text="Save Changes" style="green" icon={<Save size={14} />} disabled={saving} onClick={handleSave} />
+                    <Button text={isDraft ? "Save log" : "Save changes"} style="green" icon={<Save size={14} />} disabled={saving} onClick={handleSave} />
                 </div>
             )}
             <div className="detail-header">
@@ -206,17 +233,27 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
                         ref={titleInputRef}
                         className="template-title-input"
                         value={name}
+                        placeholder="Name this workout"
+                        aria-label="Workout name"
                         onChange={e => setName(e.target.value)}
                     />
-                    <input
-                        type="date"
-                        className="log-date-input"
-                        value={date}
-                        onChange={e => setDate(e.target.value)}
-                    />
+                    <div className="log-detail-meta">
+                        <input
+                            type="date"
+                            className="log-date-input"
+                            aria-label="Workout date"
+                            value={date}
+                            onChange={e => setDate(e.target.value)}
+                        />
+                        {isDraft && (
+                            <span className="draft-badge" title="Kept on this device until you save">
+                                Draft · not saved yet
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="actions-row" ref={actionsRef}>
-                    <Button text="Save Changes" style="green" icon={<Save size={14} />} disabled={!hasChanges || saving} onClick={handleSave} />
+                    <Button text={isDraft ? "Save log" : "Save changes"} style="green" icon={<Save size={14} />} disabled={!canSave || saving} onClick={handleSave} />
                     <div className="overflow-menu" ref={menuRef}>
                         <button
                             className="overflow-menu-trigger"
@@ -232,14 +269,14 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
                                     onClick={() => { setMenuOpen(false); onCreateTemplate(name, logExercises); }}
                                 >
                                     <BookmarkPlus size={14} />
-                                    Create Template from Log
+                                    Create template from log
                                 </button>
                                 <button
                                     className="overflow-menu-item danger"
                                     onClick={() => { setMenuOpen(false); onDelete(log.id); }}
                                 >
                                     <Trash2 size={14} />
-                                    Delete Log
+                                    {isDraft ? "Discard draft" : "Delete log"}
                                 </button>
                             </div>
                         )}
@@ -279,14 +316,20 @@ function LogDetail({ log, exercises, onSave, onDelete, onCreateTemplate, onDirty
                             id={activeExercise.exerciseId}
                             exercise={activeExercise}
                             exerciseInfo={exercises[activeExercise.exerciseId]}
-                            onSetsChange={() => {}}
-                            onDelete={() => {}}
+                            onSetsChange={noop}
+                            onDelete={noop}
                         />
                     )}
                 </DragOverlay>
             </DndContext>
 
-            <Button text="Add Exercise" style="grey" icon={<Plus size={15} />} onClick={() => setAddExerciseOpen(true)} />
+            {logExercises.length === 0 && (
+                <div className="log-empty-exercises">
+                    <p>No exercises yet.</p>
+                    <p>Add one and its first set is filled in from the last time you did it.</p>
+                </div>
+            )}
+            <Button text="Add exercise" style="grey" icon={<Plus size={15} />} onClick={() => setAddExerciseOpen(true)} />
         </div>
     );
 }

@@ -14,6 +14,12 @@ export interface DashboardStats {
     currentStreak: number;
     bestStreak: number;
     totalPRs: number;
+    /** Comparison values so an empty month doesn't read as "nothing ever happened". */
+    workoutsLastMonth: number;
+    volumeLastMonth: string;
+    volumeLastMonthUnit: string;
+    prsLastMonth: number;
+    lastWorkoutAt: string | null;
 }
 
 export function calculateDashboardStats(workouts: LoggedWorkout[]): DashboardStats {
@@ -25,6 +31,15 @@ export function calculateDashboardStats(workouts: LoggedWorkout[]): DashboardSta
     const { volumeThisMonth, volumeUnit, volumeChange } = calculateVolume(workouts, currentYear, currentMonth);
     const { currentStreak, bestStreak } = calculateStreaks(workouts, now);
     const totalPRs = calculateMonthlyPRs(workouts, currentYear, currentMonth);
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prsLastMonth = calculateMonthlyPRs(workouts, prevYear, prevMonth);
+    const workoutsLastMonth = workouts.filter(w => {
+        const d = new Date(w.loggedAt);
+        return d.getFullYear() === prevYear && d.getMonth() === prevMonth;
+    }).length;
+    const lastVol = monthVolume(workouts, prevYear, prevMonth);
+    const lastWorkoutAt = workouts.reduce<string | null>((latest, w) => (!latest || w.loggedAt > latest ? w.loggedAt : latest), null);
 
     return {
         workoutsThisYear,
@@ -35,8 +50,22 @@ export function calculateDashboardStats(workouts: LoggedWorkout[]): DashboardSta
         volumeChange,
         currentStreak,
         bestStreak,
-        totalPRs
+        totalPRs,
+        workoutsLastMonth,
+        volumeLastMonth: lastVol >= 1000 ? (lastVol / 1000).toFixed(1) : String(Math.round(lastVol)),
+        volumeLastMonthUnit: lastVol >= 1000 ? "tonnes" : "kg",
+        prsLastMonth,
+        lastWorkoutAt,
     };
+}
+
+function monthVolume(workouts: LoggedWorkout[], year: number, month: number): number {
+    return workouts.reduce((total, w) => {
+        const d = new Date(w.loggedAt);
+        if (d.getFullYear() !== year || d.getMonth() !== month) return total;
+        return total + w.exercises.reduce((exTotal, ex) =>
+            exTotal + ex.sets.reduce((setTotal, set) => setTotal + ((set.weight || 0) * (set.reps || 0)), 0), 0);
+    }, 0);
 }
 
 function calculateVolume(workouts: LoggedWorkout[], currentYear: number, currentMonth: number) {
@@ -130,9 +159,11 @@ function calculateMonthlyPRs(workouts: LoggedWorkout[], currentYear: number, cur
     const historicalMaxes: Record<string, number> = {};
     const thisMonthMaxes: Record<string, number> = {};
     const startOfThisMonth = new Date(currentYear, currentMonth, 1);
+    const startOfNextMonth = new Date(currentYear, currentMonth + 1, 1);
 
     workouts.forEach(workout => {
         const workoutDate = new Date(workout.loggedAt);
+        if (workoutDate >= startOfNextMonth) return;
         const isThisMonth = workoutDate >= startOfThisMonth;
 
         workout.exercises.forEach(ex => {

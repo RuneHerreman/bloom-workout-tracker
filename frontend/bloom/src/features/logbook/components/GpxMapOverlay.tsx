@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { MapContainer, TileLayer, Polyline, CircleMarker, Marker, useMap } from "react-leaflet";
+import { TILE_URL, TILE_ATTRIBUTION, tileClassName } from "../../../utils/mapTiles.ts";
 import "leaflet/dist/leaflet.css";
 import { Line, Bar } from "react-chartjs-2";
 import {
@@ -140,7 +141,6 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
     const tooltipTitle = dark ? "#f2efe8" : "#333";
     const tooltipBody  = dark ? "#a8a49c" : "#666";
     const tooltipBorder = dark ? "#46463e" : "#e3e3e3";
-    const tileUrl = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
     const positions = useMemo<LatLngTuple[]>(() => points.map(p => [p.lat, p.lon]), [points]);
 
@@ -341,7 +341,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
     const splitsBarHeight = `${Math.max(6, splits.length * 1.55)}rem`;
 
     return (
-        <Overlay title="Route" subtitle="GPX" onClose={onClose} noPadding panelClassName="overlay-panel-wide">
+        <Overlay title="Route" onClose={onClose} noPadding panelClassName="overlay-panel-wide">
             <div className="gpx-layout">
 
                 {/* Left col: map + splits */}
@@ -349,11 +349,7 @@ export default function GpxMapOverlay({ points, stats, onClose }: GpxMapOverlayP
                     <div className="gpx-map-cell">
                         <div className="gpx-map-inner">
                             <MapContainer center={[0, 0]} zoom={2} style={{ width: "100%", height: "100%" }} zoomControl>
-                                <TileLayer
-                                    url={tileUrl}
-                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-                                    className={dark ? "map-tiles-dark" : undefined}
-                                />
+                                <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} className={tileClassName(dark)} />
                                 <Polyline positions={positions} pathOptions={{ color: "#2D8055", weight: 3, opacity: 0.85 }} />
                                 {positions.length > 0 && <Marker position={positions[0]} icon={START_ICON} />}
                                 {positions.length > 1 && <Marker position={positions[positions.length - 1]} icon={END_ICON} />}

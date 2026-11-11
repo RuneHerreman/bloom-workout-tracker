@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Moon, Sun, LogOut, LayoutDashboard, LayoutTemplate, BookOpen, Calculator, Dumbbell, TrendingUp, Trophy } from "lucide-react";
 import "../assets/css/sidebar.css";
+import { prefetchRoute } from "../routePrefetch.ts";
 import { getMe } from "../features/auth/api.ts";
 import type { User } from "../features/auth/api.ts";
 import { useDarkModeContext } from "../context/DarkModeContext.tsx";
@@ -27,16 +28,15 @@ function SidebarComponent() {
                 <img src="/media/bloom_logo.png" alt="Bloom"/>
             </NavLink>
 
-            <span className="sidebar-section-label">Pages</span>
-            <NavLink to="/dashboard" className={navClass}><LayoutDashboard size={14}/> Dashboard</NavLink>
-            <NavLink to="/templates" className={navClass}><LayoutTemplate size={14}/> Templates</NavLink>
-            <NavLink to="/logbook" className={navClass}><BookOpen size={14}/> Log Book</NavLink>
-            <NavLink to="/insights" className={navClass}><TrendingUp size={14}/> Insights</NavLink>
-            <NavLink to="/leaderboard" className={navClass}><Trophy size={14}/> Leaderboard</NavLink>
+            <NavLink to="/dashboard" className={navClass} onPointerEnter={() => prefetchRoute("/dashboard")} onFocus={() => prefetchRoute("/dashboard")}><LayoutDashboard size={14}/> Dashboard</NavLink>
+            <NavLink to="/templates" className={navClass} onPointerEnter={() => prefetchRoute("/templates")} onFocus={() => prefetchRoute("/templates")}><LayoutTemplate size={14}/> Templates</NavLink>
+            <NavLink to="/logbook" className={navClass} onPointerEnter={() => prefetchRoute("/logbook")} onFocus={() => prefetchRoute("/logbook")}><BookOpen size={14}/> Log Book</NavLink>
+            <NavLink to="/insights" className={navClass} onPointerEnter={() => prefetchRoute("/insights")} onFocus={() => prefetchRoute("/insights")}><TrendingUp size={14}/> Insights</NavLink>
+            <NavLink to="/leaderboard" className={navClass} onPointerEnter={() => prefetchRoute("/leaderboard")} onFocus={() => prefetchRoute("/leaderboard")}><Trophy size={14}/> Leaderboard</NavLink>
 
             <span className="sidebar-section-label">Tools</span>
-            <NavLink to="/tools/macro-calculator" className={navClass}><Calculator size={14}/> Macro Calculator</NavLink>
-            <NavLink to="/tools/one-rep-max" className={navClass}><Dumbbell size={14}/> 1RM Calculator</NavLink>
+            <NavLink to="/tools/macro-calculator" className={navClass} onPointerEnter={() => prefetchRoute("/tools/macro-calculator")} onFocus={() => prefetchRoute("/tools/macro-calculator")}><Calculator size={14}/> Macro Calculator</NavLink>
+            <NavLink to="/tools/one-rep-max" className={navClass} onPointerEnter={() => prefetchRoute("/tools/one-rep-max")} onFocus={() => prefetchRoute("/tools/one-rep-max")}><Dumbbell size={14}/> 1RM Calculator</NavLink>
 
             <div className="sidebar-user">
                 <NavLink to="/profile" className="sidebar-username">{user?.username ?? "—"}</NavLink>

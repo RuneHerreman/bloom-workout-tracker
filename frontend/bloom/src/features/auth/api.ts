@@ -1,4 +1,4 @@
-import { fetchFromServer } from "../../assets/js/data/apiClient.ts";
+import { fetchFromServer, remember, peek } from "../../assets/js/data/apiClient.ts";
 import type { User, UpdateUserInfoBody, UpdateTechnicalPointsBody } from "../../assets/js/data/apiTypes.ts";
 
 export type { User };
@@ -31,10 +31,14 @@ let _meCache: Promise<User> | null = null;
 
 export function getMe(): Promise<User> {
     if (!_meCache) {
-        _meCache = fetchFromServer<User>("users/me", "GET")
-            .catch(e => { _meCache = null; throw e; });
+        _meCache = remember(fetchFromServer<User>("users/me", "GET")
+            .catch(e => { _meCache = null; throw e; }));
     }
     return _meCache;
+}
+
+export function peekMe(): User | undefined {
+    return peek(_meCache);
 }
 
 export async function updateMe(body: UpdateUserInfoBody): Promise<void> {
@@ -57,5 +61,10 @@ export async function updateTechnicalPoints(technicalPoints: string | null): Pro
 
 export async function updateGear(gear: string[]): Promise<void> {
     await fetchFromServer<unknown>("users/me/gear", "PUT", { gear });
+    _meCache = null;
+}
+
+export async function updateLeaderboardVisibility(showOnLeaderboard: boolean): Promise<void> {
+    await fetchFromServer<unknown>("users/me/leaderboard-visibility", "PUT", { showOnLeaderboard });
     _meCache = null;
 }

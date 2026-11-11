@@ -10,7 +10,7 @@ input, button, select, textarea {
 
 html, body {
     font-family: var(--sans), sans-serif;
-    font-size: 1rem;
+    font-size: var(--text-md);
     scroll-behavior: smooth;
     scrollbar-width: none;
 }
@@ -62,37 +62,23 @@ html, body {
     color: var(--ink-muted);
 }
 
-.button-component.modern::before {
-    content: '';
-    position: absolute;
-    inset: -0.12rem;
-    border: 0.12rem solid var(--primary-muted);
-    border-bottom-width: 0.2rem;
-    border-left-width: 0.2rem;
-    border-radius: var(--widget-border-radius);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--transition);
-}
+
 
 .button-component.modern:hover {
-    transform: translateY(-0.1rem) translateX(0.1rem);
-    cursor: pointer;
+    border-color: var(--primary-muted);
+    background: var(--surface-light);
 }
 
-.button-component.modern:hover::before {
-    opacity: 1;
-}
+
 
 .button-component.green {
     color: white;
     background: var(--primary-light);
-    transition: background var(--transition), transform var(--transition-spring), box-shadow var(--transition);
+    transition: background var(--transition);
 }
 
 .button-component.green:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px color-mix(in srgb, var(--primary) 20%, transparent);
+    background: color-mix(in srgb, var(--primary-light) 85%, black);
 }
 
 .button-component.grey {

@@ -45,8 +45,7 @@ function TechnicalPointsWidget({ initialContent, onSave }: TechnicalPointsWidget
         <GeneralWidget
             header={
                 <WidgetHeader
-                    title={"Technical Points"}
-                    subtitle={"What needs work?"}
+                    title={"Technique notes"}
                     action={<Button text={"Save notes"} style={"modern"} onClick={handleSave}/>}
                 />
             }

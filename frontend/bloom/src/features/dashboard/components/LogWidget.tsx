@@ -46,8 +46,7 @@ function LogWidget({ entries = [] }: LogWidgetProps) {
         <GeneralWidget
             header={
                 <WidgetHeader
-                    title={"Last sessions"}
-                    subtitle={"Recent"}
+                    title={"Recent workouts"}
                     action={<NavLink to="/logbook" className="log-widget-view-all">View all →</NavLink>}
                 />
             }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Trophy, Sprout, Flame, CalendarDays, Dumbbell } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Trophy, Sprout, Flame, CalendarDays, Dumbbell, EyeOff } from "lucide-react";
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
 import InfoHint from "../../components/general/InfoHint.tsx";
 import Skeleton from "../../components/general/Skeleton.tsx";
@@ -80,6 +81,8 @@ function LeaderboardPage() {
     const meIdle = idle.find(e => e.isCurrentUser);
     const ahead = me ? ranked.filter(e => e.value > me.value).at(-1) : undefined;
     const metricInfo = METRICS.find(m => m.value === metric)!;
+    // Only your own entry can be hidden; it's shown to you alone.
+    const hidden = data?.entries.some(e => e.isCurrentUser && e.isHidden) ?? false;
 
     const totals = useMemo(() => (data?.entries ?? []).reduce(
         (t, e) => ({ volume: t.volume + e.totalVolumeKg, prs: t.prs + e.newPrs, workouts: t.workouts + e.workouts }),
@@ -90,7 +93,6 @@ function LeaderboardPage() {
         <div className="leaderboard-page">
             <HeaderComponent
                 title="Leaderboard"
-                subtitle="Community"
                 action={
                     <div className="lb-month-switch" aria-label="Choose month">
                         <button type="button" onClick={() => shift(-1)} aria-label="Previous month"><ChevronLeft size={16} /></button>
@@ -134,6 +136,16 @@ function LeaderboardPage() {
 
                 {error && <div className="error-banner">{error}</div>}
 
+                {hidden && (
+                    <div className="lb-hidden-hint" role="note">
+                        <EyeOff size={16} aria-hidden />
+                        <p>
+                            <b>You're hidden from the leaderboard.</b> Other users can't see you; your standing below is only visible to you.{" "}
+                            <Link to="/profile">Change in Profile</Link>
+                        </p>
+                    </div>
+                )}
+
                 {!data && !error ? (
                     <div className="lb-skeleton" role="status" aria-label="Loading leaderboard">
                         <div className="lb-podium">
@@ -173,7 +185,7 @@ function LeaderboardPage() {
                                     <li key={e.username} className={`lb-podium-slot place-${i + 1}${e.isCurrentUser ? " me" : ""}`}>
                                         {i === 0 && <Trophy size={18} className="lb-crown" aria-hidden />}
                                         <Initial name={e.username} size="lg" />
-                                        <span className="lb-podium-name">{e.username}{e.isCurrentUser && <em> (you)</em>}</span>
+                                        <span className="lb-podium-name">{e.username}{e.isCurrentUser && <em> (you{e.isHidden ? ", hidden" : ""})</em>}</span>
                                         <span className="lb-podium-value">{formatValue(e.value, metric)}</span>
                                         <div className="lb-podium-block">
                                             <span className="lb-podium-rank">{e.rank}</span>
@@ -206,7 +218,11 @@ function LeaderboardPage() {
                                     <Initial name={e.username} />
                                     <div className="lb-row-main">
                                         <div className="lb-row-top">
-                                            <span className="lb-row-name">{e.username}{e.isCurrentUser && <span className="lb-you-tag">You</span>}</span>
+                                            <span className="lb-row-name">
+                                                {e.username}
+                                                {e.isCurrentUser && <span className="lb-you-tag">You</span>}
+                                                {e.isHidden && <span className="lb-hidden-tag" title="Only you can see this entry"><EyeOff size={10} aria-hidden /> Hidden</span>}
+                                            </span>
                                             <span className="lb-row-value">{formatValue(e.value, metric)}{metric !== "volume" && <small> {metricInfo.unit}</small>}</span>
                                         </div>
                                         <div className="lb-bar" aria-hidden>
@@ -225,7 +241,7 @@ function LeaderboardPage() {
 
                         {idle.length > 0 && (
                             <p className="lb-idle">
-                                <Sprout size={13} /> Yet to sprout: {idle.map(e => e.isCurrentUser ? `${e.username} (you)` : e.username).join(", ")}
+                                <Sprout size={13} /> Yet to sprout: {idle.map(e => e.isCurrentUser ? `${e.username} (you${e.isHidden ? ", hidden" : ""})` : e.username).join(", ")}
                             </p>
                         )}
                     </>

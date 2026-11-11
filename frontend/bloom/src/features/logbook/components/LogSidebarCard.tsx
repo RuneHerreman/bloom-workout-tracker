@@ -5,21 +5,22 @@ interface LogSidebarCardProps {
     log: LoggedWorkout;
     colorClass: "strength" | "cardio" | "plyometric" | "mix";
     isActive: boolean;
+    isDraft?: boolean;
     onSelect: () => void;
 }
 
 const TYPE_LABELS = { strength: "Strength", cardio: "Cardio", plyometric: "Plyo", mix: "Mix" } as const;
 
-function LogSidebarCard({ log, colorClass, isActive, onSelect }: LogSidebarCardProps) {
+function LogSidebarCard({ log, colorClass, isActive, isDraft, onSelect }: LogSidebarCardProps) {
     const exerciseCount = log.exercises.length;
     const setCount = log.exercises.reduce((n, ex) => n + ex.sets.length, 0);
 
     return (
-        <div className={`sidebar-card ${colorClass}${isActive ? " active" : ""}`} data-id={log.id} onClick={onSelect}>
+        <div className={`sidebar-card ${colorClass}${isActive ? " active" : ""}${isDraft ? " draft" : ""}`} data-id={log.id} onClick={onSelect}>
             <span className={`type-dot ${colorClass}`} data-label={TYPE_LABELS[colorClass]} />
-            <p className="sidebar-card-name">{log.name}</p>
+            <p className="sidebar-card-name">{log.name || "Untitled workout"}</p>
             <span className="sidebar-card-meta">
-                {relativeDate(log.loggedAt)} · {exerciseCount} ex · {setCount} set{setCount !== 1 ? "s" : ""}
+                {isDraft ? <span className="draft-badge">Draft</span> : relativeDate(log.loggedAt)} · {exerciseCount} ex · {setCount} set{setCount !== 1 ? "s" : ""}
             </span>
         </div>
     );

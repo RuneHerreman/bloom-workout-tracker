@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Polyline, useMap } from "react-leaflet";
+import { TILE_URL, TILE_ATTRIBUTION, tileClassName } from "../../utils/mapTiles.ts";
 import "leaflet/dist/leaflet.css";
 import type { LatLngTuple } from "leaflet";
 import { List, X, LocateFixed, ArrowUpRight } from "lucide-react";
@@ -13,11 +14,19 @@ interface InsightsHeatmapProps {
     routes: RoutePolyline[];
 }
 
-function SetView({ center }: { center: LatLngTuple }) {
+/** Frames every route on load (and when the period changes) so tracks are never off-screen. */
+function FitAllRoutes({ routes }: { routes: RoutePolyline[] }) {
     const map = useMap();
     useEffect(() => {
-        map.setView(center, 11, { animate: false });
-    }, [map, center]);
+        const pts = routes.flatMap(r => r.positions);
+        if (pts.length < 2) return;
+        const lats = pts.map(p => p[0]);
+        const lons = pts.map(p => p[1]);
+        map.fitBounds(
+            [[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]],
+            { padding: [28, 28], animate: false, maxZoom: 14 }
+        );
+    }, [map, routes]);
     return null;
 }
 
@@ -101,13 +110,8 @@ export default function InsightsHeatmap({ routes }: InsightsHeatmapProps) {
                 zoom={11}
                 style={{ width: "100%", height: "100%" }}
                 zoomControl={false}
-                attributionControl={false}
             >
-                <TileLayer
-                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-                    className={dark ? "map-tiles-dark" : undefined}
-                />
+                <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} className={tileClassName(dark)} />
 
                 {/* Heatmap layer — all routes at low opacity */}
                 {routes.map(r => (
@@ -117,9 +121,10 @@ export default function InsightsHeatmap({ routes }: InsightsHeatmapProps) {
                         pathOptions={{
                             color: "#E9762B",
                             weight: selectedId && r.id !== selectedId ? 2 : 2.5,
+                            // A few routes are drawn solid; many overlap into a heatmap.
                             opacity: selectedId
                                 ? (r.id === selectedId ? 0 : 0.08)
-                                : 0.18,
+                                : routes.length <= 3 ? 0.85 : 0.25,
                         }}
                     />
                 ))}
@@ -132,7 +137,7 @@ export default function InsightsHeatmap({ routes }: InsightsHeatmapProps) {
                     />
                 )}
 
-                {geoCenter && !selectedRoute && <SetView center={geoCenter} />}
+                {!selectedRoute && <FitAllRoutes routes={routes} />}
                 {selectedRoute && <FitRoute route={selectedRoute} />}
                 {geoCenter && <LocateButton center={geoCenter} />}
             </MapContainer>

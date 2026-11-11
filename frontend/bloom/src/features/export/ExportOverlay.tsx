@@ -56,7 +56,7 @@ function ExportOverlay({ onClose }: { onClose: () => void }) {
     }
 
     return (
-        <Overlay title="Export your data" subtitle="Download" onClose={onClose}>
+        <Overlay title="Export your data" onClose={onClose}>
             <div className="export-panel">
                 {error && <div className="error-banner">{error}</div>}
 

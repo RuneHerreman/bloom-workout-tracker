@@ -86,7 +86,7 @@
 
 
 /*         OUR MISSION         */
-h2 {
+.general-main-section h2 {
     font-size: 3.5rem;
     text-transform: uppercase;
     font-weight: 500;
@@ -382,7 +382,7 @@ footer:last-child p{
         font-size: 1.1rem;
     }
 
-    h2 {
+    .general-main-section h2 {
         font-size: 3rem;
     }
     #features li {

@@ -7,6 +7,8 @@ export interface LeaderboardEntry {
     newPrs: number;
     activeDays: number;
     workouts: number;
+    /** You opted out: only ever set on your own entry, which nobody else sees. */
+    isHidden: boolean;
 }
 
 export interface Leaderboard {
@@ -28,6 +30,11 @@ export function metricValue(e: LeaderboardEntry, m: LeaderboardMetric): number {
 }
 
 const cache = new Map<string, Promise<Leaderboard>>();
+
+/** Cached past months carry your old visibility; drop them when it changes. */
+export function clearLeaderboardCache(): void {
+    cache.clear();
+}
 
 /** Past months are immutable enough to cache for the session; the current month is always fetched fresh. */
 export function getLeaderboard(year: number, month: number): Promise<Leaderboard> {

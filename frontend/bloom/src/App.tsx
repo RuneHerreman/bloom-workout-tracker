@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Routes, Route, Outlet, useLocation } from "react-router-dom";
+import { routeLoaders } from "./routePrefetch.ts";
 import { AuthProvider } from "./context/AuthContext.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import AppLayout from "./components/AppLayout.tsx";
@@ -8,20 +9,23 @@ import LoginPage from "./features/auth/LoginPage.tsx";
 import SignUpPage from "./features/auth/SignUpPage.tsx";
 import PageLoader from "./components/general/PageLoader.tsx";
 
-const DashboardPage  = lazy(() => import("./features/dashboard/DashboardPage.tsx"));
-const TemplatePage   = lazy(() => import("./features/templates/TemplatePage.tsx"));
-const LogbookPage    = lazy(() => import("./features/logbook/LogbookPage.tsx"));
-const MacroPage      = lazy(() => import("./features/tool-pages/macros/MacroPage.tsx"));
-const OneRepMaxPage  = lazy(() => import("./features/tool-pages/1-RM/1RmPage.tsx"));
-const ProfilePage    = lazy(() => import("./features/profile/ProfilePage.tsx"));
-const InsightsPage   = lazy(() => import("./features/insights/InsightsPage.tsx"));
-const LeaderboardPage = lazy(() => import("./features/leaderboard/LeaderboardPage.tsx"));
+const DashboardPage   = lazy(routeLoaders["/dashboard"]);
+const TemplatePage    = lazy(routeLoaders["/templates"]);
+const LogbookPage     = lazy(routeLoaders["/logbook"]);
+const MacroPage       = lazy(routeLoaders["/tools/macro-calculator"]);
+const OneRepMaxPage   = lazy(routeLoaders["/tools/one-rep-max"]);
+const ProfilePage     = lazy(routeLoaders["/profile"]);
+const InsightsPage    = lazy(routeLoaders["/insights"]);
+const LeaderboardPage = lazy(routeLoaders["/leaderboard"]);
 
 function ProtectedLayout() {
+    const { pathname } = useLocation();
     return (
         <ProtectedRoute>
             <AppLayout>
-                <Suspense fallback={<PageLoader />}>
+                {/* Keyed per page: a new boundary shows its fallback right away instead of
+                    the router transition holding the previous page (and nav highlight). */}
+                <Suspense key={pathname} fallback={<PageLoader />}>
                     <Outlet />
                 </Suspense>
             </AppLayout>

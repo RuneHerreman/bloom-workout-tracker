@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Save, Trash2, Eye, EyeOff, KeyRound, X, Download } from "lucide-react";
-import { getMe, updateMe, changePassword, deleteMe } from "../auth/api.ts";
+import { getMe, updateMe, changePassword, deleteMe, updateLeaderboardVisibility } from "../auth/api.ts";
+import { clearLeaderboardCache } from "../leaderboard/api.ts";
 import type { User } from "../auth/api.ts";
 import { useAuth } from "../../context/AuthContext.tsx";
 import { useShortcut } from "../../hooks/useShortcut.ts";
@@ -46,6 +47,8 @@ function ProfilePage() {
     const [stravaImportResult, setStravaImportResult] = useState<number | null>(null);
     const [stravaError, setStravaError] = useState<string | null>(null);
     const [exportOpen, setExportOpen] = useState(false);
+    const [savingVisibility, setSavingVisibility] = useState(false);
+    const [visibilityError, setVisibilityError] = useState<string | null>(null);
 
     const actionsRef = useRef<HTMLDivElement>(null);
     const panelTopRef = useRef(0);
@@ -145,6 +148,23 @@ function ProfilePage() {
         }
     }
 
+    async function handleToggleLeaderboard() {
+        if (!user || savingVisibility) return;
+        const next = !user.showOnLeaderboard;
+        setSavingVisibility(true);
+        setVisibilityError(null);
+        setUser(prev => prev ? { ...prev, showOnLeaderboard: next } : prev);
+        try {
+            await updateLeaderboardVisibility(next);
+            clearLeaderboardCache();
+        } catch {
+            setUser(prev => prev ? { ...prev, showOnLeaderboard: !next } : prev);
+            setVisibilityError("Couldn't update your leaderboard visibility");
+        } finally {
+            setSavingVisibility(false);
+        }
+    }
+
     async function handleStravaConnect() {
         setStravaError(null);
         try {
@@ -186,7 +206,7 @@ function ProfilePage() {
         return (
             <div className="profile-page">
                 <header className="page-header">
-                    <div><p>Settings</p><h1>Profile</h1></div>
+                    <div className="page-header-titles"><h1>Profile</h1></div>
                 </header>
                 <div className="profile-detail" role="status" aria-label="Loading profile">
                     {[0, 1, 2].map(i => (
@@ -207,8 +227,7 @@ function ProfilePage() {
     return (
         <div className="profile-page">
             <header className="page-header">
-                <div>
-                    <p>Settings</p>
+                <div className="page-header-titles">
                     <h1>Profile</h1>
                 </div>
             </header>
@@ -458,6 +477,40 @@ function ProfilePage() {
                                 : `Imported ${stravaImportResult} activit${stravaImportResult === 1 ? "y" : "ies"} from Strava.`}
                         </p>
                     )}
+                </section>
+
+                <section className="profile-section">
+                    <div className="profile-section-head">
+                        <h2 className="profile-section-title">Privacy</h2>
+                        <p className="profile-section-desc">
+                            The monthly leaderboard shows your username and monthly totals to other Bloom users.
+                            Workouts, names and email are never shared.
+                        </p>
+                    </div>
+
+                    {visibilityError && <div className="error-banner">{visibilityError}</div>}
+
+                    <div className="profile-toggle-row">
+                        <div className="profile-toggle-text">
+                            <span id="leaderboardToggleLabel" className="profile-toggle-label">Show me on the leaderboard</span>
+                            <span className="profile-toggle-hint">
+                                {user?.showOnLeaderboard
+                                    ? "Other users can see your standing."
+                                    : "You're hidden. You still see your own standing, but nobody else does."}
+                            </span>
+                        </div>
+                        <button
+                            type="button"
+                            role="switch"
+                            className="profile-switch"
+                            aria-checked={user?.showOnLeaderboard ?? true}
+                            aria-labelledby="leaderboardToggleLabel"
+                            disabled={!user || savingVisibility}
+                            onClick={handleToggleLeaderboard}
+                        >
+                            <span className="profile-switch-thumb" aria-hidden />
+                        </button>
+                    </div>
                 </section>
 
                 <GearSection initialGear={user?.gear ?? []} />

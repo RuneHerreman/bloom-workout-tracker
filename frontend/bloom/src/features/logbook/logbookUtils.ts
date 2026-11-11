@@ -73,3 +73,46 @@ export function groupByMonth<T>(items: T[], dateOf: (item: T) => string): MonthG
     }
     return groups;
 }
+
+// ── Previous performance ──────────────────────────────────────────────────────
+
+/** Fallback sets for an exercise that has never been logged. */
+export function defaultSet(type: string, order = 1): LoggedSet {
+    return type === "Cardio"
+        ? { type: "Cardio", order, reps: null, weight: null, weightUnit: null, rir: null, marker: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
+        : { type, order, reps: 10, weight: 60, weightUnit: "kg", rir: null, marker: null, duration: null, distance: null, distanceUnit: null };
+}
+
+export type PreviousSetsLookup = (exerciseId: string, beforeIso?: string) => LoggedSet[] | undefined;
+
+/**
+ * Builds a lookup for "what did I do last time" per exercise: the sets of the most
+ * recent log containing it, optionally only from logs before a given date (so
+ * editing an old log prefills from the session before *that* one).
+ */
+export function buildPreviousSetsLookup(logs: LoggedWorkout[], excludeLogId?: string): PreviousSetsLookup {
+    const sorted = logs
+        .filter(l => l.id !== excludeLogId)
+        .sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime());
+    return (exerciseId, beforeIso) => {
+        const before = beforeIso ? new Date(beforeIso).getTime() : Infinity;
+        for (const log of sorted) {
+            if (new Date(log.loggedAt).getTime() >= before) continue;
+            const ex = log.exercises.find(e => e.exerciseId === exerciseId && e.sets.length > 0);
+            if (ex) return [...ex.sets].sort((a, b) => a.order - b.order);
+        }
+        return undefined;
+    };
+}
+
+/** First set for a newly added exercise: copies the values of last time's first set. */
+export function prefilledFirstSet(type: string, previous: LoggedSet[] | undefined): LoggedSet {
+    const first = previous?.[0];
+    if (!first || first.type !== type) return defaultSet(type);
+    return { ...first, order: 1, marker: null };
+}
+
+/** Copy of the previous row for "Add set": same values, but a fresh (working) set type. */
+export function duplicateSet(last: LoggedSet, order: number): LoggedSet {
+    return { ...last, order, marker: null };
+}

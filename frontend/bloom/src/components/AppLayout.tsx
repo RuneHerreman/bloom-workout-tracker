@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import SidebarComponent from "./SidebarComponent.tsx";
 import BottomNavComponent from "./BottomNavComponent.tsx";
 import { DarkModeProvider, useDarkModeContext } from "../context/DarkModeContext.tsx";
+import { ToastProvider } from "../context/ToastContext.tsx";
+import { prefetchAppInBackground } from "../routePrefetch.ts";
 
 function AppLayoutInner({ children }: { children: ReactNode }) {
     const { dark } = useDarkModeContext();
@@ -10,6 +12,8 @@ function AppLayoutInner({ children }: { children: ReactNode }) {
     useEffect(() => {
         document.documentElement.classList.toggle("dark", dark);
     }, [dark]);
+
+    useEffect(() => { prefetchAppInBackground(); }, []);
 
     return (
         <div className="app-layout">
@@ -25,7 +29,9 @@ function AppLayoutInner({ children }: { children: ReactNode }) {
 function AppLayout({ children }: { children: ReactNode }) {
     return (
         <DarkModeProvider>
-            <AppLayoutInner>{children}</AppLayoutInner>
+            <ToastProvider>
+                <AppLayoutInner>{children}</AppLayoutInner>
+            </ToastProvider>
         </DarkModeProvider>
     );
 }

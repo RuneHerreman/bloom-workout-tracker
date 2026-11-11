@@ -1,6 +1,8 @@
 import ButtonComponent from "../../../components/general/ButtonComponent.tsx";
+import { useAuth } from "../../../context/AuthContext.tsx";
 
 function NavbarComponent() {
+    const { isAuthenticated, isLoading } = useAuth();
     return(
         <>
             <nav id="home-navbar">
@@ -10,8 +12,14 @@ function NavbarComponent() {
                     <a href="#features">Features</a>
                 </div>
                 <div id="home-navbar-buttons">
-                    <ButtonComponent text={"Log In"} target={"login"} style="white"/>
-                    <ButtonComponent text={"Sign Up"} target={"signup"} style="green"/>
+                    {isAuthenticated ? (
+                        <ButtonComponent text="Open app" target="/dashboard" style="green"/>
+                    ) : !isLoading && (
+                        <>
+                            <ButtonComponent text={"Log In"} target={"login"} style="white"/>
+                            <ButtonComponent text={"Sign Up"} target={"signup"} style="green"/>
+                        </>
+                    )}
                 </div>
             </nav>
         </>

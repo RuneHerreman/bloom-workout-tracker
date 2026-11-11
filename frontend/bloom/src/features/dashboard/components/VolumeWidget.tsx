@@ -133,8 +133,8 @@ function VolumeWidget({ series = [], monthLabels = [] }: VolumeWidgetProps) {
         <GeneralWidget
             header={
                 <WidgetHeader
-                    title={"History of 5 most recent PRs"}
-                    subtitle={"Volume logged · Top 5 PR progression"}
+                    title={"PR progression"}
+                    subtitle={"Best weight per month, top 5 exercises"}
                 />
 
             }

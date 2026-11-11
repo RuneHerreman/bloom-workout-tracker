@@ -9,7 +9,7 @@ import { useExerciseDnd } from "../hooks/useExerciseDnd.ts";
 import { useShortcut } from "../../../hooks/useShortcut.ts";
 import TemplateExerciseCard from "./TemplateExerciseCard.tsx";
 import Button from "../../../components/general/ButtonComponent.tsx";
-import { Save, Trash2 } from "lucide-react";
+import { Save, Trash2, Play } from "lucide-react";
 
 interface TemplateDetailProps {
     template: WorkoutTemplate;
@@ -19,11 +19,13 @@ interface TemplateDetailProps {
     pendingExerciseId?: string | null;
     onExerciseAdded?: () => void;
     onDirtyChange?: (isDirty: boolean, save: () => Promise<void>) => void;
+    /** Start a logbook draft from this template. */
+    onLogWorkout?: (templateId: string) => void;
     userGear?: string[];
     autoFocusTitle?: boolean;
 }
 
-function TemplateDetail({ template, exercises, onDelete, onSave, pendingExerciseId, onExerciseAdded, onDirtyChange, userGear, autoFocusTitle }: TemplateDetailProps) {
+function TemplateDetail({ template, exercises, onDelete, onSave, pendingExerciseId, onExerciseAdded, onDirtyChange, onLogWorkout, userGear, autoFocusTitle }: TemplateDetailProps) {
     const [templateExercises, setTemplateExercises] = useState<TemplateExercise[]>(() =>
         [...template.exercises].sort((a, b) => a.order - b.order)
     );
@@ -152,7 +154,7 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
             {error && <div className="error-banner">{error}</div>}
             {showSticky && hasChanges && (
                 <div className="sticky-save-bar" style={{ top: panelTop }}>
-                    <Button text="Save Changes" style="white" icon={<Save size={14} />} disabled={saving} onClick={handleSave} />
+                    <Button text="Save changes" style="white" icon={<Save size={14} />} disabled={saving} onClick={handleSave} />
                 </div>
             )}
             <div className="detail-header">
@@ -163,8 +165,25 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
                     onChange={e => setName(e.target.value)}
                 />
                 <div className="actions-row" ref={actionsRef}>
-                    <Button text="Save Changes" style="white" icon={<Save size={14} />} disabled={!hasChanges || saving} onClick={handleSave} />
-                    <Button text="Delete Template" style="red" icon={<Trash2 size={14} />} onClick={() => onDelete(template.id)} />
+                    {onLogWorkout && (
+                        <Button
+                            text="Log workout"
+                            style="green"
+                            icon={<Play size={14} />}
+                            disabled={templateExercises.length === 0}
+                            onClick={() => onLogWorkout(template.id)}
+                        />
+                    )}
+                    <Button text="Save changes" style="white" icon={<Save size={14} />} disabled={!hasChanges || saving} onClick={handleSave} />
+                    <button
+                        type="button"
+                        className="icon-btn danger"
+                        aria-label="Delete template"
+                        title="Delete template"
+                        onClick={() => onDelete(template.id)}
+                    >
+                        <Trash2 size={15} />
+                    </button>
                 </div>
             </div>
 

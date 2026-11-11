@@ -61,3 +61,20 @@ export async function fetchFromServer<T>(
 
     return json as T;
 }
+
+// ── Synchronous cache reads ─────────────────────────────────────────────────
+// Module-level promise caches (getLogs, getTemplates…) resolve asynchronously,
+// so a page that mounts after the data is already loaded would still flash its
+// skeleton for a frame. `remember` records each cached promise's value so pages
+// can `peek` it and render real content on the very first frame.
+
+const settled = new WeakMap<Promise<unknown>, unknown>();
+
+export function remember<T>(promise: Promise<T>): Promise<T> {
+    promise.then(value => { settled.set(promise, value); }, () => {});
+    return promise;
+}
+
+export function peek<T>(promise: Promise<T> | null): T | undefined {
+    return promise ? (settled.get(promise) as T | undefined) : undefined;
+}

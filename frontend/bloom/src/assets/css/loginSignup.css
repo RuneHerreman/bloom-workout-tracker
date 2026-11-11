@@ -6,7 +6,7 @@
 }
 
 .login-page h1 {
-    font-size: 2.5rem;
+    font-size: var(--text-2xl);
     font-weight: 400;
 }
 
@@ -31,7 +31,7 @@
 
 .login-page .loginsignup-form > p {
     color: var(--ink-muted);
-    font-size: .9rem;
+    font-size: var(--text-base);
     line-height: 125%;
     margin: .75rem 0 1.5rem;
 }
@@ -55,7 +55,7 @@
     padding: 0.75rem;
     width: 100%;
     font-weight: 300;
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     transition: border-color var(--transition);
 }
 
@@ -84,7 +84,7 @@
     justify-content: space-between;
     padding-top: 0.5rem;
     color: var(--ink-muted);
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
 }
 
 #login-checks div {
@@ -106,7 +106,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    font-size: .8rem;
+    font-size: var(--text-sm);
     color: var(--ink);
 }
 
@@ -148,7 +148,7 @@
 
 .error-message {
     color: var(--danger);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     margin-top: 0.5rem;
     margin-left: 0.1rem;
     font-weight: 550;
@@ -159,7 +159,7 @@
 }
 
 .login-page #onboarding form div label {
-    font-size: .85rem;
+    font-size: var(--text-base);
     font-weight: 400;
     color: var(--ink);
 }
@@ -187,7 +187,7 @@
 
 @media (max-width: 768px) {
     .login-page h1 {
-        font-size:  1.75rem;
+        font-size:  var(--text-2xl);
     }
 
     .login-page {
@@ -210,7 +210,7 @@
     }
 
     .login-page #onboarding form div label {
-        font-size: .8rem;
+        font-size: var(--text-sm);
         font-weight: 400;
     }
 }

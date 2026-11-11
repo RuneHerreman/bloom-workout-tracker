@@ -9,7 +9,7 @@ import Button from "../../../components/general/ButtonComponent.tsx";
 import LogSortableSetRow, { type LogRowItem } from "./LogSortableSetRow.tsx";
 import { parseGpx, parseGpxTrackPoints, formatDuration, type GpxStats } from "../gpxUtils.ts";
 import GpxMapOverlay from "./GpxMapOverlay.tsx";
-import { workingSetNumbers } from "../logbookUtils.ts";
+import { workingSetNumbers, duplicateSet, defaultSet } from "../logbookUtils.ts";
 import InfoHint from "../../../components/general/InfoHint.tsx";
 import ExerciseNote from "../../../components/general/ExerciseNote.tsx";
 import GearPicker from "../../../components/general/GearPicker.tsx";
@@ -142,12 +142,11 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
     }
 
     function handleAddSet() {
+        // Same numbers as the row above, as a regular working set.
         const last = items[items.length - 1]?.set;
         const newSet: LoggedSet = last
-            ? { ...last, order: items.length + 1 }
-            : isCardio
-                ? { type: "Cardio", order: items.length + 1, reps: null, weight: null, weightUnit: null, rir: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
-                : { type: exerciseType, order: items.length + 1, reps: 10, weight: 60, weightUnit: "kg", rir: null, duration: null, distance: null, distanceUnit: null };
+            ? duplicateSet(last, items.length + 1)
+            : defaultSet(exerciseType, items.length + 1);
         const updated = [...items, { id: crypto.randomUUID(), set: newSet }];
         setItems(updated);
         pushChange(updated);

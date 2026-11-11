@@ -37,8 +37,7 @@ function ActivityWidget({ data }: ActivityWidgetProps) {
         <GeneralWidget
             header={
                 <WidgetHeader
-                    title={"Workouts logged this year"}
-                    subtitle={`Year · ${new Date().getFullYear()}`}
+                    title={`${new Date().getFullYear()} activity`}
                 />
             }
             content={

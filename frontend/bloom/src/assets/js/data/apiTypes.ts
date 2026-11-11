@@ -181,6 +181,8 @@ export interface User {
     birthDate: string;
     technicalPoints: string | null;
     gear?: string[];
+    /** Whether other users can see you on the monthly leaderboard. */
+    showOnLeaderboard: boolean;
 }
 
 export interface RegisterUserBody {

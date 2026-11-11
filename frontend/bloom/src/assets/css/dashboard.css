@@ -5,16 +5,7 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-.dashboard-stats .stat-widget:nth-child(1) { animation: fade-up 0.35s ease both 0.05s; }
-.dashboard-stats .stat-widget:nth-child(2) { animation: fade-up 0.35s ease both 0.1s; }
-.dashboard-stats .stat-widget:nth-child(3) { animation: fade-up 0.35s ease both 0.15s; }
-.dashboard-stats .stat-widget:nth-child(4) { animation: fade-up 0.35s ease both 0.2s; }
 
-.dash-activity  { animation: fade-up 0.4s ease both 0.15s; }
-.dash-training  { animation: fade-up 0.4s ease both 0.2s; }
-.dash-notes     { animation: fade-up 0.4s ease both 0.25s; }
-.dash-logs      { animation: fade-up 0.4s ease both 0.3s; }
-.dash-volume    { animation: fade-up 0.4s ease both 0.25s; }
 
 /* ── Layout ──────────────────────────────────────────────────────────────────── */
 
@@ -85,14 +76,17 @@
 .stat-change.negative { color: var(--danger); }
 .stat-subtext .stat-change { margin-left: 0.5rem; }
 
-.stat-label{
-    text-transform: uppercase;
-    font-size: 0.7rem;
+.stat-label {
+    font-size: var(--text-sm);
     color: var(--ink-muted);
-    padding-bottom: 0.35rem;
+}
 
+.stat-caption {
     display: flex;
-    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: var(--text-xs);
+    color: var(--ink-muted);
 }
 
 .stat-unit {
@@ -101,7 +95,7 @@
 }
 
 .stat-value {
-    font-size: 3rem;
+    font-size: var(--text-3xl);
     line-height: 1;
     font-family: var(--serif), serif;
     font-weight: normal;
@@ -109,7 +103,7 @@
 }
 
 .stat-subtext {
-    font-size: 0.68rem;
+    font-size: var(--text-2xs);
     color: var(--ink-muted);
     align-self: flex-end;
 }
@@ -133,7 +127,6 @@
 }
 
 .activity-cell:hover:not([data-level="0"]) {
-    transform: scale(1.2);
     z-index: 1;
     cursor: pointer;
     opacity: 1 !important;
@@ -182,7 +175,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
 }
 
 .focus-legend-dot {
@@ -222,7 +215,7 @@
 
 
 .focus-empty {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     color: var(--ink-muted);
     text-align: center;
     margin: auto;
@@ -244,7 +237,7 @@
 }
 
 .volume-widget-header select {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     padding: 0.2rem 0.5rem;
     border: 0.0625rem solid var(--border);
     border-radius: var(--radius-md);
@@ -276,7 +269,7 @@
 }
 
 .log-widget-view-all {
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
     color: var(--primary);
     font-weight: 500;
     cursor: pointer;
@@ -309,20 +302,20 @@
 }
 
 .log-entry-name {
-    font-size: 0.85rem;
+    font-size: var(--text-base);
     font-weight: 500;
     white-space: nowrap;
     text-transform: capitalize;
 }
 
 .log-entry-date {
-    font-size: 0.65rem;
+    font-size: var(--text-2xs);
     color: var(--ink-muted);
     text-align: right;
 }
 
 .log-entry-count {
-    font-size: 0.68rem;
+    font-size: var(--text-2xs);
     color: var(--ink-muted);
 }
 
@@ -361,7 +354,7 @@
     border: 0.0625rem solid var(--border);
     border-radius: 0.25rem;
     padding: 0.15rem 0.45rem;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     cursor: pointer;
     color: var(--ink);
     line-height: 1.4;
@@ -384,7 +377,7 @@
     padding: 0.5rem;
     border: 0.0625rem solid var(--border);
     border-radius: 0.375rem;
-    font-size: 0.85rem;
+    font-size: var(--text-base);
     line-height: 1.6;
     outline: none;
     overflow-y: auto;
@@ -417,7 +410,7 @@
     }
 
     .stat-value {
-        font-size: 2.25rem;
+        font-size: var(--text-2xl);
     }
 
     .activity-grid {

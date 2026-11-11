@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 
 interface OverlayProps {
     title: string;
-    subtitle: string;
+    subtitle?: string;
     children?: ReactNode;
     onClose: () => void;
     noPadding?: boolean;
@@ -16,8 +16,8 @@ function Overlay({ title, subtitle, children, onClose, noPadding, panelClassName
             <div className={`overlay-panel${panelClassName ? ` ${panelClassName}` : ""}`} onClick={e => e.stopPropagation()}>
                 <header className="overlay-header">
                     <div>
-                        <p className="general-widget-subtitle">{subtitle}</p>
-                        <p className="general-widget-title">{title}</p>
+                        <h2 className="overlay-title">{title}</h2>
+                        {subtitle && <p className="overlay-subtitle">{subtitle}</p>}
                     </div>
                     <button className="overlay-close" onClick={onClose} aria-label="Close">
                         <X size={16} />

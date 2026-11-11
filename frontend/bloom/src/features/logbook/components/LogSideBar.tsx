@@ -9,12 +9,13 @@ const FILTERS: LogFilterType[] = ["Strength", "Cardio", "Plyometric"];
 
 interface LogSideBarProps {
     logs: LoggedWorkout[];
+    draft?: LoggedWorkout | null;
     selectedId: string | null;
     loading: boolean;
     onSelect: (id: string) => void;
 }
 
-function LogSideBar({ logs, selectedId, loading, onSelect }: LogSideBarProps) {
+function LogSideBar({ logs, draft, selectedId, loading, onSelect }: LogSideBarProps) {
     const [activeFilters, setActiveFilters] = useState<Set<LogFilterType>>(new Set());
     const [query, setQuery] = useState("");
     const listRef = useRef<HTMLDivElement>(null);
@@ -69,6 +70,15 @@ function LogSideBar({ logs, selectedId, loading, onSelect }: LogSideBarProps) {
                 </div>
             </div>
             <div className="feature-sidebar-list" ref={listRef}>
+                {draft && (
+                    <LogSidebarCard
+                        log={draft}
+                        colorClass={dominantTypeFromLog(draft)}
+                        isActive={draft.id === selectedId}
+                        isDraft
+                        onSelect={() => onSelect(draft.id)}
+                    />
+                )}
                 {loading ? (
                     <SidebarSkeleton />
                 ) : visible.length === 0 ? (

@@ -8,7 +8,8 @@ interface Shortcut {
 
 interface HeaderComponentProps {
     title: string;
-    subtitle: string;
+    /** Optional sentence-case context shown under the title (e.g. today's date). */
+    subtitle?: string;
     action?: ReactNode;
     shortcuts?: Shortcut[];
 }
@@ -16,9 +17,9 @@ interface HeaderComponentProps {
 function HeaderComponent({ title, subtitle, action, shortcuts }: HeaderComponentProps) {
     return (
         <header className="page-header">
-            <div>
-                <p className="header-subtitle">{subtitle}</p>
+            <div className="page-header-titles">
                 <h1 className="header-title">{title}</h1>
+                {subtitle && <p className="header-subtitle">{subtitle}</p>}
             </div>
             <div className="page-header-right">
                 {shortcuts && (

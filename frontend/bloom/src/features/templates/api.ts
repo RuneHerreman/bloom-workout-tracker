@@ -1,4 +1,4 @@
-import { fetchFromServer } from "../../assets/js/data/apiClient.ts";
+import { fetchFromServer, remember, peek } from "../../assets/js/data/apiClient.ts";
 import type { ExerciseType, DistanceUnit } from "../../types.ts";
 
 // ── Response types ────────────────────────────────────────────────────────────
@@ -76,10 +76,14 @@ let _templatesCache: Promise<WorkoutTemplate[]> | null = null;
 
 export function getTemplates(): Promise<WorkoutTemplate[]> {
     if (!_templatesCache) {
-        _templatesCache = fetchFromServer<WorkoutTemplate[]>("templates", "GET")
-            .catch(e => { _templatesCache = null; throw e; });
+        _templatesCache = remember(fetchFromServer<WorkoutTemplate[]>("templates", "GET")
+            .catch(e => { _templatesCache = null; throw e; }));
     }
     return _templatesCache;
+}
+
+export function peekTemplates(): WorkoutTemplate[] | undefined {
+    return peek(_templatesCache);
 }
 
 export async function getTemplate(templateId: string): Promise<WorkoutTemplate> {

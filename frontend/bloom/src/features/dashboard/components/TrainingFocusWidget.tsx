@@ -74,7 +74,7 @@ function TrainingFocusWidget({ segments = [], muscleSegments = [] }: TrainingFoc
     return (
         <GeneralWidget
             header={
-                <WidgetHeader title={"Check your split"} subtitle={"Training Focus"}/>
+                <WidgetHeader title={"Training focus"}/>
             }
             content={
                 <div className="training-focus-content">

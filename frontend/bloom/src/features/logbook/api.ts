@@ -1,4 +1,4 @@
-import { fetchFromServer } from "../../assets/js/data/apiClient.ts";
+import { fetchFromServer, remember, peek } from "../../assets/js/data/apiClient.ts";
 import type { ExerciseType, WeightUnit, DistanceUnit } from "../../types.ts";
 import type {
     LoggedSet,
@@ -149,11 +149,16 @@ let _logsCache: Promise<LoggedWorkout[]> | null = null;
 
 export function getLogs(): Promise<LoggedWorkout[]> {
     if (!_logsCache) {
-        _logsCache = fetchFromServer<LoggedWorkout[]>("logs", "GET")
+        _logsCache = remember(fetchFromServer<LoggedWorkout[]>("logs", "GET")
             .then(logs => Promise.all(logs.map(decodeWorkout)))
-            .catch(e => { _logsCache = null; throw e; });
+            .catch(e => { _logsCache = null; throw e; }));
     }
     return _logsCache;
+}
+
+/** Logs already in memory, if any — lets a page skip its loading state. */
+export function peekLogs(): LoggedWorkout[] | undefined {
+    return peek(_logsCache);
 }
 
 export async function getLog(logId: string): Promise<LoggedWorkout> {
@@ -210,8 +215,8 @@ let _volumeCache: Promise<ExerciseVolumeResponse[]> | null = null;
 export function getVolume(filters?: VolumeFilters): Promise<ExerciseVolumeResponse[]> {
     if (!filters) {
         if (!_volumeCache) {
-            _volumeCache = fetchFromServer<ExerciseVolumeResponse[]>("logs/volume", "GET")
-                .catch(e => { _volumeCache = null; throw e; });
+            _volumeCache = remember(fetchFromServer<ExerciseVolumeResponse[]>("logs/volume", "GET")
+                .catch(e => { _volumeCache = null; throw e; }));
         }
         return _volumeCache;
     }
@@ -242,4 +247,8 @@ function buildVolumeParams(filters?: VolumeFilters): string {
     if (filters.toMonth !== undefined) p.set("ToMonth", String(filters.toMonth));
     const s = p.toString();
     return s ? `?${s}` : "";
+}
+
+export function peekVolume(): ExerciseVolumeResponse[] | undefined {
+    return peek(_volumeCache);
 }

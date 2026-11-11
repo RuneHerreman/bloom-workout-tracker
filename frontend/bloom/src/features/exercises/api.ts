@@ -1,4 +1,4 @@
-import { fetchFromServer } from "../../assets/js/data/apiClient.ts";
+import { fetchFromServer, remember, peek } from "../../assets/js/data/apiClient.ts";
 import type { ExerciseType } from "../../types.ts";
 import type { CustomExerciseBody } from "../../assets/js/data/apiTypes.ts";
 
@@ -31,8 +31,8 @@ export function searchExercises(filters?: ExerciseFilters): Promise<Exercise[]> 
 
     if (!hasFilters) {
         if (!_allExercises) {
-            _allExercises = fetchFromServer<Exercise[]>("exercises", "GET")
-                .catch(e => { _allExercises = null; throw e; });
+            _allExercises = remember(fetchFromServer<Exercise[]>("exercises", "GET")
+                .catch(e => { _allExercises = null; throw e; }));
         }
         return _allExercises;
     }
@@ -42,6 +42,10 @@ export function searchExercises(filters?: ExerciseFilters): Promise<Exercise[]> 
     filters?.targetMuscleGroups?.forEach(m => p.append("TargetMuscleGroups", m));
     filters?.exerciseTypes?.forEach(t => p.append("ExerciseTypes", t));
     return fetchFromServer<Exercise[]>(`exercises?${p.toString()}`, "GET");
+}
+
+export function peekExercises(): Exercise[] | undefined {
+    return peek(_allExercises);
 }
 
 export async function getExercise(exerciseId: string): Promise<Exercise> {
