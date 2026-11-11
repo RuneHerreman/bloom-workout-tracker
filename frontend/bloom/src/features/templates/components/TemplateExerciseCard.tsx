@@ -1,3 +1,4 @@
+import { newId } from "../../../utils/id.ts";
 import { useState, useEffect, useRef } from "react";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
@@ -80,7 +81,7 @@ function TemplateExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDele
             : exerciseType === "Cardio"
                 ? { type: "Cardio", order: items.length + 1, reps: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
                 : { type: exerciseType, order: items.length + 1, reps: 10, duration: null, distance: null, distanceUnit: null };
-        const updated = [...items, { id: crypto.randomUUID(), set: newSet }];
+        const updated = [...items, { id: newId(), set: newSet }];
         setItems(updated);
         pushChange(updated);
     }

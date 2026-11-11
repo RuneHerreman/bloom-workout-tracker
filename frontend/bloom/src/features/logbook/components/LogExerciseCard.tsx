@@ -1,3 +1,4 @@
+import { newId } from "../../../utils/id.ts";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
@@ -147,7 +148,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
         const newSet: LoggedSet = last
             ? duplicateSet(last, items.length + 1)
             : defaultSet(exerciseType, items.length + 1);
-        const updated = [...items, { id: crypto.randomUUID(), set: newSet }];
+        const updated = [...items, { id: newId(), set: newSet }];
         setItems(updated);
         pushChange(updated);
     }
