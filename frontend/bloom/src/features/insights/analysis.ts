@@ -3,6 +3,7 @@
 
 import type { LoggedSet, LoggedWorkout } from "../../assets/js/data/apiTypes.ts";
 import type { Exercise } from "../exercises/api.ts";
+import { e1rm, round1 } from "../../utils/bodyMath.ts";
 
 // ── Periods & time buckets ────────────────────────────────────────────────────
 
@@ -105,14 +106,6 @@ const toMinutes = (dur: string | null) => {
 
 const isWorkingStrengthSet = (s: LoggedSet) => s.type !== "Cardio" && s.marker !== "WarmUp";
 
-/** Estimated one-rep max (Epley). Reps above 12 are capped: estimates get unreliable. */
-export function e1rm(weightKg: number, reps: number): number {
-    if (weightKg <= 0 || reps <= 0) return 0;
-    if (reps === 1) return weightKg;
-    return weightKg * (1 + Math.min(reps, 12) / 30);
-}
-
-const round1 = (n: number) => Math.round(n * 10) / 10;
 
 // ── Strength: per-exercise progress ───────────────────────────────────────────
 
@@ -162,7 +155,7 @@ export function exerciseProgress(
             let best = 0, top = { weight: 0, reps: 0 }, volume = 0, heaviest = 0, heaviestReps = 0, bestSetVolume = 0;
             for (const s of sets) {
                 const kg = toKg(s.weight, s.weightUnit);
-                const est = e1rm(kg, s.reps!);
+                const est = e1rm(kg, s.reps!, s.rir); // reps in reserve count as reps left
                 volume += kg * s.reps!;
                 if (kg > heaviest || (kg === heaviest && s.reps! > heaviestReps)) { heaviest = kg; heaviestReps = s.reps!; }
                 bestSetVolume = Math.max(bestSetVolume, kg * s.reps!);
