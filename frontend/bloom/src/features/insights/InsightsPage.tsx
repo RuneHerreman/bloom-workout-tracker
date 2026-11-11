@@ -17,6 +17,7 @@ import Highlights from "./components/Highlights.tsx";
 import Explorer, { type ExplorerItem } from "./components/Explorer.tsx";
 import StrengthDetail from "./components/StrengthDetail.tsx";
 import CardioDetail from "./components/CardioDetail.tsx";
+import BodyView from "./components/BodyView.tsx";
 import ConsistencyChart from "./components/ConsistencyChart.tsx";
 import MuscleBalance from "./components/MuscleBalance.tsx";
 import { AXIS_TICK, VizTooltip } from "./components/ChartParts.tsx";
@@ -25,7 +26,9 @@ import "../../assets/css/insights.css";
 
 const InsightsHeatmap = lazy(() => import("./InsightsHeatmap.tsx"));
 
-type Tab = "strength" | "cardio";
+type Tab = "strength" | "cardio" | "body";
+
+const TAB_LABELS: Record<Tab, string> = { strength: "Strength", cardio: "Cardio", body: "Body" };
 
 const fmtRange = (start: Date, end: Date) => {
     const sameYear = start.getFullYear() === end.getFullYear();
@@ -152,10 +155,10 @@ function InsightsPage() {
                         ))}
                     </div>
                     <div className="segmented" role="tablist" aria-label="Insights view">
-                        {(["strength", "cardio"] as Tab[]).map(t => (
+                        {(["strength", "cardio", "body"] as Tab[]).map(t => (
                             <button key={t} role="tab" aria-selected={tab === t}
                                 className={`segmented-item${tab === t ? " active" : ""}`} onClick={() => setTab(t)}>
-                                {t === "strength" ? "Strength" : "Cardio"}
+                                {TAB_LABELS[t]}
                             </button>
                         ))}
                     </div>
@@ -206,6 +209,8 @@ function InsightsPage() {
                         </>
                     )
                 )}
+
+                {!loading && !error && tab === "body" && <BodyView range={range} period={period} />}
 
                 {!loading && !error && tab === "cardio" && (
                     !hasCardio ? (
