@@ -1461,3 +1461,13 @@
 .exercise-library-more { height: 1px; list-style: none; }
 .feature-sidebar-more { height: 1px; flex-shrink: 0; }
 .feature-sidebar-list.is-stale { opacity: 0.7; }
+
+/* The reset sets body line-height to 1, so any single-line text that also clips
+   (overflow: hidden for an ellipsis) loses its descenders — "kg", "g", "p", "y".
+   Every truncating label gets enough line box to hold them. */
+.lift-name, .muscle-name,
+.imp-name-file, .imp-name-sub,
+.explorer-item-name, .explorer-item-sub, .records dd,
+.insights-heatmap-picker-btn span, .insights-heatmap-picker-name,
+.lb-podium-name, .lb-row-name,
+.gear-item-name, .sidebar-card-meta, .sidebar-username { line-height: 1.3; }
