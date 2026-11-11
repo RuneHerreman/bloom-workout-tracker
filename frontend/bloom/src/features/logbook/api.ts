@@ -1,3 +1,4 @@
+import { forgetBody } from "../body/api.ts";
 import { fetchFromServer, remember, peek } from "../../assets/js/data/apiClient.ts";
 import { forgetExercises } from "../exercises/api.ts";
 import { forgetTemplates } from "../templates/api.ts";
@@ -200,13 +201,19 @@ export interface ImportResult {
     importedIds: string[];
     /** The import in the history, for undo (null when nothing was added). */
     batchId: string | null;
+    /** Body log days: added, already in the log, and ones whose body fat was out of range (weight kept). */
+    body: { imported: number; skipped: number; droppedBodyFat: number; failures: { date: string; reason: string }[] };
 }
+
+export interface ImportBodyDay { date: string; weightKg: number; bodyFatPct: number | null }
 
 export interface ImportMeta {
     fileName: string;
     /** New exercises and templates made for this import, so undo can remove them too. */
     createdExerciseIds: string[];
     createdTemplateIds: string[];
+    /** Body log days to add; days already in the log are kept as they are. */
+    body?: ImportBodyDay[];
 }
 
 /** Imports many workouts in one request (the server skips ones you already have) and records it in the history. */
@@ -215,6 +222,7 @@ export async function importLogs(workouts: ImportWorkoutBody[], meta: ImportMeta
     const result = await fetchFromServer<ImportResult>("logs/import", "POST", { workouts: encoded, ...meta });
     _logsCache = null;
     _volumeCache = null;
+    if (meta.body?.length) forgetBody();
     return result;
 }
 
@@ -226,6 +234,7 @@ export interface ImportBatchSummary {
     exercises: number;
     templates: number;
     undoneAt: string | null;
+    bodyEntries: number;
 }
 
 /** Your import history, newest first. */
@@ -233,13 +242,14 @@ export function getImportHistory(): Promise<ImportBatchSummary[]> {
     return fetchFromServer<ImportBatchSummary[]>("logs/imports", "GET");
 }
 
-export interface UndoImportResult { workouts: number; templates: number; exercises: number; keptExercises: number }
+export interface UndoImportResult { workouts: number; templates: number; exercises: number; keptExercises: number; bodyEntries: number }
 
 /** Undoes an import from the history: its workouts, templates and unused new exercises. */
 export async function undoImportBatch(batchId: string): Promise<UndoImportResult> {
     const result = await fetchFromServer<UndoImportResult>(`logs/imports/${batchId}/undo`, "POST");
     _logsCache = null;
     _volumeCache = null;
+    if (result.bodyEntries) forgetBody();
     forgetExercises();
     forgetTemplates();
     return result;

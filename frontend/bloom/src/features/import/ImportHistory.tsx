@@ -21,6 +21,7 @@ function ImportHistory({ history, onUndo }: { history: ImportBatchSummary[] | nu
                         b.workouts ? plural(b.workouts, "workout") : null,
                         b.exercises ? plural(b.exercises, "new exercise") : null,
                         b.templates ? plural(b.templates, "template") : null,
+                        b.bodyEntries ? plural(b.bodyEntries, "weigh-in") : null,
                     ].filter(Boolean).join(" · ");
                     return (
                         <li key={b.id} className={b.undoneAt ? "undone" : ""}>
@@ -48,7 +49,7 @@ function ImportHistory({ history, onUndo }: { history: ImportBatchSummary[] | nu
                     );
                 })}
             </ul>
-            <p className="imp-muted small">Undo removes the workouts and templates an import added, and new exercises nothing else uses. Workouts you logged yourself aren't touched.</p>
+            <p className="imp-muted small">Undo removes the workouts, templates and weigh-ins an import added, and new exercises nothing else uses. What you logged yourself isn't touched.</p>
         </section>
     );
 }

@@ -16,8 +16,12 @@ public sealed record ImportLoggedWorkoutsBody(
     [Required, MaxLength(ImportLoggedWorkouts.MaxWorkouts)] List<ImportWorkoutBody> Workouts,
     [MaxLength(200)] string? FileName = null,
     List<Guid>? CreatedExerciseIds = null,
-    List<Guid>? CreatedTemplateIds = null
+    List<Guid>? CreatedTemplateIds = null,
+    [MaxLength(ImportLoggedWorkouts.MaxBodyEntries)] List<ImportBodyBody>? Body = null
 );
+
+/// <summary>One body log day: date (yyyy-MM-dd), weight in kg, optional body fat %.</summary>
+public sealed record ImportBodyBody([Required] DateOnly Date, [Required] decimal WeightKg, decimal? BodyFatPct = null);
 
 /// <summary>
 /// One imported workout. Sets are validated by the domain rather than by attributes,
@@ -56,7 +60,9 @@ public sealed record ImportSetBody(
 
 public sealed record ImportFailureResponse(int Index, string Name, DateTime LoggedAt, string Reason);
 
-public sealed record ImportLoggedWorkoutsResponse(int Imported, int Skipped, IReadOnlyList<ImportFailureResponse> Failures, IReadOnlyList<Guid> ImportedIds, Guid? BatchId);
+public sealed record ImportBodyResponse(int Imported, int Skipped, int DroppedBodyFat, IReadOnlyList<ImportBodyFailure> Failures);
+
+public sealed record ImportLoggedWorkoutsResponse(int Imported, int Skipped, IReadOnlyList<ImportFailureResponse> Failures, IReadOnlyList<Guid> ImportedIds, Guid? BatchId, ImportBodyResponse Body);
 
 public static class ImportLoggedWorkoutsController
 {
@@ -78,7 +84,8 @@ public static class ImportLoggedWorkoutsController
             )).ToList(),
             w.Note,
             w.SourceId
-        )).ToList(), request.Body.FileName, request.Body.CreatedExerciseIds, request.Body.CreatedTemplateIds);
+        )).ToList(), request.Body.FileName, request.Body.CreatedExerciseIds, request.Body.CreatedTemplateIds,
+            request.Body.Body?.Select(b => new ImportBodyInput(b.Date, b.WeightKg, b.BodyFatPct)).ToList());
 
         var output = await request.UseCase.Execute(input, ct);
 
@@ -87,7 +94,10 @@ public static class ImportLoggedWorkoutsController
             output.Skipped,
             output.Failures.Select(f => new ImportFailureResponse(f.Index, f.Name, f.LoggedAt, f.Reason)).ToList(),
             output.ImportedIds,
-            output.BatchId
+            output.BatchId,
+            output.Body is { } b
+                ? new ImportBodyResponse(b.Imported, b.Skipped, b.DroppedBodyFat, b.Failures)
+                : new ImportBodyResponse(0, 0, 0, [])
         ));
     }
 }

@@ -9,6 +9,8 @@ import type {
 import { MARKERS } from "../logbook/logbookUtils.ts";
 import { SET_COLUMNS } from "./exportData.ts";
 import { readXlsxSheet } from "./xlsxRead.ts";
+import { isBodyTable, parseBodyJson, parseBodyTable, type BodyUnit, type ParsedBody } from "./bodyImport.ts";
+import { dayOf, detectDateOrder, timeOf, type DateOrder } from "./dates.ts";
 
 /** Example rows in the CSV layout. Exercise names should match ones in your account (or they're created as custom exercises). */
 const EXAMPLE_ROWS: string[][] = [
@@ -104,12 +106,18 @@ export interface ParsedFile {
      * decides it (no day above 12), so the person should be asked.
      */
     dateOrder: { used: DateOrder; ambiguous: boolean; sample?: string };
+    /** Body log days (weight, body fat) in the file. */
+    body: ParsedBody[];
+    /**
+     * How the body log's weights were read, when the file has one from a plain table.
+     * `ambiguous` when the header has no unit and the values could be kg or lb.
+     */
+    bodyUnit: { used: BodyUnit; ambiguous: boolean; median: number } | null;
 }
 
-/** Day-first (02/11 = 2 November) or month-first (02/11 = 11 February). */
-export type DateOrder = "dmy" | "mdy";
+export type { DateOrder };
 
-export interface ParseOptions { dateOrder?: DateOrder }
+export interface ParseOptions { dateOrder?: DateOrder; bodyUnit?: BodyUnit }
 
 export class ImportFileError extends Error {}
 
@@ -173,9 +181,39 @@ function asMarker(setType: unknown, setNumber: unknown): SetMarker | null {
 export async function parseImportFile(file: File, options: ParseOptions = {}): Promise<ParsedFile> {
     const ext = file.name.toLowerCase().split(".").pop();
     if (ext === "json") return parseJson(await file.text(), file.name);
-    if (ext === "csv") return parseTable(parseCsv(await file.text()), "csv", file.name, options);
-    if (ext === "xlsx") return parseTable(await readXlsxSheet(await file.arrayBuffer(), "Sets"), "xlsx", file.name, options);
-    throw new ImportFileError("Choose a .json, .csv or .xlsx file exported from Bloom.");
+    if (ext === "csv") {
+        const rows = parseCsv(await file.text());
+        return rows.length && isBodyTable(rows[0]) ? bodyFile(rows, "csv", file.name, options) : parseTable(rows, "csv", file.name, options);
+    }
+    if (ext === "xlsx") {
+        const buf = await file.arrayBuffer();
+        const sets = await readXlsxSheet(buf, "Sets", { fallback: false });
+        if (!sets) {
+            // Not a Bloom workbook: its first sheet is either a body log or sets in Bloom's columns.
+            const first = await readXlsxSheet(buf, "", { fallback: true });
+            return first?.length && isBodyTable(first[0]) ? bodyFile(first, "xlsx", file.name, options) : parseTable(first ?? [], "xlsx", file.name, options);
+        }
+        const parsed = parseTable(sets, "xlsx", file.name, options);
+        const body = await readXlsxSheet(buf, "Body", { fallback: false });
+        if (body?.length && isBodyTable(body[0])) {
+            const b = parseBodyTable(body, { dateOrder: parsed.dateOrder.used, unit: "kg" });
+            return { ...parsed, body: b.days, warnings: [...parsed.warnings, ...b.warnings.map(w => `Body sheet, ${w.charAt(0).toLowerCase()}${w.slice(1)}`)] };
+        }
+        return parsed;
+    }
+    throw new ImportFileError("Choose a .json, .csv or .xlsx file.");
+}
+
+/** A file that is only a body log (a scale or health app's export, or a weight spreadsheet). */
+function bodyFile(rows: (string | number)[][], format: "csv" | "xlsx", fileName: string, options: ParseOptions): ParsedFile {
+    const b = parseBodyTable(rows, { dateOrder: options.dateOrder, unit: options.bodyUnit });
+    if (b.days.length === 0 && b.warnings.length === 0) throw new ImportFileError("No weigh-ins found in this file.");
+    const warnings = [...b.warnings];
+    if (b.sameDay) warnings.push(`${b.sameDay} extra reading${b.sameDay === 1 ? "" : "s"} on days that already had one: kept the earliest of each day.`);
+    return {
+        format, fileName, workouts: [], templates: [], customExercises: [], warnings,
+        dateOrder: b.dateOrder, body: b.days, bodyUnit: b.unit,
+    };
 }
 
 // ── JSON (Bloom backup) ───────────────────────────────────────────────────────
@@ -194,17 +232,19 @@ function parseJson(text: string, fileName: string): ParsedFile {
         }[];
         templates?: { name?: string; exercises?: { exerciseId?: string; exerciseName?: string | null; note?: string | null; gear?: string[]; sets?: JsonSet[] }[] }[];
         customExercises?: { id?: string; name?: string; description?: string; type?: string; targetMuscles?: string[] }[];
+        body?: unknown;
     };
     try {
         data = JSON.parse(text);
     } catch {
         throw new ImportFileError("This file isn't valid JSON.");
     }
-    if (!data || typeof data !== "object" || (!Array.isArray(data.workouts) && !Array.isArray(data.templates))) {
-        throw new ImportFileError("This doesn't look like a Bloom backup: no workouts or templates in it.");
+    if (!data || typeof data !== "object" || (!Array.isArray(data.workouts) && !Array.isArray(data.templates) && !Array.isArray(data.body))) {
+        throw new ImportFileError("This doesn't look like a Bloom backup: no workouts, templates or body log in it.");
     }
 
-    const warnings: string[] = [];
+    const bodyParse = parseBodyJson(data.body);
+    const warnings: string[] = [...bodyParse.warnings];
     const customs = (data.customExercises ?? []).flatMap(c => {
         const type = asType(c.type);
         if (!c.name || !type) return [];
@@ -274,7 +314,10 @@ function parseJson(text: string, fileName: string): ParsedFile {
         }),
     }));
 
-    return { format: "json", fileName, workouts, templates, customExercises: customs, warnings, dateOrder: { used: "dmy", ambiguous: false } };
+    return {
+        format: "json", fileName, workouts, templates, customExercises: customs, warnings,
+        dateOrder: { used: "dmy", ambiguous: false }, body: bodyParse.days, bodyUnit: null,
+    };
 }
 
 // ── CSV / Excel (one row per set) ─────────────────────────────────────────────
@@ -304,44 +347,6 @@ export function parseCsv(text: string): string[][] {
 /** The export prefixes text starting with = + - @ with a quote so spreadsheets don't run it; undo that. */
 const unguard = (v: string) => (/^'[=+\-@\t\r]/.test(v) ? v.slice(1) : v);
 
-const SLASH_DATE = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/;
-
-/** Date cell → local calendar day: "2026-11-02", "02/11/2026" (in `order`), or an Excel serial number. */
-function dayOf(v: string | number, order: DateOrder): Date | null {
-    if (typeof v === "number" || /^\d+(\.\d+)?$/.test(String(v).trim())) {
-        const serial = Number(v);
-        const utc = new Date(Math.round((serial - 25569) * 86_400_000));
-        return new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate());
-    }
-    const iso = String(v).trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-    if (iso) return valid(Number(iso[1]), Number(iso[2]), Number(iso[3]));
-    const m = String(v).trim().match(SLASH_DATE);
-    if (!m) return null;
-    const [a, b] = [Number(m[1]), Number(m[2])];
-    return order === "dmy" ? valid(Number(m[3]), b, a) : valid(Number(m[3]), a, b);
-}
-
-/** A real calendar date, or null (so 31/02 or month 13 is reported instead of rolling over). */
-function valid(y: number, month: number, d: number): Date | null {
-    const date = new Date(y, month - 1, d);
-    return date.getMonth() === month - 1 && date.getDate() === d ? date : null;
-}
-
-/** Decides day/month order from the file: any first part above 12 means day-first, any second part above 12 month-first. */
-function detectDateOrder(cells: (string | number)[]): { order: DateOrder | null; slashDates: boolean; sample?: string } {
-    let dayFirst = false, monthFirst = false, slashDates = false;
-    let sample: string | undefined;
-    for (const c of cells) {
-        const m = typeof c === "string" ? c.trim().match(SLASH_DATE) : null;
-        if (!m) continue;
-        slashDates = true;
-        sample ??= m[0];
-        if (Number(m[1]) > 12) dayFirst = true;
-        if (Number(m[2]) > 12) monthFirst = true;
-    }
-    return { order: dayFirst === monthFirst ? null : dayFirst ? "dmy" : "mdy", slashDates, sample };
-}
-
 /**
  * Sets the server would reject, per workout, so the review step can list them
  * before importing: Strength and Plyometric need reps (1+) and a weight (0+).
@@ -360,16 +365,6 @@ export function workoutProblems(w: ParsedWorkout): string[] {
         }
     }
     return [...problems];
-}
-
-/** Time cell → [hours, minutes]: "18:30" text, or an Excel day fraction. */
-function timeOf(v: string | number): [number, number] {
-    if (typeof v === "number" || /^0?\.\d+$/.test(String(v).trim())) {
-        const minutes = Math.round(Number(v) * 24 * 60);
-        return [Math.floor(minutes / 60) % 24, minutes % 60];
-    }
-    const m = String(v).match(/(\d{1,2}):(\d{2})/);
-    return m ? [Number(m[1]), Number(m[2])] : [12, 0];
 }
 
 function parseTable(rows: (string | number)[][], format: "csv" | "xlsx", fileName: string, options: ParseOptions = {}): ParsedFile {
@@ -459,7 +454,7 @@ function parseTable(rows: (string | number)[][], format: "csv" | "xlsx", fileNam
         } as LoggedSet);
     });
 
-    return { format, fileName, workouts, templates: [], customExercises: [], warnings, dateOrder };
+    return { format, fileName, workouts, templates: [], customExercises: [], warnings, dateOrder, body: [], bodyUnit: null };
 }
 
 // ── Plan: match against this account ──────────────────────────────────────────

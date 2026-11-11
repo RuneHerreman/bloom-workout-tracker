@@ -19,6 +19,12 @@ export function peekBody(): BodyEntry[] | undefined {
     return peek(_bodyCache);
 }
 
+/** Drop the cached log after something else changed it (an import or its undo). */
+export function forgetBody(): void {
+    _bodyCache = null;
+    invalidateMe();
+}
+
 /** Logs (or updates) a day. The latest day is also the profile weight, so that cache goes too. */
 export async function logBody(date: string, body: LogBodyBody): Promise<BodyEntry> {
     const entry = await fetchFromServer<BodyEntry>(`body/${date}`, "PUT", body);

@@ -3,12 +3,13 @@ import { FileSpreadsheet, FileText, Braces, Download, Check } from "lucide-react
 import Overlay from "../../components/general/OverlayComponent.tsx";
 import Skeleton from "../../components/general/Skeleton.tsx";
 import { getLogs } from "../logbook/api.ts";
+import { getBody } from "../body/api.ts";
 import { getTemplates } from "../templates/api.ts";
 import { searchExercises } from "../exercises/api.ts";
-import type { Exercise, LoggedWorkout, WorkoutTemplate } from "../../assets/js/data/apiTypes.ts";
+import type { BodyEntry, Exercise, LoggedWorkout, WorkoutTemplate } from "../../assets/js/data/apiTypes.ts";
 import {
     type ExportFormat, type ExportRange, RANGE_LABELS,
-    filterByRange, buildCsv, buildWorkbook, buildJson, downloadBlob, exportFilename,
+    filterByRange, filterBodyByRange, buildCsv, buildWorkbook, buildJson, downloadBlob, exportFilename,
 } from "./exportData.ts";
 
 const FORMATS: { value: ExportFormat; label: string; ext: string; desc: string; icon: typeof FileText }[] = [
@@ -21,6 +22,7 @@ interface Data {
     logs: LoggedWorkout[];
     templates: WorkoutTemplate[];
     exercises: Record<string, Exercise>;
+    body: BodyEntry[];
 }
 
 function ExportOverlay({ onClose }: { onClose: () => void }) {
@@ -32,14 +34,17 @@ function ExportOverlay({ onClose }: { onClose: () => void }) {
     const [done, setDone] = useState(false);
 
     useEffect(() => {
-        Promise.all([getLogs(), getTemplates(), searchExercises()])
-            .then(([logs, templates, exs]) => setData({
-                logs, templates, exercises: Object.fromEntries(exs.map(e => [e.id, e])),
+        Promise.all([getLogs(), getTemplates(), searchExercises(), getBody().catch(() => [])])
+            .then(([logs, templates, exs, body]) => setData({
+                logs, templates, exercises: Object.fromEntries(exs.map(e => [e.id, e])), body,
             }))
             .catch(() => setError("Couldn't load your data. Check your connection and try again."));
     }, []);
 
     const selected = useMemo(() => (data ? filterByRange(data.logs, range) : []), [data, range]);
+    const selectedBody = useMemo(() => (data ? filterBodyByRange(data.body, range) : []), [data, range]);
+    // The CSV is one table of sets; the body log goes in the Excel and JSON files.
+    const bodyIncluded = format !== "csv" && selectedBody.length > 0;
     const setCount = selected.reduce((n, l) => n + l.exercises.reduce((m, e) => m + e.sets.length, 0), 0);
     const hasGps = selected.some(l => l.exercises.some(e => e.gpxData));
 
@@ -48,8 +53,8 @@ function ExportOverlay({ onClose }: { onClose: () => void }) {
         const blob = format === "csv"
             ? buildCsv(selected, data.exercises)
             : format === "xlsx"
-                ? buildWorkbook(selected, data.exercises)
-                : buildJson(selected, data.templates, data.exercises, { includeGps, range });
+                ? buildWorkbook(selected, data.exercises, selectedBody)
+                : buildJson(selected, data.templates, data.exercises, { includeGps, range, body: selectedBody });
         downloadBlob(blob, exportFilename(format));
         setDone(true);
         setTimeout(() => setDone(false), 2200);
@@ -116,10 +121,12 @@ function ExportOverlay({ onClose }: { onClose: () => void }) {
 
                 <div className="export-summary">
                     {data ? (
-                        selected.length ? (
+                        selected.length || bodyIncluded ? (
                             <p>
                                 <b>{selected.length}</b> workout{selected.length !== 1 ? "s" : ""} · <b>{setCount}</b> set{setCount !== 1 ? "s" : ""}
                                 {format === "json" && <> · <b>{data.templates.length}</b> template{data.templates.length !== 1 ? "s" : ""}</>}
+                                {bodyIncluded && <> · <b>{selectedBody.length}</b> body log day{selectedBody.length !== 1 ? "s" : ""}</>}
+                                {format === "csv" && selectedBody.length > 0 && <span className="export-note">The body log is in the Excel and JSON exports.</span>}
                             </p>
                         ) : (
                             <p>No workouts in this period.</p>
@@ -132,7 +139,7 @@ function ExportOverlay({ onClose }: { onClose: () => void }) {
                 <button
                     type="button"
                     className="button-component green export-submit"
-                    disabled={!data || (selected.length === 0 && format !== "json")}
+                    disabled={!data || (selected.length === 0 && !bodyIncluded && format !== "json")}
                     onClick={handleExport}
                 >
                     {done ? <Check size={14} /> : <Download size={14} />}

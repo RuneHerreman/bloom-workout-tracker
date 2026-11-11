@@ -1,3 +1,4 @@
+using Bloom.Domain.Body;
 using Bloom.Application.Contracts;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Domain.Imports;
@@ -20,18 +21,32 @@ public sealed record ImportWorkoutInput(
 /// <param name="FileName">Shown in the import history.</param>
 /// <param name="CreatedExerciseIds">Custom exercises the client created for this import, so undo can remove them.</param>
 /// <param name="CreatedTemplateIds">Templates the client created for this import, so undo can remove them.</param>
+/// <summary>One day of the body log in an import (a Bloom backup's Body sheet, or a scale app's export).</summary>
+public sealed record ImportBodyInput(DateOnly Date, decimal WeightKg, decimal? BodyFatPct = null);
+
+/// <param name="Body">Body log days to add alongside the workouts; days already in the log are skipped.</param>
 public sealed record ImportLoggedWorkoutsInput(
     List<ImportWorkoutInput> Workouts,
     string? FileName = null,
     List<Guid>? CreatedExerciseIds = null,
-    List<Guid>? CreatedTemplateIds = null
+    List<Guid>? CreatedTemplateIds = null,
+    List<ImportBodyInput>? Body = null
 );
 
 public sealed record ImportFailure(int Index, string Name, DateTime LoggedAt, string Reason);
 
+public sealed record ImportBodyFailure(DateOnly Date, string Reason);
+
+/// <param name="Skipped">Days already in the body log (or repeated in the file).</param>
+/// <param name="DroppedBodyFat">Days whose body fat reading was out of range: the weight was kept.</param>
+public sealed record ImportBodyOutput(int Imported, int Skipped, int DroppedBodyFat, IReadOnlyList<ImportBodyFailure> Failures)
+{
+    public static readonly ImportBodyOutput None = new(0, 0, 0, []);
+}
+
 /// <param name="ImportedIds">Ids of the workouts this import created, so the import can be undone.</param>
 /// <param name="BatchId">The import in the history (null when nothing was added).</param>
-public sealed record ImportLoggedWorkoutsOutput(int Imported, int Skipped, IReadOnlyList<ImportFailure> Failures, IReadOnlyList<Guid> ImportedIds, Guid? BatchId = null);
+public sealed record ImportLoggedWorkoutsOutput(int Imported, int Skipped, IReadOnlyList<ImportFailure> Failures, IReadOnlyList<Guid> ImportedIds, Guid? BatchId = null, ImportBodyOutput? Body = null);
 
 /// <summary>
 /// Imports many workouts at once (from a Bloom export or another app's file) in a
@@ -50,6 +65,8 @@ public class ImportLoggedWorkouts(
 ) : IUseCase<ImportLoggedWorkoutsInput, ImportLoggedWorkoutsOutput>
 {
     public const int MaxWorkouts = 5000;
+    /// <summary>Daily weigh-ins for over 50 years.</summary>
+    public const int MaxBodyEntries = 20000;
     private const string ExternalIdPrefix = "import:";
 
     public async Task<ImportLoggedWorkoutsOutput> Execute(ImportLoggedWorkoutsInput input, CancellationToken ct = default)
@@ -57,6 +74,8 @@ public class ImportLoggedWorkouts(
         var userId = currentUser.UserId;
         if (input.Workouts.Count > MaxWorkouts)
             throw new ArgumentException($"An import can hold at most {MaxWorkouts} workouts.");
+        if ((input.Body?.Count ?? 0) > MaxBodyEntries)
+            throw new ArgumentException($"An import can hold at most {MaxBodyEntries} body log days.");
 
         if (!await uow.Repo<IUserRepository>().Exists(userId))
             throw new UserNotFoundException($"User not found | Id: {userId}");
@@ -129,23 +148,79 @@ public class ImportLoggedWorkouts(
             }
         }
 
+        var (body, bodyIds) = input.Body is { Count: > 0 }
+            ? await ImportBody(userId, input.Body, ct)
+            : (ImportBodyOutput.None, new List<Guid>());
+
         // Record the import so it can be undone later from the history.
         var createdExercises = input.CreatedExerciseIds ?? [];
         var createdTemplates = input.CreatedTemplateIds ?? [];
         ImportBatch? batch = null;
-        if (importedIds.Count > 0 || createdExercises.Count > 0 || createdTemplates.Count > 0)
+        if (importedIds.Count > 0 || createdExercises.Count > 0 || createdTemplates.Count > 0 || bodyIds.Count > 0)
         {
-            batch = ImportBatch.Create(userId, input.FileName, importedIds, createdExercises, createdTemplates);
+            batch = ImportBatch.Create(userId, input.FileName, importedIds, createdExercises, createdTemplates, bodyIds);
             await uow.Repo<IImportBatchRepository>().Save(batch);
         }
 
         if (batch is not null) await uow.Do(ct);
 
         logger.LogInformation(
-            "Import done | User: {UserId} - Imported: {Imported}, Skipped: {Skipped}, Failed: {Failed}",
-            userId, imported, skipped, failures.Count);
+            "Import done | User: {UserId} - Imported: {Imported}, Skipped: {Skipped}, Failed: {Failed}, Body days: {BodyImported} (skipped {BodySkipped})",
+            userId, imported, skipped, failures.Count, body.Imported, body.Skipped);
 
-        return new ImportLoggedWorkoutsOutput(imported, skipped, failures, importedIds, batch?.Id.Value);
+        return new ImportLoggedWorkoutsOutput(imported, skipped, failures, importedIds, batch?.Id.Value, body);
+    }
+
+    /// <summary>
+    /// Adds the file's body log days. A day already in the log keeps what is there (an
+    /// import never overwrites a weigh-in); a day repeated in the file counts once, the
+    /// first time. An out-of-range body fat reading is dropped and the weight kept.
+    /// When the newest imported day is newer than the log's, it becomes the current weight.
+    /// </summary>
+    private async Task<(ImportBodyOutput Output, List<Guid> Ids)> ImportBody(UserId userId, List<ImportBodyInput> days, CancellationToken ct)
+    {
+        var repo = uow.Repo<IBodyMeasurementRepository>();
+        var existing = await repo.ForUser(userId, ct: ct);
+        var taken = existing.Select(m => m.Date).ToHashSet();
+        var latest = existing.Count > 0 ? existing[^1] : null;
+        var lastAllowed = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1);
+
+        var ids = new List<Guid>();
+        var failures = new List<ImportBodyFailure>();
+        int skipped = 0, droppedBodyFat = 0;
+        BodyMeasurement? newest = null;
+
+        foreach (var d in days)
+        {
+            if (taken.Contains(d.Date)) { skipped++; continue; }
+            if (d.Date > lastAllowed) { failures.Add(new(d.Date, "The date is in the future.")); continue; }
+            if (!BodyMeasurement.IsValidWeight(d.WeightKg))
+            {
+                failures.Add(new(d.Date, $"Weight must be between {BodyMeasurement.MinWeightKg:0} and {BodyMeasurement.MaxWeightKg:0} kg."));
+                continue;
+            }
+            var bodyFat = d.BodyFatPct;
+            if (bodyFat is { } bf && !BodyMeasurement.IsValidBodyFat(bf)) { bodyFat = null; droppedBodyFat++; }
+
+            var entry = BodyMeasurement.Create(userId, d.Date, d.WeightKg, bodyFat, BodyMeasurementSource.Import);
+            await repo.Save(entry);
+            taken.Add(d.Date);
+            ids.Add(entry.Id.Value);
+            if (newest is null || entry.Date > newest.Date) newest = entry;
+        }
+
+        if (newest is not null && (latest is null || newest.Date > latest.Date))
+        {
+            var userRepo = uow.Repo<IUserRepository>();
+            var user = await userRepo.ById(userId);
+            if (user.HasValue)
+            {
+                user.Value.SyncWeight(newest.WeightKg);
+                await userRepo.Save(user.Value);
+            }
+        }
+
+        return (new ImportBodyOutput(ids.Count, skipped, droppedBodyFat, failures), ids);
     }
 
     /// <summary>Same workout = same name (case-insensitive) at the same minute.</summary>

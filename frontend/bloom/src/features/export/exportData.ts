@@ -1,4 +1,4 @@
-import type { LoggedWorkout, WorkoutTemplate, Exercise } from "../../assets/js/data/apiTypes.ts";
+import type { BodyEntry, LoggedWorkout, WorkoutTemplate, Exercise } from "../../assets/js/data/apiTypes.ts";
 import { parseDuration } from "../../utils/workoutUtils.ts";
 import { markerLabel, workingSetNumbers } from "../logbook/logbookUtils.ts";
 import { buildXlsx, type CellValue } from "./xlsx.ts";
@@ -19,6 +19,16 @@ export function filterByRange(logs: LoggedWorkout[], range: ExportRange, now = n
         ? new Date(now.getFullYear(), 0, 1)
         : new Date(now.getTime() - (range === "90d" ? 90 : 30) * 86_400_000);
     return logs.filter(l => new Date(l.loggedAt) >= from);
+}
+
+/** Body log days in the export range. */
+export function filterBodyByRange(entries: BodyEntry[], range: ExportRange, now = new Date()): BodyEntry[] {
+    if (range === "all") return entries;
+    const from = range === "year"
+        ? new Date(now.getFullYear(), 0, 1)
+        : new Date(now.getTime() - (range === "90d" ? 90 : 30) * 86_400_000);
+    const fromDay = `${from.getFullYear()}-${pad(from.getMonth() + 1)}-${pad(from.getDate())}`;
+    return entries.filter(e => e.date >= fromDay);
 }
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
@@ -101,6 +111,18 @@ export function workoutRows(logs: LoggedWorkout[]): CellValue[][] {
     });
 }
 
+export const BODY_COLUMNS = ["Date", "Weight (kg)", "Body fat (%)"] as const;
+
+/** One row per body log day, oldest first. The date is a real date cell in Excel. */
+export function bodyRows(entries: BodyEntry[]): CellValue[][] {
+    return [...entries]
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .map(e => {
+            const [y, m, d] = e.date.split("-").map(Number);
+            return [new Date(y, m - 1, d), e.weightKg, e.bodyFatPct];
+        });
+}
+
 // ── CSV ───────────────────────────────────────────────────────────────────────
 
 function csvCell(v: CellValue): string {
@@ -120,7 +142,7 @@ export function buildCsv(logs: LoggedWorkout[], exercises: Record<string, Exerci
 
 // ── Excel ─────────────────────────────────────────────────────────────────────
 
-export function buildWorkbook(logs: LoggedWorkout[], exercises: Record<string, Exercise>): Blob {
+export function buildWorkbook(logs: LoggedWorkout[], exercises: Record<string, Exercise>, body: BodyEntry[] = []): Blob {
     return buildXlsx([
         {
             name: "Sets",
@@ -132,6 +154,11 @@ export function buildWorkbook(logs: LoggedWorkout[], exercises: Record<string, E
             rows: [[...WORKOUT_COLUMNS], ...workoutRows(logs)],
             widths: [11, 26, 10, 6, 12, 12, 13, 14, 40],
         },
+        ...(body.length ? [{
+            name: "Body",
+            rows: [[...BODY_COLUMNS], ...bodyRows(body)],
+            widths: [11, 12, 12],
+        }] : []),
     ]);
 }
 
@@ -141,7 +168,7 @@ export function buildJson(
     logs: LoggedWorkout[],
     templates: WorkoutTemplate[],
     exercises: Record<string, Exercise>,
-    options: { includeGps: boolean; range: ExportRange }
+    options: { includeGps: boolean; range: ExportRange; body?: BodyEntry[] }
 ): Blob {
     const exerciseName = (id: string) => exercises[id]?.name ?? null;
     const payload = {
@@ -180,6 +207,9 @@ export function buildJson(
             })),
         })),
         customExercises: Object.values(exercises).filter(e => e.isCustom),
+        body: [...(options.body ?? [])]
+            .sort((a, b) => a.date.localeCompare(b.date))
+            .map(e => ({ date: e.date, weightKg: e.weightKg, bodyFatPct: e.bodyFatPct })),
     };
     return new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
 }

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
     AlertTriangle, ArrowLeft, ArrowRight, BookOpen, Braces, Calendar, Check, Download, FileSpreadsheet,
-    FileText, Loader2, RotateCcw, Undo2, Upload,
+    FileText, Loader2, RotateCcw, Scale, Undo2, Upload,
 } from "lucide-react";
 import "../../assets/css/import.css";
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
@@ -16,6 +16,8 @@ import {
     type DateOrder, type ParsedExerciseRef, type ParsedFile,
 } from "../export/importData.ts";
 import ExercisesStep from "./ExercisesStep.tsx";
+import { getBody } from "../body/api.ts";
+import { LB, type BodyUnit, type ParsedBody } from "../export/bodyImport.ts";
 import ImportHistory from "./ImportHistory.tsx";
 import {
     choiceProblem, evidenceByKey, initialChoices, keyOf, prepareWorkouts, statusOf, timesLogged, type Choice, type Fixes, type Prepared,
@@ -27,6 +29,9 @@ const STEPS: { id: Step; label: string }[] = [
     { id: "exercises", label: "Exercises" },
     { id: "review", label: "Review" },
 ];
+
+/** A file with only a body log skips matching exercises. */
+const BODY_STEPS = STEPS.filter(s => s.id !== "exercises");
 
 const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
 const fmtDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -47,7 +52,10 @@ function ImportPage() {
     const [catalog, setCatalog] = useState<Exercise[]>([]);
     const [logs, setLogs] = useState<LoggedWorkout[]>([]);
     const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
+    const [bodyDates, setBodyDates] = useState<Set<string>>(new Set());
+    const loadBody = () => getBody().then(b => setBodyDates(new Set(b.map(e => e.date)))).catch(() => setBodyDates(new Set()));
     useEffect(() => {
+        loadBody();
         Promise.all([searchExercises(), getLogs(), getTemplates()])
             .then(([c, l, t]) => { setCatalog(c); setLogs(l); setTemplates(t); })
             .catch(() => setError("Couldn't load your account. Check your connection and reload the page."));
@@ -56,6 +64,9 @@ function ImportPage() {
     const [file, setFile] = useState<File | null>(null);
     const [parsed, setParsed] = useState<ParsedFile | null>(null);
     const [dateConfirmed, setDateConfirmed] = useState(false);
+    const [unitConfirmed, setUnitConfirmed] = useState(false);
+    const [bodyUnit, setBodyUnit] = useState<BodyUnit | undefined>(undefined);
+    const [dateOrder, setDateOrder] = useState<DateOrder | undefined>(undefined);
     const [choices, setChoices] = useState<Map<string, Choice>>(new Map());
     const [withTemplates, setWithTemplates] = useState(true);
     const [fixes, setFixes] = useState<Fixes>({ fillReps: true, zeroWeight: true });
@@ -72,6 +83,7 @@ function ImportPage() {
             // Reload what the page matches against, since workouts and exercises were removed.
             const [c, l, t] = await Promise.all([searchExercises(), getLogs(), getTemplates()]);
             setCatalog(c); setLogs(l); setTemplates(t);
+            await loadBody();
         } catch {
             setError("Couldn't undo that import. Try again.");
         }
@@ -79,6 +91,13 @@ function ImportPage() {
     }
 
     const plan = useMemo(() => (parsed ? planImport(parsed, catalog, logs, templates) : null), [parsed, catalog, logs, templates]);
+    const bodyOnly = !!parsed && parsed.workouts.length === 0 && parsed.templates.length === 0;
+    // Days already in the body log keep what's there; only new days are sent.
+    const bodyPlan = useMemo(() => {
+        const days = parsed?.body ?? [];
+        const fresh = days.filter(d => !bodyDates.has(d.date));
+        return { fresh, already: days.length - fresh.length };
+    }, [parsed, bodyDates]);
 
     const usedTemplates = useMemo(() => (withTemplates ? plan?.newTemplates ?? [] : []), [withTemplates, plan]);
     // Every new workout is matched, including ones that only import after a fix.
@@ -90,17 +109,24 @@ function ImportPage() {
     // What the fixes would touch, whether or not they're switched on (so the toggles stay visible).
     const fixable = useMemo(() => prepareWorkouts(plan?.newWorkouts ?? [], choices, catalog, logs, { fillReps: true, zeroWeight: true }), [plan, choices, catalog, logs]);
 
-    async function read(f: File, dateOrder?: DateOrder) {
+    async function read(f: File, order?: DateOrder, unit?: BodyUnit) {
         setError(null);
         try {
-            const p = await parseImportFile(f, { dateOrder });
-            if (p.workouts.length === 0 && p.templates.length === 0) throw new ImportFileError("No workouts or templates found in this file.");
+            const p = await parseImportFile(f, { dateOrder: order, bodyUnit: unit });
+            if (p.workouts.length === 0 && p.templates.length === 0 && p.body.length === 0) {
+                throw new ImportFileError("No workouts, templates or weigh-ins found in this file.");
+            }
             const pl = planImport(p, catalog, logs, templates);
             setFile(f);
             setParsed(p);
+            setDateOrder(order);
+            setBodyUnit(unit);
             setChoices(initialChoices(pl, catalog));
-            setDateConfirmed(!!dateOrder || !p.dateOrder.ambiguous);
-            if (dateOrder || !p.dateOrder.ambiguous) setStep("exercises");
+            const datesOk = !!order || !p.dateOrder.ambiguous;
+            const unitOk = !!unit || !p.bodyUnit?.ambiguous;
+            setDateConfirmed(datesOk);
+            setUnitConfirmed(unitOk);
+            if (datesOk && unitOk) setStep(p.workouts.length === 0 && p.templates.length === 0 ? "review" : "exercises");
         } catch (e) {
             setError(e instanceof ImportFileError ? e.message : e instanceof Error && e.message ? e.message : "Couldn't read this file.");
         }
@@ -108,7 +134,9 @@ function ImportPage() {
 
     function reset() {
         setFile(null); setParsed(null); setChoices(new Map()); setDone(null); setError(null); setStep("file");
+        setDateOrder(undefined); setBodyUnit(undefined);
         loadHistory();
+        loadBody();
     }
 
     async function run() {
@@ -142,9 +170,12 @@ function ImportPage() {
                 }
             }
 
-            setProgress(`Importing ${plural(importable.length, "workout")}`);
+            setProgress(importable.length
+                ? `Importing ${plural(importable.length, "workout")}${bodyPlan.fresh.length ? ` and ${plural(bodyPlan.fresh.length, "weigh-in")}` : ""}`
+                : `Importing ${plural(bodyPlan.fresh.length, "weigh-in")}`);
             const result = await importLogs(toImportBodies(importable, idFor), {
                 fileName: parsed.fileName, createdExerciseIds: exerciseIds, createdTemplateIds: templateIds,
+                body: bodyPlan.fresh,
             });
             setDone({ result, templateIds, exerciseIds, undone: false });
             setStep("done");
@@ -167,20 +198,21 @@ function ImportPage() {
         setStep("done");
     }
 
-    const stepIndex = STEPS.findIndex(s => s.id === step);
+    const steps = bodyOnly ? BODY_STEPS : STEPS;
+    const stepIndex = steps.findIndex(s => s.id === step);
 
     return (
         <div className="imp">
             <HeaderComponent
-                title="Import workouts"
-                subtitle="Bring your training history into Bloom"
+                title="Import"
+                subtitle="Bring your training history and weigh-ins into Bloom"
                 action={<Link className="imp-btn ghost" to="/docs/import" target="_blank"><BookOpen size={15} /> Import format</Link>}
             />
 
             <div className="imp-body">
                 {step !== "done" && step !== "importing" && (
                     <ol className="imp-stepper" aria-label="Steps">
-                        {STEPS.map((s, i) => (
+                        {steps.map((s, i) => (
                             <li key={s.id} className={i < stepIndex ? "past" : i === stepIndex ? "current" : ""} aria-current={i === stepIndex ? "step" : undefined}>
                                 <span className="imp-step-dot">{i < stepIndex ? <Check size={12} /> : i + 1}</span>
                                 {s.label}
@@ -197,9 +229,11 @@ function ImportPage() {
                         history={history}
                         onUndoHistory={undoFromHistory}
                         ready={catalog.length > 0}
-                        parsed={parsed && !dateConfirmed ? parsed : null}
+                        parsed={parsed && (!dateConfirmed || !unitConfirmed) ? parsed : null}
+                        question={!dateConfirmed ? "date" : "unit"}
                         onFile={f => read(f)}
-                        onDateOrder={order => file && read(file, order)}
+                        onDateOrder={order => file && read(file, order, bodyUnit)}
+                        onUnit={unit => file && read(file, dateOrder, unit)}
                         onCancel={reset}
                     />
                 )}
@@ -228,7 +262,11 @@ function ImportPage() {
                     )
                 )}
 
-                {step === "review" && plan && parsed && (
+                {step === "review" && plan && parsed && bodyOnly && (
+                    <BodyReview parsed={parsed} fresh={bodyPlan.fresh} already={bodyPlan.already} onBack={reset} onImport={run} />
+                )}
+
+                {step === "review" && plan && parsed && !bodyOnly && (
                     <ReviewStep
                         parsed={parsed}
                         prepared={prepared}
@@ -244,6 +282,7 @@ function ImportPage() {
                         choices={choices}
                         catalog={catalog}
                         problems={keys.filter(k => choiceProblem(choices.get(k), new Set(catalog.map(e => e.name.toLowerCase())), new Set())).length}
+                        body={bodyPlan}
                         onBack={() => setStep("exercises")}
                         onImport={run}
                     />
@@ -267,17 +306,43 @@ function ImportPage() {
 
 // ── Step 1: file ──────────────────────────────────────────────────────────────
 
-function FileStep({ history, onUndoHistory, ready, parsed, onFile, onDateOrder, onCancel }: {
+function FileStep({ history, onUndoHistory, ready, parsed, question, onFile, onDateOrder, onUnit, onCancel }: {
     history: ImportBatchSummary[] | null;
     onUndoHistory: (id: string) => Promise<void>;
     ready: boolean;
     parsed: ParsedFile | null;
+    question: "date" | "unit";
     onFile: (f: File) => void;
     onDateOrder: (o: DateOrder) => void;
+    onUnit: (u: BodyUnit) => void;
     onCancel: () => void;
 }) {
     const input = useRef<HTMLInputElement>(null);
     const [dragging, setDragging] = useState(false);
+
+    if (parsed && question === "unit" && parsed.bodyUnit) {
+        // The weight column has no unit and the values fit both kg and lb.
+        const m = parsed.bodyUnit.median;
+        const fmt = (n: number) => n.toLocaleString("en-GB", { maximumFractionDigits: 1 });
+        return (
+            <div className="imp-card imp-question">
+                <Scale size={22} className="imp-question-icon" />
+                <div>
+                    <h2>Are these weights in kilograms or pounds?</h2>
+                    <p className="imp-muted">The weight column in <b>{parsed.fileName}</b> has no unit, and a typical value of <code>{fmt(m)}</code> could be either.</p>
+                    <div className="imp-options">
+                        <button type="button" className="imp-option" onClick={() => onUnit("kg")}>
+                            <b>{fmt(m)} kg</b><span>Kilograms</span>
+                        </button>
+                        <button type="button" className="imp-option" onClick={() => onUnit("lb")}>
+                            <b>{fmt(m)} lb = {fmt(m * LB)} kg</b><span>Pounds</span>
+                        </button>
+                    </div>
+                    <button type="button" className="imp-btn ghost" onClick={onCancel}><ArrowLeft size={15} /> Choose another file</button>
+                </div>
+            </div>
+        );
+    }
 
     if (parsed) {
         // Dates like 02/11/2026 could be either order and nothing in the file decides it.
@@ -314,7 +379,7 @@ function FileStep({ history, onUndoHistory, ready, parsed, onFile, onDateOrder, 
             >
                 <span className="imp-drop-icon"><Upload size={26} /></span>
                 <h2>Drop your file here</h2>
-                <p className="imp-muted">Your own spreadsheet, another app's export, or a Bloom backup.</p>
+                <p className="imp-muted">Your own spreadsheet, another app's export, a scale's weight log, or a Bloom backup.</p>
                 <button type="button" className="imp-btn primary" disabled={!ready} onClick={() => input.current?.click()}>
                     {ready ? "Choose file" : "Loading your account…"}
                 </button>
@@ -335,7 +400,12 @@ function FileStep({ history, onUndoHistory, ready, parsed, onFile, onDateOrder, 
                 <div className="imp-format">
                     <Braces size={18} />
                     <b>JSON</b>
-                    <p>A Bloom backup. Brings templates, set types and GPS tracks too.</p>
+                    <p>A Bloom backup. Brings templates, set types, GPS tracks and your body log too.</p>
+                </div>
+                <div className="imp-format">
+                    <Scale size={18} />
+                    <b>Weight log</b>
+                    <p>A CSV or Excel file from a scale or health app: a <b>Date</b> and a <b>Weight</b> column, body fat if you have it.</p>
                 </div>
             </div>
             <p className="imp-file-links">
@@ -350,7 +420,7 @@ function FileStep({ history, onUndoHistory, ready, parsed, onFile, onDateOrder, 
 
 // ── Step 3: review ────────────────────────────────────────────────────────────
 
-function ReviewStep({ parsed, prepared, fixable, fixes, setFixes, duplicates, templates, existingTemplates, withTemplates, setWithTemplates, keys, choices, catalog, problems, onBack, onImport }: {
+function ReviewStep({ parsed, prepared, fixable, fixes, setFixes, duplicates, templates, existingTemplates, withTemplates, setWithTemplates, keys, choices, catalog, problems, body, onBack, onImport }: {
     parsed: ParsedFile;
     prepared: Prepared;
     fixable: Prepared;
@@ -365,6 +435,7 @@ function ReviewStep({ parsed, prepared, fixable, fixes, setFixes, duplicates, te
     choices: Map<string, Choice>;
     catalog: Exercise[];
     problems: number;
+    body: { fresh: ParsedBody[]; already: number };
     onBack: () => void;
     onImport: () => void;
 }) {
@@ -462,6 +533,17 @@ function ReviewStep({ parsed, prepared, fixable, fixes, setFixes, duplicates, te
                         </div>
                     )}
 
+                    {body.fresh.length + body.already > 0 && (
+                        <div className="imp-card imp-body-line">
+                            <Scale size={16} aria-hidden />
+                            <span>
+                                <b>Body log: {plural(body.fresh.length, "new weigh-in")}</b>
+                                {body.fresh.some(d => d.bodyFatPct != null) && <> · {body.fresh.filter(d => d.bodyFatPct != null).length} with body fat</>}
+                                {body.already > 0 && <small> · {body.already} {body.already === 1 ? "day is" : "days are"} already in your log and stay as they are</small>}
+                            </span>
+                        </div>
+                    )}
+
                     {templates + existingTemplates > 0 && (
                         <label className="imp-card imp-check">
                             <input type="checkbox" checked={withTemplates} onChange={e => setWithTemplates(e.target.checked)} />
@@ -503,8 +585,85 @@ function ReviewStep({ parsed, prepared, fixable, fixes, setFixes, duplicates, te
                 <button type="button" className="imp-btn ghost" onClick={onBack}><ArrowLeft size={15} /> Exercises</button>
                 <div className="imp-footer-right">
                     {unchecked > 0 && <span className="imp-muted">{plural(unchecked, "exercise")} not checked: imported as suggested</span>}
-                    <button type="button" className="imp-btn primary" disabled={importable.length === 0 || problems > 0} onClick={onImport}>
-                        <Upload size={15} /> Import {plural(importable.length, "workout")}
+                    <button type="button" className="imp-btn primary" disabled={(importable.length === 0 && body.fresh.length === 0) || problems > 0} onClick={onImport}>
+                        <Upload size={15} /> Import {importable.length ? plural(importable.length, "workout") : plural(body.fresh.length, "weigh-in")}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── Review: a weight log ──────────────────────────────────────────────────────
+
+const fmtDay = (iso: string) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return fmtDate(new Date(y, m - 1, d));
+};
+const num1 = (n: number) => n.toLocaleString("en-GB", { maximumFractionDigits: 1 });
+const kg = (n: number) => `${num1(n)} kg`;
+
+function BodyReview({ parsed, fresh, already, onBack, onImport }: {
+    parsed: ParsedFile;
+    fresh: ParsedBody[];
+    already: number;
+    onBack: () => void;
+    onImport: () => void;
+}) {
+    const withFat = fresh.filter(d => d.bodyFatPct != null).length;
+    const weights = fresh.map(d => d.weightKg);
+    const recent = [...fresh].reverse().slice(0, 8);
+    const unit = parsed.bodyUnit?.used;
+
+    return (
+        <div className="imp-step">
+            <div className="imp-metrics">
+                <div className="imp-metric">
+                    <span>New weigh-ins</span><b>{fresh.length}</b>
+                    {fresh.length > 0 && <small>{fmtDay(fresh[0].date)} to {fmtDay(fresh[fresh.length - 1].date)}</small>}
+                </div>
+                <div className="imp-metric"><span>With body fat</span><b>{withFat}</b><small>{withFat ? "added to the same days" : "none in this file"}</small></div>
+                <div className="imp-metric">
+                    <span>Weight</span><b>{weights.length ? `${num1(Math.min(...weights))}–${kg(Math.max(...weights))}` : "—"}</b>
+                    <small>{unit === "lb" ? "converted from pounds" : "read as kilograms"}</small>
+                </div>
+                <div className="imp-metric"><span>Already in your log</span><b>{already}</b><small>kept as they are</small></div>
+            </div>
+
+            {recent.length > 0 && (
+                <div className="imp-card">
+                    <p className="imp-eyebrow">Most recent weigh-ins</p>
+                    <table className="imp-body-table">
+                        <thead><tr><th>Day</th><th className="num">Weight</th><th className="num">Body fat</th></tr></thead>
+                        <tbody>
+                            {recent.map(d => (
+                                <tr key={d.date}>
+                                    <td>{fmtDay(d.date)}</td>
+                                    <td className="num">{kg(d.weightKg)}</td>
+                                    <td className="num">{d.bodyFatPct != null ? `${d.bodyFatPct}%` : "—"}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            {parsed.warnings.length > 0 && (
+                <div className="imp-card imp-warn">
+                    <p className="imp-warn-title"><AlertTriangle size={15} /> Notes on this file</p>
+                    <details>
+                        <summary>{plural(parsed.warnings.length, "note")} about this file</summary>
+                        <ul>{parsed.warnings.slice(0, 30).map((w, i) => <li key={i}>{w}</li>)}</ul>
+                    </details>
+                </div>
+            )}
+
+            <div className="imp-footer" role="group" aria-label="Actions">
+                <button type="button" className="imp-btn ghost" onClick={onBack}><ArrowLeft size={15} /> Choose another file</button>
+                <div className="imp-footer-right">
+                    {fresh.length === 0 && <span className="imp-muted">Every day in this file is already in your log.</span>}
+                    <button type="button" className="imp-btn primary" disabled={fresh.length === 0} onClick={onImport}>
+                        <Upload size={15} /> Import {plural(fresh.length, "weigh-in")}
                     </button>
                 </div>
             </div>
@@ -517,13 +676,19 @@ function ReviewStep({ parsed, prepared, fixable, fixes, setFixes, duplicates, te
 function DoneStep({ done, onUndo, onAgain, onOpen }: { done: Done; onUndo: () => void; onAgain: () => void; onOpen: (path: string) => void }) {
     const [confirming, setConfirming] = useState(false);
     const { result } = done;
+    const weighIns = result.body?.imported ?? 0;
+    const onlyBody = result.imported === 0 && weighIns > 0;
 
     if (done.undone) {
         return (
             <div className="imp-card imp-center imp-done">
                 <span className="imp-done-icon muted"><RotateCcw size={24} /></span>
                 <h2>Import undone</h2>
-                <p className="imp-muted">The {plural(result.imported, "workout")}{done.templateIds.length ? `, ${plural(done.templateIds.length, "template")}` : ""}{done.exerciseIds.length ? ` and ${plural(done.exerciseIds.length, "new exercise")}` : ""} from this import were removed.</p>
+                <p className="imp-muted">
+                    {onlyBody
+                        ? `The ${plural(weighIns, "weigh-in")} from this import were removed.`
+                        : `The ${plural(result.imported, "workout")}${done.templateIds.length ? `, ${plural(done.templateIds.length, "template")}` : ""}${done.exerciseIds.length ? `, ${plural(done.exerciseIds.length, "new exercise")}` : ""}${weighIns ? ` and ${plural(weighIns, "weigh-in")}` : ""} from this import were removed.`}
+                </p>
                 <button className="imp-btn primary" onClick={onAgain}>Import a file</button>
             </div>
         );
@@ -532,14 +697,23 @@ function DoneStep({ done, onUndo, onAgain, onOpen }: { done: Done; onUndo: () =>
     return (
         <div className="imp-card imp-center imp-done">
             <span className="imp-done-icon"><Check size={26} /></span>
-            <h2>{plural(result.imported, "workout")} imported</h2>
+            <h2>{onlyBody ? `${plural(weighIns, "weigh-in")} imported` : `${plural(result.imported, "workout")} imported`}</h2>
             <p className="imp-muted">
                 {[
+                    !onlyBody && weighIns ? `${plural(weighIns, "weigh-in")} added to your body log` : null,
+                    result.body?.skipped ? `${result.body.skipped} ${result.body.skipped === 1 ? "day was" : "days were"} already in your log` : null,
+                    result.body?.droppedBodyFat ? `${plural(result.body.droppedBodyFat, "body fat reading")} out of range, weight kept` : null,
                     result.skipped ? `${result.skipped} already in Bloom were skipped` : null,
                     done.exerciseIds.length ? `${plural(done.exerciseIds.length, "new exercise")} added` : null,
                     done.templateIds.length ? `${plural(done.templateIds.length, "template")} added` : null,
-                ].filter(Boolean).join(" · ") || "Your history is in your logbook."}
+                ].filter(Boolean).join(" · ") || (onlyBody ? "Your trend is in Insights." : "Your history is in your logbook.")}
             </p>
+            {(result.body?.failures.length ?? 0) > 0 && (
+                <details className="imp-warn-inline">
+                    <summary><AlertTriangle size={14} /> {plural(result.body.failures.length, "day")} couldn't be imported</summary>
+                    <ul>{result.body.failures.slice(0, 30).map(f => <li key={f.date}>{fmtDay(f.date)}: {f.reason}</li>)}</ul>
+                </details>
+            )}
             {result.failures.length > 0 && (
                 <details className="imp-warn-inline">
                     <summary><AlertTriangle size={14} /> {plural(result.failures.length, "workout")} couldn't be imported</summary>
@@ -547,8 +721,14 @@ function DoneStep({ done, onUndo, onAgain, onOpen }: { done: Done; onUndo: () =>
                 </details>
             )}
             <div className="imp-row">
-                <button className="imp-btn primary" onClick={() => onOpen("/logbook")}>Open logbook</button>
-                <button className="imp-btn secondary" onClick={() => onOpen("/insights")}>See your progress</button>
+                {onlyBody ? (
+                    <button className="imp-btn primary" onClick={() => onOpen("/insights")}>See your trend</button>
+                ) : (
+                    <>
+                        <button className="imp-btn primary" onClick={() => onOpen("/logbook")}>Open logbook</button>
+                        <button className="imp-btn secondary" onClick={() => onOpen("/insights")}>See your progress</button>
+                    </>
+                )}
             </div>
             <div className="imp-undo">
                 {confirming ? (

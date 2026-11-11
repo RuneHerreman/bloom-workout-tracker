@@ -874,6 +874,7 @@
 }
 
 .export-summary b { color: var(--ink); font-weight: 550; }
+.export-note { display: block; margin-top: 0.25rem; font-size: var(--text-xs); color: var(--ink-muted); }
 
 .export-submit { justify-content: center; padding: 0.7rem 1rem; }
 

@@ -54,7 +54,10 @@ function columnIndex(ref: string): number {
  * Rows of one sheet as strings and numbers (dates come back as Excel serial
  * numbers). Falls back to the first sheet when the named one doesn't exist.
  */
-export async function readXlsxSheet(buf: ArrayBuffer, sheetName: string): Promise<(string | number)[][]> {
+export async function readXlsxSheet(buf: ArrayBuffer, sheetName: string): Promise<(string | number)[][]>;
+export async function readXlsxSheet(buf: ArrayBuffer, sheetName: string, options: { fallback: boolean }): Promise<(string | number)[][] | null>;
+/** With `fallback: false`, a workbook without that sheet gives null instead of its first sheet. */
+export async function readXlsxSheet(buf: ArrayBuffer, sheetName: string, options: { fallback: boolean } = { fallback: true }): Promise<(string | number)[][] | null> {
     const entries = readZipEntries(buf);
     const read = async (path: string) => {
         const e = entries.get(path);
@@ -65,7 +68,9 @@ export async function readXlsxSheet(buf: ArrayBuffer, sheetName: string): Promis
     const rels = await read("xl/_rels/workbook.xml.rels");
     if (!workbook || !rels) throw new Error("Not a valid Excel file.");
     const sheets = [...workbook.getElementsByTagName("sheet")];
-    const sheet = sheets.find(s => s.getAttribute("name") === sheetName) ?? sheets[0];
+    const named = sheets.find(s => s.getAttribute("name") === sheetName);
+    if (!named && !options.fallback) return null;
+    const sheet = named ?? sheets[0];
     if (!sheet) throw new Error("This Excel file has no sheets.");
     const relId = sheet.getAttribute("r:id") ?? sheet.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id");
     const rel = [...rels.getElementsByTagName("Relationship")].find(r => r.getAttribute("Id") === relId);
