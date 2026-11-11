@@ -93,7 +93,6 @@ function LogSideBar({ logs, draft, selectedId, loading, onSelect }: LogSideBarPr
             <div className="feature-sidebar-header">
                 <div className="feature-sidebar-title-row">
                     <span className="feature-sidebar-title">Your logs</span>
-                    {!loading && <span className="feature-sidebar-count">{logs.length}</span>}
                 </div>
                 <div className="exercise-library-search-wrap">
                     <Search className="exercise-library-search-icon" size={14} />

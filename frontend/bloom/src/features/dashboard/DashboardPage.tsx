@@ -49,7 +49,7 @@ function DashboardSkeleton() {
                 ))}
             </div>
             <div className="dash-main">
-                {block("dash-lifts", "18rem")}
+                {block("dash-lifts", "11rem")}
                 {block("dash-activity", "9rem")}
             </div>
             <div className="dash-side">
@@ -81,7 +81,7 @@ function DashboardPage() {
     const exercises = useMemo(() => Object.fromEntries((exerciseList ?? []).map(e => [e.id, e])), [exerciseList]);
     const stats = useMemo(() => (logs ? calculateDashboardStats(logs, goal) : null), [logs, goal]);
     const activity = useMemo(() => buildActivity(logs ?? []), [logs]);
-    const lifts = useMemo(() => buildKeyLifts(logs ?? [], exercises), [logs, exercises]);
+    const lifts = useMemo(() => buildKeyLifts(logs ?? [], exercises, 3), [logs, exercises]);
     const focus = useMemo(() => buildMuscleFocus(logs ?? [], exercises), [logs, exercises]);
     const recent = useMemo(() => buildRecentWorkouts(logs ?? []), [logs]);
     const next = useMemo(() => suggestNext(templates, logs ?? [], exercises), [templates, logs, exercises]);

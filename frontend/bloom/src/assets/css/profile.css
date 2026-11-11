@@ -33,7 +33,7 @@
     text-transform: none;
     font-family: var(--sans), sans-serif;
     font-size: var(--text-md);
-    font-weight: 600;
+    font-weight: 550;
     color: var(--dark-text);
 }
 
@@ -211,7 +211,7 @@
     justify-content: center;
     background: #FC4C02;
     color: white;
-    font-weight: 700;
+    font-weight: 600;
     font-size: var(--text-xs);
     letter-spacing: 0.02em;
 }
@@ -310,7 +310,7 @@
 .gear-item-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
 .gear-item-name { font-size: var(--text-base); font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gear-item-meta { font-size: var(--text-xs); color: var(--ink-muted); }
-.gear-item-meta b { color: var(--ink); font-weight: 600; }
+.gear-item-meta b { color: var(--ink); font-weight: 550; }
 
 .gear-item-remove {
     display: flex;

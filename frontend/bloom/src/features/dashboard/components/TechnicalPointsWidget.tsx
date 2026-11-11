@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import DOMPurify from "dompurify";
+import { Bold, Italic, List, Underline } from "lucide-react";
 import GeneralWidget from "./GeneralWidget.tsx";
 import WidgetHeader from "./WidgetHeader.tsx";
 
@@ -9,6 +10,17 @@ interface TechnicalPointsWidgetProps {
 }
 
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
+type FormatCommand = "bold" | "italic" | "underline" | "insertUnorderedList";
+
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+const MOD = isMac ? "⌘" : "Ctrl";
+
+const FORMATS: { cmd: FormatCommand; label: string; key: string; shift: boolean; hint: string; icon: typeof Bold }[] = [
+    { cmd: "bold", label: "Bold", key: "b", shift: false, hint: `${MOD}+B`, icon: Bold },
+    { cmd: "italic", label: "Italic", key: "i", shift: false, hint: `${MOD}+I`, icon: Italic },
+    { cmd: "underline", label: "Underline", key: "u", shift: false, hint: `${MOD}+U`, icon: Underline },
+    { cmd: "insertUnorderedList", label: "Bulleted list", key: "8", shift: true, hint: `${MOD}+Shift+8`, icon: List },
+];
 
 const SAVE_LABEL: Record<SaveState, string> = {
     idle: "", dirty: "Unsaved changes", saving: "Saving…", saved: "Saved", error: "Couldn't save, try again",
@@ -19,6 +31,7 @@ function TechnicalPointsWidget({ initialContent, onSave }: TechnicalPointsWidget
     const editorRef = useRef<HTMLDivElement>(null);
     const timer = useRef<number | undefined>(undefined);
     const [state, setState] = useState<SaveState>("idle");
+    const [active, setActive] = useState<Set<FormatCommand>>(new Set());
 
     useEffect(() => {
         // Don't clobber what's being typed when the user record refreshes.
@@ -44,22 +57,33 @@ function TechnicalPointsWidget({ initialContent, onSave }: TechnicalPointsWidget
         timer.current = window.setTimeout(save, 1200);
     }
 
-    function applyUnderline() {
+    // execCommand is deprecated but still the only cross-browser way to toggle inline
+    // formatting in a contentEditable while keeping the native undo stack intact.
+    function format(cmd: FormatCommand) {
         editorRef.current?.focus();
-        const selection = window.getSelection();
-        if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
-
-        const range = selection.getRangeAt(0);
-        const fragment = range.extractContents();
-        const u = document.createElement("u");
-        u.appendChild(fragment);
-        range.insertNode(u);
-
-        const newRange = document.createRange();
-        newRange.selectNodeContents(u);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
+        document.execCommand(cmd);
+        refreshActive();
         handleInput();
+    }
+
+    function refreshActive() {
+        const sel = window.getSelection();
+        if (!sel || !editorRef.current?.contains(sel.anchorNode)) return;
+        setActive(new Set(FORMATS.filter(f => document.queryCommandState(f.cmd)).map(f => f.cmd)));
+    }
+
+    useEffect(() => {
+        document.addEventListener("selectionchange", refreshActive);
+        return () => document.removeEventListener("selectionchange", refreshActive);
+    }, []);
+
+    function handleKeyDown(e: KeyboardEvent) {
+        if (!(e.ctrlKey || e.metaKey)) return;
+        const key = e.key.toLowerCase();
+        const hit = FORMATS.find(f => f.key === key && f.shift === e.shiftKey);
+        if (!hit) return;
+        e.preventDefault();
+        format(hit.cmd);
     }
 
     return (
@@ -74,10 +98,20 @@ function TechnicalPointsWidget({ initialContent, onSave }: TechnicalPointsWidget
             }
             content={
                 <div className="technical-points">
-                    <div className="technical-points-toolbar">
-                        <button onMouseDown={e => { e.preventDefault(); applyUnderline(); }} title="Underline selection" aria-label="Underline selection">
-                            <u>U</u>
-                        </button>
+                    <div className="technical-points-toolbar" role="toolbar" aria-label="Formatting">
+                        {FORMATS.map(({ cmd, label, hint, icon: Icon }) => (
+                            <button
+                                key={cmd}
+                                type="button"
+                                className={active.has(cmd) ? "active" : undefined}
+                                aria-pressed={active.has(cmd)}
+                                onMouseDown={e => { e.preventDefault(); format(cmd); }}
+                                title={`${label} (${hint})`}
+                                aria-label={label}
+                            >
+                                <Icon size={14} strokeWidth={2.25} />
+                            </button>
+                        ))}
                     </div>
                     <div
                         ref={editorRef}
@@ -89,6 +123,7 @@ function TechnicalPointsWidget({ initialContent, onSave }: TechnicalPointsWidget
                         aria-label="Technique notes"
                         data-placeholder="e.g. Bench: shoulder blades back, feet planted. Squat: brace before every rep."
                         onInput={handleInput}
+                        onKeyDown={handleKeyDown}
                         onBlur={() => state === "dirty" && save()}
                     />
                 </div>

@@ -117,7 +117,7 @@
 
 #login-action a {
     color: var(--primary);
-    font-weight: 600;
+    font-weight: 550;
 }
 
 .password-input-wrapper {

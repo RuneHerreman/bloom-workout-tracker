@@ -44,7 +44,7 @@
     text-align: center;
     font-family: var(--sans), sans-serif;
     font-size: var(--text-sm);
-    font-weight: 600;
+    font-weight: 550;
     color: var(--dark-text);
 }
 
@@ -264,10 +264,10 @@
 
 .lb-you-tag {
     flex-shrink: 0;
-    padding: 0.05rem 0.4rem;
+    padding: 0.2rem 0.55rem;
     border-radius: 100rem;
     font-size: var(--text-2xs);
-    font-weight: 600;
+    font-weight: 550;
     color: white;
     background: var(--primary-light);
 }
@@ -358,7 +358,7 @@
 }
 
 .lb-hidden-hint svg { flex-shrink: 0; margin-top: 0.1rem; }
-.lb-hidden-hint b { color: var(--ink); font-weight: 600; }
+.lb-hidden-hint b { color: var(--ink); font-weight: 550; }
 .lb-hidden-hint a { color: var(--primary-muted); text-decoration: underline; text-underline-offset: 0.15em; }
 .dark .lb-hidden-hint a { color: var(--primary); }
 
@@ -367,11 +367,11 @@
     align-items: center;
     gap: 0.2rem;
     flex-shrink: 0;
-    padding: 0.05rem 0.4rem;
+    padding: 0.2rem 0.55rem;
     border-radius: 100rem;
     border: 0.0625rem dashed var(--ink-muted);
     font-size: var(--text-2xs);
-    font-weight: 600;
+    font-weight: 550;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--ink-muted);

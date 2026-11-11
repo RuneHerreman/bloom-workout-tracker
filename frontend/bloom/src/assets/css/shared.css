@@ -85,44 +85,51 @@
    ============================================================================= */
 
 .dark {
-    --primary: #00954e;
-    /* Surfaces — page is darkest, cards lift above it, hover lifts further */
-    --surface-lighter:    #1e1e1c;
-    --surface-light:      #272724;
-    --surface-less-light: #313130;
+    /* Deep green-tinted charcoal. Three clear steps: the page sinks, cards and the
+       sidebar lift above it, hover/fills lift again — borders are just visible on each. */
+    --surface-light:      #111412; /* page */
+    --surface-lighter:    #191d1a; /* cards, sidebar */
+    --surface-less-light: #232925; /* hover, form fills */
+    --surface-dark:       #e9ece7; /* inverted tooltips */
 
-    /* Text */
-    --ink:       #f2efe8;
-    --ink-muted: #a8a49c;
-    --dark-text: #c2ccc4;
+    /* Text — ink-muted stays above 6:1 on cards */
+    --ink:       #eceee9;
+    --ink-muted: #a1a9a2;
+    --dark-text: #a6dcbd; /* headings and big numbers keep the brand green */
 
-    /* Borders — visible against all surface levels */
-    --border:       #46463e;
-    --border-light: #3a3a32;
-    --grey-light:   #353532;
-    --grey:         #52524a;
+    /* Borders */
+    --border:       #303732;
+    --border-light: #272d29;
+    --grey-light:   #29302b;
+    --grey:         #4a524c;
+
+    /* Brand — the same greens, raised for dark surfaces */
+    --primary:             #4cc28a; /* text, tints */
+    --primary-muted:       #8fd6af; /* links, active text */
+    --primary-light:       #2b8257; /* solid buttons, white text on it */
+    --primary-glow:        rgb(125 211 165 / 0.45);
+    --primary-faded:       rgb(76 194 138 / 0.16);
+    --primary-transparent: #b2e6c9; /* active sidebar item text */
+    --accent:              #ef8a4a;
 
     /* Semantic */
-    --danger:         #f87171;
-    --danger-lighter: rgb(80 20 20 / 0.5);
-    --danger-text:    #fca5a5;
-
-    /* Primary variants — lightened for legibility on dark surfaces */
-    --primary-muted:  #4ade80;
+    --danger:         #f28b82;
+    --danger-lighter: rgb(120 30 30 / 0.35);
+    --danger-text:    #f6aaa3;
 
     /* Misc */
-    --backdrop-bg: rgb(0 0 0 / 0.65);
-    --kbd-bg:      #2e2e28;
+    --backdrop-bg: rgb(0 0 0 / 0.6);
+    --kbd-bg:      #262c28;
 
-    /* Active sidebar item — light green readable on dark bg */
-    --primary-transparent: rgb(160 220 190 / 0.95);
+    --shadow-sm:     0 1px 4px rgb(0 0 0 / 0.35);
+    --shadow-widget: 0 2px 12px rgb(0 0 0 / 0.4);
 
-    --marker-warmup:  #e0b45a;
-    --marker-drop:    #6fcf97;
-    --marker-failure: #f87171;
+    --marker-warmup:  #e2b862;
+    --marker-drop:    #7fd6a6;
+    --marker-failure: #f28b82;
 
-    --skeleton-base:  #2c2c29;
-    --skeleton-shine: #3a3a36;
+    --skeleton-base:  #20251f;
+    --skeleton-shine: #2b312c;
 }
 
 
@@ -491,7 +498,7 @@
 .filter-chip,
 .exercise-library-chip,
 .focus-chip {
-    padding: 0.4rem 0.6rem;
+    padding: 0.45rem 0.75rem;
     border-radius: var(--radius-sm);
     border: 0.0625rem solid var(--border);
     background: none;
@@ -517,7 +524,7 @@
 .filter-chip { font-size: var(--text-xs); font-weight: 500; }
 
 /* focus-chip size override */
-.focus-chip { padding: 0.2rem 0.65rem; line-height: 1.5; }
+.focus-chip { padding: 0.3rem 0.75rem; line-height: 1.5; }
 
 /* Active states — generic (no type class) */
 .filter-chip.active            { background: color-mix(in srgb, var(--primary-light) 8%, transparent); border-color: var(--primary-light); color: var(--primary-light); }
@@ -713,7 +720,7 @@
 
 .exercise-library-section-label {
     font-size: var(--text-2xs);
-    font-weight: 600;
+    font-weight: 550;
     color: var(--ink-muted);
 }
 
@@ -1027,7 +1034,7 @@
 
 .duration-sep {
     font-size: var(--text-base);
-    font-weight: 600;
+    font-weight: 550;
     color: var(--ink-muted);
     line-height: 1;
     user-select: none;
@@ -1128,7 +1135,7 @@
 .general-widget-title {
     font-family: var(--sans), sans-serif;
     font-size: var(--text-md);
-    font-weight: 600;
+    font-weight: 550;
     color: var(--dark-text);
     line-height: 1.2;
 }
@@ -1308,7 +1315,7 @@
     padding: 0.5rem 0.875rem;
     border: none;
     border-radius: var(--radius-md);
-    background: var(--primary);
+    background: var(--primary-light);
     color: white;
     font-size: var(--text-base);
     font-family: var(--sans), sans-serif;
@@ -1429,7 +1436,7 @@
 .dark .sidebar-month-label,
 .dark .lb-month-label,
 .dark .dash-prompt-title,
-.dark .up-next-name { color: #8fd0ac; }
+.dark .up-next-name { color: var(--dark-text); }
 
 /* Exercise library: the mouse highlight is pure CSS (no re-render per row), and
    while the pointer is over the list the keyboard highlight steps aside. */
