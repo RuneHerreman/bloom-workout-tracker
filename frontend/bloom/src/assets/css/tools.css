@@ -136,12 +136,46 @@
     font-weight: 550;
 }
 
+/* ── Macros ── */
+
+.macro-inputs { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(9rem, 1fr); }
+.macro-plan-inputs { grid-template-columns: minmax(10rem, 1.3fr) auto minmax(12rem, 1.4fr) minmax(8rem, 1fr); padding-top: 0.25rem; }
+.macro-plan-inputs .segmented, .macro-sex { height: 2.5rem; align-items: stretch; }
+.macro-sex { display: flex; }
+.macro-sex .segmented-item { flex: 1; }
+.tool-field select:disabled { opacity: 0.55; cursor: not-allowed; }
+.tool-history a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+
+.macro-caveat { line-height: 1.45; }
+.macro-caveat span { display: block; margin-top: 0.35rem; }
+
+.macro-bars { list-style: none; margin: 0.25rem 0 0.5rem; padding: 0; display: flex; flex-direction: column; gap: 0.85rem; }
+.macro-row {
+    display: grid;
+    grid-template-columns: 4.5rem 4rem minmax(0, 1fr) 2.5rem;
+    align-items: center;
+    gap: 0.75rem;
+    font-variant-numeric: tabular-nums;
+}
+.macro-name { font-size: var(--text-sm); color: var(--ink-muted); }
+.macro-grams { font-family: var(--serif), serif; font-size: var(--text-lg); color: var(--dark-text); text-align: right; line-height: 1.2; }
+.macro-share { font-size: var(--text-xs); color: var(--ink-muted); text-align: right; }
+.macro-track { height: 0.6rem; border-radius: 2px; background: var(--grey-light); overflow: hidden; }
+.macro-track span { display: block; height: 100%; border-radius: 2px; }
+.macro-row.protein .macro-track span { background: var(--viz-1); }
+.macro-row.fat .macro-track span { background: var(--viz-2); }
+.macro-row.carbs .macro-track span { background: var(--viz-axis); }
+
 /* ── Narrow ── */
 
 @media (max-width: 860px) {
     .tool-body { padding: 1rem; }
     .tool-inputs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .tool-field-wide { grid-column: 1 / -1; }
+    .macro-inputs, .macro-plan-inputs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .macro-goal { grid-column: 1 / -1; grid-row: 1; }
+    .macro-goal .segmented { display: flex; width: 100%; }
+    .macro-goal .segmented-item { flex: 1; }
     .tool-split { grid-template-columns: minmax(0, 1fr); }
     .tool-result { border-right: none; border-bottom: 0.0625rem solid var(--border); }
     .tool-history-best { margin-top: 0.5rem; padding-top: 0.5rem; }

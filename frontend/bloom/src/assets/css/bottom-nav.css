@@ -54,7 +54,7 @@
         border-radius: 50%;
         background: var(--primary-light);
         color: white;
-        box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent);
+        box-shadow: none;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
     }

@@ -1,6 +1,6 @@
 # Body weight & body fat, 1RM calculator, macro calculator
 
-Status: plan, nothing built yet. Written 11 Nov 2026.
+Status: built, all seven steps (11 Nov 2026).
 
 Three pieces, built in this order because each leans on the one before:
 
