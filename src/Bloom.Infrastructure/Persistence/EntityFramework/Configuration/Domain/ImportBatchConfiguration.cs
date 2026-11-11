@@ -24,6 +24,7 @@ public class ImportBatchConfiguration : IEntityTypeConfiguration<ImportBatch>
         builder.PrimitiveCollection(b => b.WorkoutIds).IsRequired();
         builder.PrimitiveCollection(b => b.ExerciseIds).IsRequired();
         builder.PrimitiveCollection(b => b.TemplateIds).IsRequired();
+        builder.PrimitiveCollection(b => b.BodyMeasurementIds).IsRequired();
 
         builder.HasIndex(b => b.UserId);
 

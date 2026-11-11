@@ -1,3 +1,4 @@
+using Bloom.Domain.Body;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Domain.Users;
 using Bloom.Domain.Users.ValueObjects;
@@ -40,6 +41,8 @@ public class UpdateUserInfo(
         if (user.Value.Email != newEmail && await userRepo.ExistsByEmail(newEmail))
             throw new UserAlreadyExistsException($"User already exists | Email: {newEmail.Value}");
 
+        var weightChanged = user.Value.Weight != input.Weight;
+
         user.Value.UpdateInfo(
             input.Email,
             input.Username,
@@ -52,6 +55,20 @@ public class UpdateUserInfo(
         );
 
         await userRepo.Save(user.Value);
+
+        // A new weight in the profile is a weigh-in today, so the body log stays the source of truth.
+        if (weightChanged && BodyMeasurement.IsValidWeight(input.Weight))
+        {
+            var bodyRepo = uow.Repo<IBodyMeasurementRepository>();
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var entry = await bodyRepo.OnDate(userId, today, ct);
+            if (entry is null)
+                entry = BodyMeasurement.Create(userId, today, input.Weight, null, BodyMeasurementSource.Manual);
+            else
+                entry.Update(input.Weight, null);
+            await bodyRepo.Save(entry);
+        }
+
         await uow.Do(ct);
 
         logger.LogInformation("User updated | Id: {UserId}", user.Value.Id);

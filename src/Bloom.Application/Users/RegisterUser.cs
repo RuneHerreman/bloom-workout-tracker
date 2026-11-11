@@ -1,3 +1,4 @@
+using Bloom.Domain.Body;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Domain.Users;
 using Bloom.Domain.Users.ValueObjects;
@@ -52,6 +53,11 @@ public class RegisterUser(
         );
 
         await userRepo.Save(user);
+
+        // The weight given at signup is the first day of the body log.
+        await uow.Repo<IBodyMeasurementRepository>().Save(BodyMeasurement.Create(
+            user.Id, DateOnly.FromDateTime(DateTime.UtcNow), user.Weight, null, BodyMeasurementSource.Signup));
+
         await uow.Do(ct);
 
         var token = tokenIssuer.Issue(user.Id, user.Email, user.Username);

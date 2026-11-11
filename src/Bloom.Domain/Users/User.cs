@@ -1,4 +1,4 @@
-﻿using Bloom.Domain.Shared;
+using Bloom.Domain.Shared;
 using Bloom.Domain.Users.DomainEvents;
 using Bloom.Domain.Users.ValueObjects;
 
@@ -21,6 +21,8 @@ public class User : AggregateRoot<UserId>
     public List<string> Gear { get; private set; } = [];
     /// <summary>Whether other users can see this user on the monthly leaderboard. Opt-out: visible by default.</summary>
     public bool ShowOnLeaderboard { get; private set; } = true;
+    /// <summary>Optional; only asked for by the macro calculator.</summary>
+    public Sex? Sex { get; private set; }
 
     private User() { }
 
@@ -96,6 +98,20 @@ public class User : AggregateRoot<UserId>
 
         ShowOnLeaderboard = showOnLeaderboard;
         RaiseDomainEvent(new UserUpdated(Id));
+    }
+
+    public void SetSex(Sex? sex)
+    {
+        if (Sex == sex) return;
+        Sex = sex;
+        RaiseDomainEvent(new UserUpdated(Id));
+    }
+
+    /// <summary>Current weight follows the latest entry in the body log.</summary>
+    public void SyncWeight(decimal weightKg)
+    {
+        Asserts.EnsureGreaterThan(weightKg, 0m);
+        Weight = weightKg;
     }
 
     public void ChangePassword(string newHashedPassword)

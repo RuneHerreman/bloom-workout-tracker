@@ -1,4 +1,4 @@
-﻿using Bloom.Domain.Users;
+using Bloom.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -29,5 +29,6 @@ public class UserConfiguration: IEntityTypeConfiguration<User>
         // "unset" and silently replaced by the DB default. Existing rows are backfilled
         // to true by the AddLeaderboardVisibility migration instead.
         builder.Property(u => u.ShowOnLeaderboard).IsRequired();
+        builder.Property(u => u.Sex).HasConversion<string>().HasMaxLength(16).IsRequired(false);
     }
 }

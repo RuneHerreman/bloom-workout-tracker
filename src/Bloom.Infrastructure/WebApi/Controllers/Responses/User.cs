@@ -14,7 +14,8 @@ public record User(
     DateOnly BirthDate,
     string? TechnicalPoints,
     IReadOnlyList<string> Gear,
-    bool ShowOnLeaderboard
+    bool ShowOnLeaderboard,
+    string? Sex
 );
 
 public static class UserExtensions
@@ -33,7 +34,8 @@ public static class UserExtensions
             data.BirthDate,
             data.TechnicalPoints,
             data.Gear,
-            data.ShowOnLeaderboard
+            data.ShowOnLeaderboard,
+            data.Sex
         );
     }
 }

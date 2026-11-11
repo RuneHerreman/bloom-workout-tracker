@@ -231,6 +231,29 @@ public sealed class ImportLoggedWorkoutsTests : ApplicationTestBase
         Assert.True((await LoggedWorkoutRepository.ById(LogId(output.ImportedIds[0]))).HasValue);
     }
 
+    [Fact]
+    public async Task UndoBatch_ShouldRemoveItsBodyEntries_AndCurrentWeightFallsBack()
+    {
+        var user = User.Create("body@example.com", "bea", "hash", "Bea", "Smith", 70m, 170, 3, new DateOnly(1992, 3, 3));
+        await UserRepository.Save(user);
+        var own = Bloom.Domain.Body.BodyMeasurement.Create(user.Id, new DateOnly(2026, 10, 1), 71m, null, Bloom.Domain.Body.BodyMeasurementSource.Manual);
+        var imported = Bloom.Domain.Body.BodyMeasurement.Create(user.Id, new DateOnly(2026, 11, 1), 69m, 20m, Bloom.Domain.Body.BodyMeasurementSource.Import);
+        await BodyMeasurementRepository.Save(own);
+        await BodyMeasurementRepository.Save(imported);
+        user.SyncWeight(69m);
+        var batch = Bloom.Domain.Imports.ImportBatch.Create(user.Id, "scale.csv", [], [], [], [imported.Id.Value]);
+        await ImportBatchRepository.Save(batch);
+
+        var undo = new UndoImportBatch(UnitOfWork, StubCurrentUser.With(user.Id),
+            new MockFindLoggedWorkoutsQuery([]), new UnitTests.Application.WorkoutTemplates.MockFindWorkoutTemplatesQuery([]),
+            CreateLogger<UndoImportBatch>());
+        var result = await undo.Execute(new UndoImportBatchInput(batch.Id.Value));
+
+        Assert.Equal(1, result.BodyEntries);
+        Assert.Equal([own.Id], (await BodyMeasurementRepository.ForUser(user.Id)).Select(m => m.Id));
+        Assert.Equal(71m, (await UserRepository.ById(user.Id)).Value.Weight);
+    }
+
     private static Bloom.Domain.LoggedWorkouts.LoggedWorkoutId LogId(Guid id) =>
         Bloom.Domain.Shared.EntityId.New<Bloom.Domain.LoggedWorkouts.LoggedWorkoutId>(id);
 

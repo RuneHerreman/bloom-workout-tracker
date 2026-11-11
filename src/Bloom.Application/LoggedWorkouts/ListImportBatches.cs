@@ -12,7 +12,8 @@ public sealed record ImportBatchSummary(
     int Workouts,
     int Exercises,
     int Templates,
-    DateTime? UndoneAt
+    DateTime? UndoneAt,
+    int BodyEntries = 0
 );
 
 public sealed record ListImportBatchesOutput(IReadOnlyList<ImportBatchSummary> Imports);
@@ -25,7 +26,7 @@ public class ListImportBatches(IUnitOfWork uow, ICurrentUser currentUser)
     {
         var batches = await uow.Repo<IImportBatchRepository>().ForUser(currentUser.UserId, ct);
         return new ListImportBatchesOutput(batches
-            .Select(b => new ImportBatchSummary(b.Id.Value, b.FileName, b.ImportedAt, b.WorkoutIds.Count, b.ExerciseIds.Count, b.TemplateIds.Count, b.UndoneAt))
+            .Select(b => new ImportBatchSummary(b.Id.Value, b.FileName, b.ImportedAt, b.WorkoutIds.Count, b.ExerciseIds.Count, b.TemplateIds.Count, b.UndoneAt, b.BodyMeasurementIds.Count))
             .ToList());
     }
 }

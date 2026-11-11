@@ -1,4 +1,5 @@
-﻿using Bloom.Domain.Exercises;
+using Bloom.Domain.Body;
+using Bloom.Domain.Exercises;
 using Bloom.Domain.Imports;
 using Bloom.Domain.LoggedWorkouts;
 using Bloom.Domain.Shared.DomainEvents;
@@ -21,6 +22,7 @@ public abstract class DomainDbContext(IDataProtectionProvider? dataProtectionPro
     public DbSet<WorkoutTemplate> WorkoutTemplates { get; set; }
     public DbSet<StravaConnection> StravaConnections { get; set; }
     public DbSet<ImportBatch> ImportBatches { get; set; }
+    public DbSet<BodyMeasurement> BodyMeasurements { get; set; }
     
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -38,6 +40,7 @@ public abstract class DomainDbContext(IDataProtectionProvider? dataProtectionPro
             .ApplyConfiguration(new WorkoutTemplateConfiguration())
             .ApplyConfiguration(new UserConfiguration())
             .ApplyConfiguration(new ImportBatchConfiguration())
+            .ApplyConfiguration(new BodyMeasurementConfiguration())
             .ApplyConfiguration(new StravaConnectionConfiguration(
                 dataProtectionProvider?.CreateProtector("Strava.Tokens")));
         

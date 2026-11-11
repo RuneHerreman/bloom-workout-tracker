@@ -1,3 +1,4 @@
+using Bloom.Infrastructure.WebApi.Controllers.Body;
 using Bloom.Infrastructure.WebApi.Controllers.Exercises;
 using Bloom.Infrastructure.WebApi.Controllers.Leaderboard;
 using Bloom.Infrastructure.WebApi.Controllers.LoggedWorkouts;
@@ -23,6 +24,7 @@ public static class Routes
         webApi.MapLogRoutes();
         webApi.MapStravaRoutes();
         webApi.MapLeaderboardRoutes();
+        webApi.MapBodyRoutes();
 
         return app;
     }
@@ -77,6 +79,11 @@ public static class Routes
         userGroup.MapPut("/me/gear", UpdateUserGearController.Invoke)
             .WithName(nameof(UpdateUserGearController))
             .WithDescription("Update the authenticated user's gear list (full overwrite).")
+            .RequireAuthorization();
+
+        userGroup.MapPut("/me/sex", UpdateUserSexController.Invoke)
+            .WithName(nameof(UpdateUserSexController))
+            .WithDescription("Set or clear the authenticated user's sex (Male/Female), used for resting-energy estimates.")
             .RequireAuthorization();
 
         userGroup.MapPut("/me/leaderboard-visibility", UpdateLeaderboardVisibilityController.Invoke)
@@ -193,6 +200,27 @@ public static class Routes
             .WithDescription("Get monthly max weight per exercise for all logged exercises. Optionally filter by name, type, target muscle group, and date range.");
 
         return logGroup;
+    }
+
+    private static RouteGroupBuilder MapBodyRoutes(this IEndpointRouteBuilder app)
+    {
+        RouteGroupBuilder bodyGroup = app.MapGroup("/body")
+            .WithTags("Body")
+            .RequireAuthorization();
+
+        bodyGroup.MapGet("", ListBodyMeasurementsController.Invoke)
+            .WithName(nameof(ListBodyMeasurementsController))
+            .WithDescription("The authenticated user's body log (weight, body fat), oldest first. Optional from/to dates (inclusive).");
+
+        bodyGroup.MapPut("/{Date}", LogBodyMeasurementController.Invoke)
+            .WithName(nameof(LogBodyMeasurementController))
+            .WithDescription("Log a weigh-in for a day (yyyy-MM-dd). Creates or updates that day; leaving out bodyFatPct keeps the day's existing reading.");
+
+        bodyGroup.MapDelete("/{Date}", DeleteBodyMeasurementController.Invoke)
+            .WithName(nameof(DeleteBodyMeasurementController))
+            .WithDescription("Remove a day (yyyy-MM-dd) from the body log.");
+
+        return bodyGroup;
     }
 
     private static RouteGroupBuilder MapLeaderboardRoutes(this IEndpointRouteBuilder app)

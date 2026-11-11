@@ -24,5 +24,6 @@ public class UserDataConfiguration: IEntityTypeConfiguration<UserData>
         builder.Property(u => u.TechnicalPoints);
         builder.Property(u => u.Gear).HasColumnType("jsonb");
         builder.Property(u => u.ShowOnLeaderboard).IsRequired();
+        builder.Property(u => u.Sex).HasMaxLength(16).IsRequired(false);
     }
 }

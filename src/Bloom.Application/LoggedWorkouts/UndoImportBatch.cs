@@ -1,3 +1,5 @@
+using Bloom.Domain.Body;
+using Bloom.Domain.Users;
 using Bloom.Application.Contracts.Ports;
 using Bloom.Domain.Exercises;
 using Bloom.Domain.Imports;
@@ -12,7 +14,7 @@ namespace Bloom.Application.LoggedWorkouts;
 public sealed record UndoImportBatchInput(Guid ImportBatchId);
 
 /// <param name="KeptExercises">New exercises from the import that stay because other workouts or templates now use them.</param>
-public sealed record UndoImportBatchOutput(int Workouts, int Templates, int Exercises, int KeptExercises);
+public sealed record UndoImportBatchOutput(int Workouts, int Templates, int Exercises, int KeptExercises, int BodyEntries = 0);
 
 /// <summary>
 /// Undoes one import from the history: removes the workouts and templates it
@@ -37,7 +39,7 @@ public class UndoImportBatch(
             throw new ImportBatchNotFoundException($"Import not found | Id: {input.ImportBatchId}");
 
         var batch = found.Value;
-        if (batch.IsUndone) return new UndoImportBatchOutput(0, 0, 0, 0);
+        if (batch.IsUndone) return new UndoImportBatchOutput(0, 0, 0, 0, 0);
 
         var workoutRepo = uow.Repo<ILoggedWorkoutRepository>();
         var workouts = 0;
@@ -82,6 +84,29 @@ public class UndoImportBatch(
             exercises++;
         }
 
+        // Body log days the import added. The user's current weight then follows what's left.
+        var bodyRepo = uow.Repo<IBodyMeasurementRepository>();
+        var bodyEntries = 0;
+        if (batch.BodyMeasurementIds.Count > 0)
+        {
+            var removed = new HashSet<Guid>();
+            foreach (var id in batch.BodyMeasurementIds)
+            {
+                var entry = await bodyRepo.ById(EntityId.New<BodyMeasurementId>(id));
+                if (!entry.HasValue || entry.Value.UserId != userId) continue;
+                await bodyRepo.Remove(entry.Value);
+                removed.Add(id);
+                bodyEntries++;
+            }
+            var latestLeft = (await bodyRepo.ForUser(userId, ct: ct)).LastOrDefault(m => !removed.Contains(m.Id.Value));
+            if (latestLeft is not null)
+            {
+                var userRepo = uow.Repo<IUserRepository>();
+                var user = await userRepo.ById(userId);
+                if (user.HasValue) { user.Value.SyncWeight(latestLeft.WeightKg); await userRepo.Save(user.Value); }
+            }
+        }
+
         batch.MarkUndone();
         await batches.Save(batch);
         await uow.Do(ct);
@@ -89,6 +114,6 @@ public class UndoImportBatch(
         logger.LogInformation(
             "Import undone | Batch: {BatchId} - User: {UserId} - Workouts: {Workouts}, Templates: {Templates}, Exercises: {Exercises} (kept {Kept})",
             batch.Id, userId, workouts, templates, exercises, kept);
-        return new UndoImportBatchOutput(workouts, templates, exercises, kept);
+        return new UndoImportBatchOutput(workouts, templates, exercises, kept, bodyEntries);
     }
 }

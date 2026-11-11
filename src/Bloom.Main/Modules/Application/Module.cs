@@ -1,4 +1,5 @@
-﻿using Bloom.Application.Contracts.Ports;
+using Bloom.Application.Body;
+using Bloom.Application.Contracts.Ports;
 using Bloom.Application.Exercises;
 using Bloom.Application.Leaderboard;
 using Bloom.Application.LoggedWorkouts;
@@ -27,6 +28,7 @@ public static class ApplicationModule
         services.AddScoped<IUseCase<UpdateTechnicalPointsInput, UpdateTechnicalPointsOutput>, UpdateTechnicalPoints>();
         services.AddScoped<IUseCase<UpdateUserGearInput, UpdateUserGearOutput>, UpdateUserGear>();
         services.AddScoped<IUseCase<UpdateLeaderboardVisibilityInput, UpdateLeaderboardVisibilityOutput>, UpdateLeaderboardVisibility>();
+        services.AddScoped<IUseCase<UpdateUserSexInput, UpdateUserSexOutput>, UpdateUserSex>();
         services.AddScoped<IUseCase<DeleteUserInput>, DeleteUser>();
         services.AddScoped<IUseCase<ChangeUserPasswordInput>, ChangeUserPassword>();
         //      EXERCISES
@@ -63,6 +65,9 @@ public static class ApplicationModule
         services.AddScoped<IUseCase<UndoImportBatchInput, UndoImportBatchOutput>, UndoImportBatch>();
         services.AddScoped<IUseCase<UpdateLoggedWorkoutInput, UpdateLoggedWorkoutOutput>, UpdateLoggedWorkout>();
         services.AddScoped<IUseCase<DeleteLoggedWorkoutInput>, DeleteLoggedWorkout>();
+        //      BODY LOG
+        services.AddScoped<IUseCase<LogBodyMeasurementInput, LogBodyMeasurementOutput>, LogBodyMeasurement>();
+        services.AddScoped<IUseCase<DeleteBodyMeasurementInput>, DeleteBodyMeasurement>();
 
 
 
@@ -89,6 +94,8 @@ public static class ApplicationModule
         services.AddScoped<IUseCase<FindLoggedWorkoutByIdInput, FindLoggedWorkoutByIdOutput>, FindLoggedWorkoutById>();
         services.AddScoped<IUseCase<GetLoggedExercisePrsInput, GetLoggedExercisePrsOutput>, GetLoggedExercisePrs>();
         services.AddScoped<IUseCase<GetLoggedExerciseVolumeInput, GetLoggedExerciseVolumeOutput>, GetLoggedExerciseVolume>();
+        //      BODY LOG
+        services.AddScoped<IUseCase<ListBodyMeasurementsInput, ListBodyMeasurementsOutput>, ListBodyMeasurements>();
         //      LEADERBOARD
         services.AddScoped<IUseCase<GetMonthlyLeaderboardInput, GetMonthlyLeaderboardOutput>, GetMonthlyLeaderboard>();
         //      STRAVA

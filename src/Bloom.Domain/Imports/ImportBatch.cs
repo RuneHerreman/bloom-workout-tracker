@@ -19,13 +19,14 @@ public class ImportBatch : AggregateRoot<ImportBatchId>
     public List<Guid> WorkoutIds { get; private set; } = [];
     public List<Guid> ExerciseIds { get; private set; } = [];
     public List<Guid> TemplateIds { get; private set; } = [];
+    public List<Guid> BodyMeasurementIds { get; private set; } = [];
     public DateTime? UndoneAt { get; private set; }
 
     public bool IsUndone => UndoneAt is not null;
 
     private ImportBatch() { }
 
-    private ImportBatch(ImportBatchId id, UserId userId, string fileName, IEnumerable<Guid> workoutIds, IEnumerable<Guid> exerciseIds, IEnumerable<Guid> templateIds)
+    private ImportBatch(ImportBatchId id, UserId userId, string fileName, IEnumerable<Guid> workoutIds, IEnumerable<Guid> exerciseIds, IEnumerable<Guid> templateIds, IEnumerable<Guid> bodyMeasurementIds)
         : base(id)
     {
         UserId = userId;
@@ -34,14 +35,15 @@ public class ImportBatch : AggregateRoot<ImportBatchId>
         WorkoutIds = workoutIds.Distinct().ToList();
         ExerciseIds = exerciseIds.Distinct().ToList();
         TemplateIds = templateIds.Distinct().ToList();
+        BodyMeasurementIds = bodyMeasurementIds.Distinct().ToList();
     }
 
-    public static ImportBatch Create(UserId userId, string? fileName, IEnumerable<Guid> workoutIds, IEnumerable<Guid> exerciseIds, IEnumerable<Guid> templateIds)
+    public static ImportBatch Create(UserId userId, string? fileName, IEnumerable<Guid> workoutIds, IEnumerable<Guid> exerciseIds, IEnumerable<Guid> templateIds, IEnumerable<Guid>? bodyMeasurementIds = null)
     {
         var name = string.IsNullOrWhiteSpace(fileName) ? "Import" : fileName.Trim();
         if (name.Length > MaxFileNameLength) name = name[..MaxFileNameLength];
 
-        var batch = new ImportBatch(EntityId.New<ImportBatchId>(), userId, name, workoutIds, exerciseIds, templateIds);
+        var batch = new ImportBatch(EntityId.New<ImportBatchId>(), userId, name, workoutIds, exerciseIds, templateIds, bodyMeasurementIds ?? []);
         batch.ValidateState();
         return batch;
     }

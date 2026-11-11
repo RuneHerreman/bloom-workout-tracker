@@ -23,6 +23,39 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Bloom.Domain.Body.BodyMeasurement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("BodyFatPct")
+                        .HasColumnType("numeric(4,1)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("WeightKg")
+                        .HasColumnType("numeric(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("BodyMeasurements", (string)null);
+                });
+
             modelBuilder.Entity("Bloom.Domain.Exercises.Exercise", b =>
                 {
                     b.Property<Guid>("Id")
@@ -54,6 +87,10 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
+
+                    b.PrimitiveCollection<List<Guid>>("BodyMeasurementIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
 
                     b.PrimitiveCollection<List<Guid>>("ExerciseIds")
                         .IsRequired()
@@ -197,6 +234,10 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Sex")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
                     b.Property<bool>("ShowOnLeaderboard")
                         .HasColumnType("boolean");
 
@@ -235,6 +276,15 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                     b.HasIndex("UserId");
 
                     b.ToTable("WorkoutTemplates", (string)null);
+                });
+
+            modelBuilder.Entity("Bloom.Domain.Body.BodyMeasurement", b =>
+                {
+                    b.HasOne("Bloom.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Bloom.Domain.Exercises.Exercise", b =>

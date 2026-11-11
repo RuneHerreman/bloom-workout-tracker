@@ -64,9 +64,10 @@ Endpoints, following the `Routes.cs` pattern:
 
 | Method | Route | Body / result |
 |---|---|---|
-| GET | `/body-weight?from&to` | entries, oldest first |
-| PUT | `/body-weight/{date}` | `{ weightKg, bodyFatPct? }`: upsert for that day. Leaving `bodyFatPct` out keeps the day's existing value, so re-weighing doesn't wipe a body fat reading |
-| DELETE | `/body-weight/{date}` | |
+| GET | `/body?from&to` | entries, oldest first |
+| PUT | `/body/{date}` | `{ weightKg, bodyFatPct?, clearBodyFat? }`: upsert for that day. Leaving `bodyFatPct` out keeps the day's existing value, so re-weighing doesn't wipe a body fat reading; `clearBodyFat` removes it |
+| DELETE | `/body/{date}` | |
+| PUT | `/users/me/sex` | `{ sex: "Male" | "Female" | null }` |
 
 ### Import
 

@@ -14,4 +14,6 @@ public sealed record UserData
     public string? TechnicalPoints { get; init; }
     public List<string> Gear { get; init; } = [];
     public bool ShowOnLeaderboard { get; init; } = true;
+    /// <summary>"Male", "Female" or null.</summary>
+    public string? Sex { get; init; }
 }

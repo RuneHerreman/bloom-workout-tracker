@@ -1,3 +1,4 @@
+using Bloom.Domain.Body;
 using Bloom.Domain.Imports;
 ﻿using Bloom.Application.Contracts.Ports;
 using Bloom.Domain.Exercises;
@@ -49,6 +50,7 @@ public static class EFCoreServices
 
                 IStravaConnectionRepository stravaConnectionRepository = sp.GetRequiredService<IStravaConnectionRepository>();
                 IImportBatchRepository importBatchRepository = sp.GetRequiredService<IImportBatchRepository>();
+                IBodyMeasurementRepository bodyMeasurementRepository = sp.GetRequiredService<IBodyMeasurementRepository>();
 
                 EfCoreUnitOfWork uow = new(context, logger);
 
@@ -59,6 +61,7 @@ public static class EFCoreServices
                 uow.RegisterRepository(loggedWorkoutRepository);
                 uow.RegisterRepository(stravaConnectionRepository);
                 uow.RegisterRepository(importBatchRepository);
+                uow.RegisterRepository(bodyMeasurementRepository);
 
                 return uow;
             });
@@ -72,7 +75,8 @@ public static class EFCoreServices
             .AddScoped<IExerciseRepository, ExerciseRepository>()
             .AddScoped<ILoggedWorkoutRepository, LoggedWorkoutRepository>()
             .AddScoped<IStravaConnectionRepository, StravaConnectionRepository>()
-            .AddScoped<IImportBatchRepository, ImportBatchRepository>();
+            .AddScoped<IImportBatchRepository, ImportBatchRepository>()
+            .AddScoped<IBodyMeasurementRepository, BodyMeasurementRepository>();
     }
 
     public static IServiceCollection AddQueries(this IServiceCollection services)
