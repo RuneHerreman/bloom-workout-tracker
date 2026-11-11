@@ -7,17 +7,22 @@ namespace Bloom.Application.Users;
 
 public sealed record ChangeUserPasswordInput(
     string OldPassword,
-    string NewPassword
+    string NewPassword,
+    bool Persistent = false
 );
+
+/// <summary>A fresh token for the caller: the password change voids every older one.</summary>
+public sealed record ChangeUserPasswordOutput(string Token);
 
 public class ChangeUserPassword(
     IUnitOfWork uow,
     ICurrentUser currentUser,
     IPasswordHasher passwordHasher,
+    ITokenIssuer tokenIssuer,
     ILogger<ChangeUserPassword> logger
-) : IUseCase<ChangeUserPasswordInput>
+) : IUseCase<ChangeUserPasswordInput, ChangeUserPasswordOutput>
 {
-    public async Task Execute(ChangeUserPasswordInput input, CancellationToken ct = default)
+    public async Task<ChangeUserPasswordOutput> Execute(ChangeUserPasswordInput input, CancellationToken ct = default)
     {
         var userId = currentUser.UserId;
         logger.LogInformation("Changing password | UserId: {UserId}", userId);
@@ -38,5 +43,7 @@ public class ChangeUserPassword(
         await uow.Do(ct);
 
         logger.LogInformation("Password changed | UserId: {UserId}", userId);
+
+        return new ChangeUserPasswordOutput(tokenIssuer.Issue(SessionTicket.For(user.Value, input.Persistent)));
     }
 }

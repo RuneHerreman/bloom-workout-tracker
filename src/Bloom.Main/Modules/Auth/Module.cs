@@ -18,6 +18,7 @@ public static class AuthModule
             .Validate(o => !o.Key.StartsWith("__"), "Jwt:Key still holds the appsettings placeholder; set it via the Jwt__Key environment variable.")
             .ValidateOnStart();
 
+        services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddSingleton<ITokenIssuer, JwtTokenIssuer>();
         services.AddScoped<ICurrentUser, HttpContextCurrentUser>();

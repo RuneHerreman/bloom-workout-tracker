@@ -12,12 +12,7 @@ public static class LogoutUserController
         IOptions<JwtOptions> jwtOptions
     )
     {
-        httpContext.Response.Cookies.Delete(jwtOptions.Value.CookieName, new CookieOptions
-        {
-            Path = "/",
-            SameSite = SameSiteMode.Lax,
-            Secure = httpContext.Request.IsHttps
-        });
+        AuthCookie.Delete(httpContext, jwtOptions.Value);
 
         return TypedResults.NoContent();
     }

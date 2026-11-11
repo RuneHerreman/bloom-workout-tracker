@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect, useMemo, useCallback } 
 import type { ReactNode } from "react";
 import { getMe, logout as logoutApi } from "../features/auth/api.ts";
 import { syncStrava } from "../features/strava/api.ts";
+import { fetchFromServer, onServerContact } from "../assets/js/data/apiClient.ts";
+import { createSessionKeepAlive } from "../assets/js/data/sessionKeepAlive.ts";
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -50,6 +52,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         return () => { isMounted = false; };
     }, []);
+
+    // Keep the sliding session alive while the user works in the UI without
+    // otherwise reaching the server; an idle tab still times out.
+    useEffect(() => {
+        if (!isAuthenticated) return;
+
+        const keepAlive = createSessionKeepAlive(() => fetchFromServer<unknown>("users/me", "GET"));
+        const unsubscribe = onServerContact(() => keepAlive.contact());
+        const onActivity = () => keepAlive.activity();
+        const events = ["pointerdown", "keydown", "wheel", "touchstart"] as const;
+        events.forEach(e => window.addEventListener(e, onActivity, { passive: true }));
+
+        return () => {
+            unsubscribe();
+            events.forEach(e => window.removeEventListener(e, onActivity));
+        };
+    }, [isAuthenticated]);
 
     const value = useMemo(
         () => ({ isAuthenticated, isLoading, markAuthenticated, logout }),

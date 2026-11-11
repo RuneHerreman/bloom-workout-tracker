@@ -28,6 +28,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Bloom.Application\Bloom.Application.csproj" />
         <ProjectReference Include="..\..\src\Bloom.Domain\Bloom.Domain.csproj" />
+        <ProjectReference Include="..\..\src\Bloom.Infrastructure\Bloom.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>

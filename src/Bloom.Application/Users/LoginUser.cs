@@ -8,10 +8,11 @@ namespace Bloom.Application.Users;
 
 public sealed record LoginUserInput(
     string Email,
-    string Password
+    string Password,
+    bool RememberMe = false
 );
 
-public sealed record LoginUserOutput(string Token);
+public sealed record LoginUserOutput(string Token, bool Persistent);
 
 public class LoginUser(
     IUnitOfWork uow,
@@ -42,10 +43,10 @@ public class LoginUser(
         if (!passwordHasher.VerifyHashedPassword(user.HashedPassword.Value, input.Password))
             throw new InvalidCredentialsException("Invalid email or password.");
 
-        var token = tokenIssuer.Issue(user.Id, user.Email, user.Username);
+        var token = tokenIssuer.Issue(SessionTicket.For(user, input.RememberMe));
 
         logger.LogInformation("Login successful | Id: {UserId}", user.Id);
 
-        return new LoginUserOutput(token);
+        return new LoginUserOutput(token, input.RememberMe);
     }
 }

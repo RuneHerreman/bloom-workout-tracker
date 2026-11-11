@@ -3,8 +3,8 @@ import type { Sex, User, UpdateUserInfoBody, UpdateTechnicalPointsBody } from ".
 
 export type { User };
 
-export async function login(email: string, password: string): Promise<void> {
-    await fetchFromServer<void>("users/login", "POST", { email, password });
+export async function login(email: string, password: string, rememberMe = false): Promise<void> {
+    await fetchFromServer<void>("users/login", "POST", { email, password, rememberMe });
 }
 
 export async function register(

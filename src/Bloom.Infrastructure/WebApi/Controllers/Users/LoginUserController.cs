@@ -13,12 +13,14 @@ public sealed record LoginUserRequest(
     [FromBody] LoginUserBody Body,
     [FromServices] IUseCase<LoginUserInput, LoginUserOutput> UseCase,
     [FromServices] IOptions<JwtOptions> JwtOptions,
+    [FromServices] TimeProvider Clock,
     HttpContext HttpContext
 );
 
 public sealed record LoginUserBody(
     [Required, EmailAddress] string Email,
-    [Required] string Password
+    [Required] string Password,
+    bool RememberMe = false
 );
 
 public static class LoginUserController
@@ -30,18 +32,11 @@ public static class LoginUserController
     {
         var output = await request.UseCase.Execute(new LoginUserInput(
             request.Body.Email,
-            request.Body.Password
+            request.Body.Password,
+            request.Body.RememberMe
         ), ct);
 
-        var opts = request.JwtOptions.Value;
-        request.HttpContext.Response.Cookies.Append(opts.CookieName, output.Token, new CookieOptions
-        {
-            HttpOnly = true,
-            SameSite = SameSiteMode.Lax,
-            Secure = request.HttpContext.Request.IsHttps,
-            Expires = DateTimeOffset.UtcNow.AddMinutes(opts.ExpiryMinutes),
-            Path = "/"
-        });
+        AuthCookie.Append(request.HttpContext, request.JwtOptions.Value, output.Token, output.Persistent, request.Clock.GetUtcNow());
 
         return TypedResults.NoContent();
     }

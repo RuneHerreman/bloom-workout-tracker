@@ -23,6 +23,14 @@ function constructOptions(httpVerb: string, requestBody?: unknown): RequestInit 
     return options;
 }
 
+const serverContactListeners = new Set<() => void>();
+
+/** Called after every authenticated-or-public response that isn't a 401. Returns an unsubscribe. */
+export function onServerContact(listener: () => void): () => void {
+    serverContactListeners.add(listener);
+    return () => { serverContactListeners.delete(listener); };
+}
+
 // Pages where a 401 is expected (not logged in yet) and must not trigger a redirect.
 const PUBLIC_PATHS = ["/", "/login", "/signup"];
 
@@ -34,8 +42,14 @@ export async function fetchFromServer<T>(
     const options = constructOptions(httpVerb, requestBody);
     const response = await fetch(`${API_BASE_URL}${path}`, options);
 
+    if (response.status !== 401) {
+        serverContactListeners.forEach(listener => listener());
+    }
+
     if (response.status === 401 && !PUBLIC_PATHS.includes(window.location.pathname)) {
-        // Session expired mid-use: send the user back to login instead of
+        // The server renews the session cookie on use, so no refresh-and-retry
+        // is needed here: a 401 means the session really ended (idle timeout,
+        // logout or a password change). Send the user back to login instead of
         // letting every widget fail with its own error.
         window.location.href = "/login";
         const sessionExpired: ApiError = { failure: true, error: "Session expired" };

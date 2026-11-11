@@ -77,7 +77,8 @@ public static class Module
                         if (context.Request.Cookies.TryGetValue(jwtOptions.CookieName, out var token))
                             context.Token = token;
                         return Task.CompletedTask;
-                    }
+                    },
+                    OnTokenValidated = context => SlidingSession.OnTokenValidated(context, jwtOptions)
                 };
             });
 

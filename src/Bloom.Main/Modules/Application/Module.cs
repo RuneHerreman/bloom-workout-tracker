@@ -30,7 +30,8 @@ public static class ApplicationModule
         services.AddScoped<IUseCase<UpdateLeaderboardVisibilityInput, UpdateLeaderboardVisibilityOutput>, UpdateLeaderboardVisibility>();
         services.AddScoped<IUseCase<UpdateUserSexInput, UpdateUserSexOutput>, UpdateUserSex>();
         services.AddScoped<IUseCase<DeleteUserInput>, DeleteUser>();
-        services.AddScoped<IUseCase<ChangeUserPasswordInput>, ChangeUserPassword>();
+        services.AddScoped<IUseCase<ChangeUserPasswordInput, ChangeUserPasswordOutput>, ChangeUserPassword>();
+        services.AddScoped<IUseCase<RenewSessionInput, RenewSessionOutput>, RenewSession>();
         //      EXERCISES
         services.AddSingleton<ExerciseCatalogCacheVersion>();
         services.AddScoped<CreateCustomExercise>();

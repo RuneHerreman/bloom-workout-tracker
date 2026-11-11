@@ -10,6 +10,7 @@ namespace UnitTests.Application.Users;
 public sealed class ChangeUserPasswordTests : ApplicationTestBase
 {
     private readonly StubPasswordHasher _passwordHasher = new();
+    private readonly StubTokenIssuer _tokenIssuer = new();
 
     private async Task<User> SeedUser(string password = "old-secret")
     {
@@ -25,7 +26,7 @@ public sealed class ChangeUserPasswordTests : ApplicationTestBase
     }
 
     private ChangeUserPassword BuildUseCase(UserId currentUserId) =>
-        new(UnitOfWork, StubCurrentUser.With(currentUserId), _passwordHasher, CreateLogger<ChangeUserPassword>());
+        new(UnitOfWork, StubCurrentUser.With(currentUserId), _passwordHasher, _tokenIssuer, CreateLogger<ChangeUserPassword>());
 
     [Fact]
     public async Task Execute_WithCorrectOldPassword_ShouldReplaceHash()
@@ -38,6 +39,21 @@ public sealed class ChangeUserPasswordTests : ApplicationTestBase
         var stored = await UserRepository.ById(user.Id);
         Assert.True(stored.HasValue);
         Assert.True(_passwordHasher.VerifyHashedPassword(stored.Value.HashedPassword.Value, "new-secret"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Execute_ShouldIssueTokenWithNewStamp(bool persistent)
+    {
+        var user = await SeedUser("old-secret");
+        var oldStamp = Bloom.Application.Contracts.Ports.SessionTicket.StampOf(user);
+
+        await BuildUseCase(user.Id).Execute(new ChangeUserPasswordInput("old-secret", "new-secret", persistent));
+
+        var ticket = Assert.Single(_tokenIssuer.Issued);
+        Assert.NotEqual(oldStamp, ticket.Stamp);
+        Assert.Equal(persistent, ticket.Persistent);
     }
 
     [Fact]

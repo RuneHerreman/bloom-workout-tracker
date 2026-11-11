@@ -13,6 +13,7 @@ public sealed record RegisterUserRequest(
     [FromBody] RegisterUserBody Body,
     [FromServices] IUseCase<RegisterUserInput, RegisterUserOutput> UseCase,
     [FromServices] IOptions<JwtOptions> JwtOptions,
+    [FromServices] TimeProvider Clock,
     HttpContext HttpContext
 );
 
@@ -47,15 +48,7 @@ public static class RegisterUserController
             request.Body.BirthDate
         ), ct);
 
-        var opts = request.JwtOptions.Value;
-        request.HttpContext.Response.Cookies.Append(opts.CookieName, output.Token, new CookieOptions
-        {
-            HttpOnly = true,
-            SameSite = SameSiteMode.Lax,
-            Secure = request.HttpContext.Request.IsHttps,
-            Expires = DateTimeOffset.UtcNow.AddMinutes(opts.ExpiryMinutes),
-            Path = "/"
-        });
+        AuthCookie.Append(request.HttpContext, request.JwtOptions.Value, output.Token, persistent: false, request.Clock.GetUtcNow());
 
         return TypedResults.NoContent();
     }
