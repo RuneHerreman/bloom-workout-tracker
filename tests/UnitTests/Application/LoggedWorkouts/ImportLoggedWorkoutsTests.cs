@@ -118,9 +118,9 @@ public sealed class ImportLoggedWorkoutsTests : ApplicationTestBase
     public async Task Execute_ShouldReportInvalidSetsWithoutFailingTheRest()
     {
         var useCase = await Setup();
-        // A cardio set needs a distance.
-        var badRun = new ImportWorkoutInput("Run", Monday.AddDays(4),
-            [new LoggedExerciseInput(Run, 0, [new LoggedSetInput("Cardio", 0, TimeSpan.FromMinutes(20), null, null, null, null, null, null)])]);
+        // A strength set needs reps.
+        var badRun = new ImportWorkoutInput("Bench", Monday.AddDays(4),
+            [new LoggedExerciseInput(Bench, 0, [new LoggedSetInput("Strength", 0, null, null, null, null, 60m, "Kg", null)])]);
 
         var output = await useCase.Execute(new ImportLoggedWorkoutsInput([badRun, Push(Monday)]));
 

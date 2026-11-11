@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, CheckCheck, ChevronRight, CircleHelp, Plus, Search, Sparkles, CircleCheck, CirclePlus } from "lucide-react";
+import { ArrowLeft, ArrowRight, Ban, Check, CheckCheck, ChevronRight, CircleHelp, Plus, Search, Sparkles, CircleCheck, CirclePlus } from "lucide-react";
 import type { Exercise } from "../../assets/js/data/apiTypes.ts";
 import type { ExerciseType } from "../../types.ts";
 import { nameSimilarity, rankExercises } from "../export/importData.ts";
@@ -41,7 +41,7 @@ function ExercisesStep({ keys, evidence, choices, catalog, logged, onChoose, onB
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [keys, evidence]);
 
-    const counts = { check: 0, matched: 0, new: 0 } as Record<Status, number>;
+    const counts = { check: 0, matched: 0, new: 0, skip: 0 } as Record<Status, number>;
     for (const k of keys) counts[statusOf(choices.get(k))]++;
     const [filter, setFilter] = useState<Filter>(counts.check > 0 ? "check" : "all");
     const visible = ordered.filter(k => filter === "all" || statusOf(choices.get(k)) === filter);
@@ -67,7 +67,7 @@ function ExercisesStep({ keys, evidence, choices, catalog, logged, onChoose, onB
     const unsure = keys.filter(k => { const c = choices.get(k); return c && !c.checked && c.decision.kind === "create"; });
 
     // Keyboard: ↑/↓ move through the list, Enter accepts the best match, N adds as new.
-    const detailApi = useRef<{ acceptBest: () => void; addNew: () => void } | null>(null);
+    const detailApi = useRef<{ acceptBest: () => void; addNew: () => void; skip: () => void } | null>(null);
     useEffect(() => {
         function onKey(e: KeyboardEvent) {
             const t = e.target as HTMLElement;
@@ -83,6 +83,9 @@ function ExercisesStep({ keys, evidence, choices, catalog, logged, onChoose, onB
             } else if (e.key.toLowerCase() === "n") {
                 e.preventDefault();
                 detailApi.current?.addNew();
+            } else if (e.key.toLowerCase() === "s") {
+                e.preventDefault();
+                detailApi.current?.skip();
             }
         }
         window.addEventListener("keydown", onKey);
@@ -107,7 +110,7 @@ function ExercisesStep({ keys, evidence, choices, catalog, logged, onChoose, onB
                         </div>
                         <div className="imp-progress" aria-hidden><span style={{ width: `${keys.length ? (done / keys.length) * 100 : 100}%` }} /></div>
                         <div className="imp-filters" role="tablist" aria-label="Show">
-                            {([["check", "To check"], ["matched", "Matched"], ["new", "New"], ["all", "All"]] as [Filter, string][]).map(([f, label]) => (
+                            {([["check", "To check"], ["matched", "Matched"], ["new", "New"], ["skip", "Skipped"], ["all", "All"]] as [Filter, string][]).filter(([f]) => f !== "skip" || counts.skip > 0).map(([f, label]) => (
                                 <button key={f} role="tab" aria-selected={filter === f} className={`imp-filter ${f}${filter === f ? " active" : ""}`} onClick={() => setFilter(f)}>
                                     {label} <span>{f === "all" ? keys.length : counts[f as Status]}</span>
                                 </button>
@@ -144,12 +147,12 @@ function ExercisesStep({ keys, evidence, choices, catalog, logged, onChoose, onB
                                         onClick={() => { setSelected(k); setDetailOpen(true); }}
                                     >
                                         <span className="imp-name-icon" aria-hidden>
-                                            {st === "matched" ? <CircleCheck size={16} /> : st === "new" ? <CirclePlus size={16} /> : target ? <Sparkles size={16} /> : <CircleHelp size={16} />}
+                                            {st === "matched" ? <CircleCheck size={16} /> : st === "new" ? <CirclePlus size={16} /> : st === "skip" ? <Ban size={16} /> : target ? <Sparkles size={16} /> : <CircleHelp size={16} />}
                                         </span>
                                         <span className="imp-name-text">
                                             <span className="imp-name-file">{ev.name}</span>
                                             <span className="imp-name-sub">
-                                                {st === "matched" ? `→ ${target}` : st === "new" ? `New · ${c?.decision.kind === "create" ? c.decision.type : ""}` : target ? `${target}?` : "No close match"}
+                                                {st === "matched" ? `→ ${target}` : st === "new" ? `New · ${c?.decision.kind === "create" ? c.decision.type : ""}` : st === "skip" ? "Not imported" : target ? `${target}?` : "No close match"}
                                                 {" · "}{plural(ev.sets, "set")}
                                             </span>
                                         </span>
@@ -194,7 +197,7 @@ function ExercisesStep({ keys, evidence, choices, catalog, logged, onChoose, onB
                     </button>
                 </div>
             </div>
-            <p className="imp-keys imp-muted" aria-hidden><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Enter</kbd> use best match · <kbd>N</kbd> add as new</p>
+            <p className="imp-keys imp-muted" aria-hidden><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Enter</kbd> use best match · <kbd>N</kbd> add as new · <kbd>S</kbd> skip</p>
         </div>
     );
 }
@@ -210,7 +213,7 @@ interface DetailProps {
     onDecide: (c: Choice) => void;
     onChange: (c: Choice) => void;
     onClose: () => void;
-    apiRef: React.MutableRefObject<{ acceptBest: () => void; addNew: () => void } | null>;
+    apiRef: React.MutableRefObject<{ acceptBest: () => void; addNew: () => void; skip: () => void } | null>;
 }
 
 function Detail({ ev, choice, catalog, byId, logged, muscleOptions, problem, onDecide, onChange, onClose, apiRef }: DetailProps) {
@@ -231,14 +234,17 @@ function Detail({ ev, choice, catalog, byId, logged, muscleOptions, problem, onD
     const pick = (id: string) => onDecide({ decision: { kind: "existing", exerciseId: id }, checked: true });
     const addNew = () => onDecide({ decision: { ...draft, name: draft.name.trim() || ev.name }, checked: true });
 
+    const skip = () => onDecide({ decision: { kind: "skip" }, checked: true });
     useEffect(() => {
-        apiRef.current = { acceptBest: () => best && pick(best.exercise.id), addNew };
+        apiRef.current = { acceptBest: () => best && pick(best.exercise.id), addNew, skip };
     });
 
     const chosen = chosenId ? byId.get(chosenId) : null;
     const status = !choice.checked
         ? chosen ? <>Suggested: <b>{chosen.name}</b>. Use it, or choose another below.</> : <>No close match. Pick an exercise or add it as new.</>
-        : chosen ? <><Check size={14} /> Linked to <b>{chosen.name}</b></> : <><Check size={14} /> Added as a new <b>{choice.decision.kind === "create" ? choice.decision.type : ""}</b> exercise</>;
+        : chosen ? <><Check size={14} /> Linked to <b>{chosen.name}</b></>
+        : choice.decision.kind === "skip" ? <><Ban size={14} /> Not imported: its sets are left out</>
+        : <><Check size={14} /> Added as a new <b>{choice.decision.kind === "create" ? choice.decision.type : ""}</b> exercise</>;
 
     return (
         <div className="imp-detail-inner">
@@ -346,6 +352,13 @@ function Detail({ ev, choice, catalog, byId, logged, muscleOptions, problem, onD
                 {choice.decision.kind === "create" && problem && <p className="imp-problem">{problem}</p>}
                 <button type="button" className={`imp-btn ${choice.decision.kind === "create" && choice.checked ? "chosen" : "secondary"}`} onClick={addNew}>
                     {choice.decision.kind === "create" && choice.checked ? <><Check size={14} /> Adding as new</> : <><Plus size={14} /> Add as new exercise <kbd>N</kbd></>}
+                </button>
+            </div>
+
+            <div className="imp-skip">
+                <span className="imp-muted small">Not a real exercise, like a placeholder or a note?</span>
+                <button type="button" className={`imp-btn ${choice.decision.kind === "skip" ? "chosen" : "ghost"}`} onClick={skip}>
+                    {choice.decision.kind === "skip" ? <><Check size={14} /> Skipped</> : <><Ban size={14} /> Don't import it <kbd>S</kbd></>}
                 </button>
             </div>
         </div>

@@ -311,8 +311,8 @@ function detectDateOrder(cells: (string | number)[]): { order: DateOrder | null;
 
 /**
  * Sets the server would reject, per workout, so the review step can list them
- * before importing: Strength and Plyometric need reps (1+) and a weight (0+),
- * Cardio needs a distance and a duration.
+ * before importing: Strength and Plyometric need reps (1+) and a weight (0+).
+ * Cardio sets can have a distance, a duration, both or neither.
  */
 export function workoutProblems(w: ParsedWorkout): string[] {
     const problems = new Set<string>();
@@ -320,11 +320,7 @@ export function workoutProblems(w: ParsedWorkout): string[] {
     for (const e of w.exercises) {
         if (e.sets.length === 0) problems.add(`${e.ref.name} has no sets`);
         for (const s of e.sets) {
-            if (s.type === "Cardio") {
-                const [h, m, sec] = (s.duration ?? "").split(":").map(Number);
-                if (!(s.distance && s.distance > 0)) problems.add(`${e.ref.name}: a cardio set has no distance`);
-                if (!((h || 0) * 3600 + (m || 0) * 60 + (sec || 0) > 0)) problems.add(`${e.ref.name}: a cardio set has no duration`);
-            } else {
+            if (s.type !== "Cardio") {
                 if (!(s.reps && s.reps >= 1)) problems.add(`${e.ref.name}: a set has no reps`);
                 if (s.weight == null || s.weight < 0) problems.add(`${e.ref.name}: a set has no weight (use 0 for bodyweight)`);
             }
@@ -527,7 +523,9 @@ export function toTemplateExercises(t: ParsedTemplate, idFor: (ref: ParsedExerci
 /** What to do with one exercise name from the file. */
 export type Decision =
     | { kind: "existing"; exerciseId: string | null }
-    | { kind: "create"; name: string; type: ExerciseType; muscles: string[] };
+    | { kind: "create"; name: string; type: ExerciseType; muscles: string[] }
+    /** Leave this exercise out (e.g. a placeholder like "CANT REMEMBER"). */
+    | { kind: "skip" };
 
 const ALIASES: Record<string, string> = {
     db: "dumbbell", dbs: "dumbbell", dumbell: "dumbbell", dumbbells: "dumbbell", dumbel: "dumbbell",
@@ -594,16 +592,4 @@ export function exerciseUsage(workouts: ParsedWorkout[], templates: ParsedTempla
     for (const w of workouts) for (const e of w.exercises) touch(e.ref, e.sets.length, "workouts");
     for (const t of templates) for (const e of t.exercises) touch(e.ref, e.sets.length, "templates");
     return usage;
-}
-
-/** Why a decision can't be used yet, or null. */
-export function decisionProblem(d: Decision | undefined, catalogNames: Set<string>, otherNewNames: Set<string>): string | null {
-    if (!d) return "Choose what to do with this exercise.";
-    if (d.kind === "existing") return d.exerciseId ? null : "Pick an exercise.";
-    const name = d.name.trim().toLowerCase();
-    if (!name) return "Give the new exercise a name.";
-    if (name.length > 100) return "Name is too long (100 characters at most).";
-    if (catalogNames.has(name)) return "You already have an exercise with this name; match it instead.";
-    if (otherNewNames.has(name)) return "Another new exercise has this name.";
-    return null;
 }

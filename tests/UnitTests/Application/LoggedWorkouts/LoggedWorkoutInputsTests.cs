@@ -31,28 +31,30 @@ public sealed class LoggedWorkoutInputsTests : ApplicationTestBase
         Assert.NotEqual(Guid.Empty, output.LoggedWorkoutId);
     }
 
-    [Fact]
-    public async Task ToLoggedSet_Cardio_MissingDuration_ShouldThrow()
+    // Cardio sets may have a distance, a duration, both or neither.
+    [Theory]
+    [InlineData(null, 5.0, "Km")]   // untimed run
+    [InlineData(90, null, null)]    // bouldering: time, no distance
+    [InlineData(null, null, null)]  // "went snowboarding"
+    [InlineData(10, 5.0, null)]     // distance without unit: Km
+    public async Task ToLoggedSet_Cardio_WithOptionalValues_ShouldMap(int? minutes, double? km, string? unit)
     {
-        var input = WithSet(new LoggedSetInput("Cardio", 0, null, 5m, "Km", null, null, null, null));
+        var input = WithSet(new LoggedSetInput("Cardio", 0,
+            minutes is null ? null : TimeSpan.FromMinutes(minutes.Value),
+            km is null ? null : (decimal)km.Value, unit, null, null, null, null));
 
-        await Assert.ThrowsAsync<ArgumentException>(() => _useCase.Execute(input));
+        var output = await _useCase.Execute(input);
+
+        Assert.NotEqual(Guid.Empty, output.LoggedWorkoutId);
     }
 
     [Fact]
-    public async Task ToLoggedSet_Cardio_MissingDistance_ShouldThrow()
+    public void CreateCardio_ShouldStoreZeroValuesAsAbsent()
     {
-        var input = WithSet(new LoggedSetInput("Cardio", 0, TimeSpan.FromMinutes(10), null, "Km", null, null, null, null));
+        var set = Bloom.Domain.LoggedWorkouts.LoggedSet.CreateCardio(0, TimeSpan.Zero, 0m, null);
 
-        await Assert.ThrowsAsync<ArgumentException>(() => _useCase.Execute(input));
-    }
-
-    [Fact]
-    public async Task ToLoggedSet_Cardio_MissingDistanceUnit_ShouldThrow()
-    {
-        var input = WithSet(new LoggedSetInput("Cardio", 0, TimeSpan.FromMinutes(10), 5m, null, null, null, null, null));
-
-        await Assert.ThrowsAsync<ArgumentException>(() => _useCase.Execute(input));
+        Assert.Null(set.Duration);
+        Assert.Null(set.Distance);
     }
 
     [Fact]

@@ -30,12 +30,17 @@ public class LoggedSet : Entity<LoggedSetId>
         Order = order;
     }
 
-    public static LoggedSet CreateCardio(int order, TimeSpan duration, decimal distance, DistanceUnit unit, SetMarker? marker = null)
+    /// <summary>
+    /// A cardio set records a duration, a distance, both, or neither: bouldering has
+    /// no distance, an untimed run has no duration, and "went snowboarding" has
+    /// neither. Zero or missing values are stored as absent.
+    /// </summary>
+    public static LoggedSet CreateCardio(int order, TimeSpan? duration, decimal? distance, DistanceUnit? unit, SetMarker? marker = null)
     {
         var set = new LoggedSet(EntityId.New<LoggedSetId>(), ExerciseType.Cardio, order)
         {
-            Duration = ValueObjects.Duration.Create(duration),
-            Distance = ValueObjects.Distance.Create(distance, unit),
+            Duration = duration is { } d && d > TimeSpan.Zero ? ValueObjects.Duration.Create(d) : null,
+            Distance = distance is { } km && km > 0 ? ValueObjects.Distance.Create(km, unit ?? DistanceUnit.Km) : null,
             Marker = marker,
 
             Reps = null,
@@ -87,9 +92,7 @@ public class LoggedSet : Entity<LoggedSetId>
         switch (Type)
         {
             case ExerciseType.Cardio:
-                Asserts.EnsureNotEmpty(Duration);
-                Asserts.EnsureNotEmpty(Distance);
-
+                // Duration and distance are both optional (see CreateCardio).
                 Asserts.EnsureTrue(Reps is null);
                 Asserts.EnsureTrue(Weight is null);
                 Asserts.EnsureTrue(Rir is null);

@@ -25,9 +25,9 @@ const CSV_FIELDS: Field[] = [
     { name: "Weight", type: "decimal", values: <>0 or more, <code>82.5</code> or <code>82,5</code></>, notes: "Required on Strength and Plyometric sets. Use 0 for bodyweight." },
     { name: "Weight unit", type: "enum", values: "Kg, Lbs", notes: "Left out: Kg. Weights are stored in the unit given." },
     { name: "RIR", type: "integer", values: "0–10", notes: "Reps in reserve. Optional." },
-    { name: "Distance", type: "decimal", values: "Greater than 0", notes: "Required on Cardio sets." },
+    { name: "Distance", type: "decimal", values: "Greater than 0", notes: "Optional. Cardio sets can have a distance, a duration, both or neither." },
     { name: "Distance unit", type: "enum", values: "Km, Miles", notes: "Left out: Km." },
-    { name: "Duration", type: "time span", values: <><code>hh:mm:ss</code> or <code>mm:ss</code></>, notes: <>Required on Cardio sets. If empty, <b>Duration (s)</b> is used.</> },
+    { name: "Duration", type: "time span", values: <><code>hh:mm:ss</code> or <code>mm:ss</code></>, notes: <>Optional. If empty, <b>Duration (s)</b> is used.</> },
     { name: "Duration (s)", type: "integer", values: "Seconds", notes: "Fallback for Duration." },
     { name: "Gear", type: "list", values: "Comma separated", notes: "Gear used for the exercise, e.g. shoes, belt." },
     { name: "Exercise note", type: "text", values: "Up to 2000 characters", notes: "Taken from the exercise's first row." },
@@ -60,9 +60,9 @@ const SET_FIELDS: Field[] = [
     { name: "weight", type: "number", values: "0 or more", notes: "Required for Strength and Plyometric. 0 = bodyweight." },
     { name: "weightUnit", type: "enum", values: "Kg | Lbs" },
     { name: "rir", type: "integer | null", values: "0–10" },
-    { name: "distance", type: "number", values: "Greater than 0", notes: "Required for Cardio." },
+    { name: "distance", type: "number", values: "Greater than 0", notes: "Optional for Cardio." },
     { name: "distanceUnit", type: "enum", values: "Km | Miles" },
-    { name: "duration", type: "string", values: "hh:mm:ss", notes: "Required for Cardio." },
+    { name: "duration", type: "string", values: "hh:mm:ss", notes: "Optional for Cardio." },
 ];
 
 const TEMPLATE_FIELDS: Field[] = [
@@ -267,8 +267,9 @@ function ImportDocsPage() {
                         </p>
                         <FieldTable fields={CSV_FIELDS} />
                         <p className="docs-note">
-                            Cardio sets need <b>Distance</b> and <b>Duration</b>; Strength and Plyometric sets need <b>Reps</b> and <b>Weight</b>. A workout containing a set that
-                            doesn't meet this is reported as failed; the rest of the file still imports.
+                            Strength and Plyometric sets need <b>Reps</b> and <b>Weight</b>; Cardio sets can have a distance, a duration, both or neither.
+                            Each set takes the type of the exercise it's matched to. Missing reps can be filled with your usual reps and missing weights logged as
+                            bodyweight (you choose in the review step); a workout that still has an incomplete set isn't imported, and the rest of the file is.
                         </p>
                         <p className="docs-note">Text starting with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code> is exported with a leading <code>'</code> so spreadsheets don't run it as a formula; the importer removes it again.</p>
                     </section>
@@ -303,7 +304,7 @@ function ImportDocsPage() {
                                 <h3>Exercise / set type</h3>
                                 <ul>
                                     <li><code>Strength</code> reps × weight</li>
-                                    <li><code>Cardio</code> distance and duration</li>
+                                    <li><code>Cardio</code> distance and/or duration, both optional</li>
                                     <li><code>Plyometric</code> reps × weight</li>
                                 </ul>
                             </div>
@@ -375,7 +376,7 @@ function ImportDocsPage() {
                             <li>At most <b>5000 workouts</b> per import.</li>
                             <li>A file that isn't a Bloom export, or has no workouts or templates, is rejected with a message before anything happens.</li>
                             <li>Rows without a date, workout or exercise (CSV/Excel), and workouts without a name or date (JSON), are skipped and listed in the preview.</li>
-                            <li>A workout with an invalid set (for example a Cardio set without a distance) is reported as <i>couldn't be imported</i> with the reason; the other workouts are imported.</li>
+                            <li>A workout with an invalid set (for example a Strength set without reps, with the fix switched off) is reported as <i>couldn't be imported</i> with the reason; the other workouts are imported.</li>
                             <li>If the import is interrupted, run it again: what was already saved is skipped.</li>
                             <li>Changed your mind? Right after importing, <b>Undo this import</b> removes the workouts, templates and new exercises it added.</li>
                         </ul>
@@ -414,7 +415,7 @@ Content-Type: application/json
   "imported": 1,
   "skipped": 0,
   "failures": [
-    { "index": 3, "name": "Run", "loggedAt": "2026-11-04T07:15:00Z", "reason": "Distance required for Cardio set" }
+    { "index": 3, "name": "Run", "loggedAt": "2026-11-04T07:15:00Z", "reason": "Reps required for Strength set" }
   ]
 }`} />
                         <p className="docs-note">

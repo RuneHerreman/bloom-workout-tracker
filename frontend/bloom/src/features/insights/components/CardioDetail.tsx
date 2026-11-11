@@ -13,14 +13,19 @@ const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day
 
 function CardioDetail({ activity, range }: { activity: CardioActivity; range: Range }) {
     const hasPace = activity.sessions.filter(s => s.pace !== null).length >= 2;
+    // Activities like bouldering are logged by time only; untimed ones by distance only.
+    const hasDistance = activity.sessions.some(s => s.km > 0);
+    const hasDuration = activity.sessions.some(s => s.minutes > 0);
     const [metric, setMetric] = useState<Metric>("distance");
-    const active: Metric = metric === "pace" && !hasPace ? "distance" : metric;
+    const fallback: Metric = hasDistance || !hasDuration ? "distance" : "duration";
+    const active: Metric =
+        (metric === "pace" && !hasPace) || (metric === "distance" && !hasDistance) || (metric === "duration" && !hasDuration) ? fallback : metric;
     const navigate = useNavigate();
 
     const metrics: { value: Metric; label: string }[] = [
-        { value: "distance", label: "Distance" },
+        ...(hasDistance ? [{ value: "distance" as Metric, label: "Distance" }] : []),
         ...(hasPace ? [{ value: "pace" as Metric, label: "Pace" }] : []),
-        { value: "duration", label: "Duration" },
+        ...(hasDuration ? [{ value: "duration" as Metric, label: "Duration" }] : []),
     ];
 
     const sessions = active === "pace" ? activity.sessions.filter(s => s.pace !== null) : activity.sessions;

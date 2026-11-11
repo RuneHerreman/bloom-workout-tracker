@@ -114,7 +114,7 @@ function InsightsPage() {
     const cardioItems: ExplorerItem[] = useMemo(() => activities.map(a => ({
         id: a.id,
         name: a.name,
-        sub: `${a.totalKm} km · ${formatDuration(a.totalMinutes)}`,
+        sub: [a.totalKm > 0 ? `${a.totalKm} km` : null, a.totalMinutes > 0 ? formatDuration(a.totalMinutes) : null].filter(Boolean).join(" · ") || "Logged without distance or time",
         spark: a.sessions.map(s => s.km),
         change: a.paceChangeSec === null ? null : {
             text: `${a.paceChangeSec <= 0 ? "−" : "+"}${Math.abs(a.paceChangeSec)}s/km`,

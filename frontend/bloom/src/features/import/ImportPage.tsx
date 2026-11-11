@@ -13,11 +13,11 @@ import type { Exercise, LoggedWorkout, WorkoutTemplate } from "../../assets/js/d
 import { downloadBlob } from "../export/exportData.ts";
 import {
     ImportFileError, exampleBlob, parseImportFile, planImport, toImportBodies, toTemplateExercises,
-    type DateOrder, type ParsedExerciseRef, type ParsedFile, type ParsedWorkout,
+    type DateOrder, type ParsedExerciseRef, type ParsedFile,
 } from "../export/importData.ts";
 import ExercisesStep from "./ExercisesStep.tsx";
 import {
-    choiceProblem, evidenceByKey, initialChoices, keyOf, splitByProblems, statusOf, timesLogged, type Choice,
+    choiceProblem, evidenceByKey, initialChoices, keyOf, prepareWorkouts, statusOf, timesLogged, type Choice, type Fixes, type Prepared,
 } from "./importSession.ts";
 
 type Step = "file" | "exercises" | "review" | "importing" | "done";
@@ -57,15 +57,21 @@ function ImportPage() {
     const [dateConfirmed, setDateConfirmed] = useState(false);
     const [choices, setChoices] = useState<Map<string, Choice>>(new Map());
     const [withTemplates, setWithTemplates] = useState(true);
+    const [fixes, setFixes] = useState<Fixes>({ fillReps: true, zeroWeight: true });
     const [progress, setProgress] = useState("");
     const [done, setDone] = useState<Done | null>(null);
 
     const plan = useMemo(() => (parsed ? planImport(parsed, catalog, logs, templates) : null), [parsed, catalog, logs, templates]);
-    const { ok: importable, rejected } = useMemo(() => splitByProblems(plan?.newWorkouts ?? []), [plan]);
+
     const usedTemplates = useMemo(() => (withTemplates ? plan?.newTemplates ?? [] : []), [withTemplates, plan]);
-    const evidence = useMemo(() => evidenceByKey(importable, usedTemplates), [importable, usedTemplates]);
+    // Every new workout is matched, including ones that only import after a fix.
+    const evidence = useMemo(() => evidenceByKey(plan?.newWorkouts ?? [], usedTemplates), [plan, usedTemplates]);
     const keys = useMemo(() => [...evidence.keys()], [evidence]);
     const logged = useMemo(() => timesLogged(logs), [logs]);
+    const prepared = useMemo(() => prepareWorkouts(plan?.newWorkouts ?? [], choices, catalog, logs, fixes), [plan, choices, catalog, logs, fixes]);
+    const importable = prepared.ok;
+    // What the fixes would touch, whether or not they're switched on (so the toggles stay visible).
+    const fixable = useMemo(() => prepareWorkouts(plan?.newWorkouts ?? [], choices, catalog, logs, { fillReps: true, zeroWeight: true }), [plan, choices, catalog, logs]);
 
     async function read(f: File, dateOrder?: DateOrder) {
         setError(null);
@@ -96,8 +102,12 @@ function ImportPage() {
         try {
             setProgress("Adding new exercises");
             const ids = new Map<string, string>();
+            // Only exercises that end up in what's imported (not ones in skipped or rejected workouts).
+            const used = new Set([...importable, ...usedTemplates].flatMap(w => w.exercises.map(e => keyOf(e.ref.name))));
             for (const key of keys) {
+                if (!used.has(key)) continue;
                 const d = choices.get(key)!.decision;
+                if (d.kind === "skip") continue;
                 if (d.kind === "existing") { ids.set(key, d.exerciseId!); continue; }
                 const made = await createCustomExercise({ name: d.name.trim(), description: `Imported from ${parsed.fileName}`, type: d.type, targetMuscles: d.muscles });
                 ids.set(key, made.id);
@@ -112,7 +122,10 @@ function ImportPage() {
 
             if (usedTemplates.length) {
                 setProgress("Adding templates");
-                for (const t of usedTemplates) templateIds.push(await createTemplate(t.name, toTemplateExercises(t, idFor)));
+                for (const t of usedTemplates) {
+                    const kept = { ...t, exercises: t.exercises.filter(e => choices.get(keyOf(e.ref.name))?.decision.kind !== "skip") };
+                    templateIds.push(await createTemplate(t.name, toTemplateExercises(kept, idFor)));
+                }
             }
             setDone({ result, templateIds, exerciseIds, undone: false });
             setStep("done");
@@ -199,8 +212,10 @@ function ImportPage() {
                 {step === "review" && plan && parsed && (
                     <ReviewStep
                         parsed={parsed}
-                        importable={importable}
-                        rejected={rejected}
+                        prepared={prepared}
+                        fixable={fixable}
+                        fixes={fixes}
+                        setFixes={setFixes}
                         duplicates={plan.duplicateWorkouts}
                         templates={plan.newTemplates.length}
                         existingTemplates={plan.existingTemplates}
@@ -312,10 +327,12 @@ function FileStep({ ready, parsed, onFile, onDateOrder, onCancel }: {
 
 // ── Step 3: review ────────────────────────────────────────────────────────────
 
-function ReviewStep({ parsed, importable, rejected, duplicates, templates, existingTemplates, withTemplates, setWithTemplates, keys, choices, catalog, problems, onBack, onImport }: {
+function ReviewStep({ parsed, prepared, fixable, fixes, setFixes, duplicates, templates, existingTemplates, withTemplates, setWithTemplates, keys, choices, catalog, problems, onBack, onImport }: {
     parsed: ParsedFile;
-    importable: ParsedWorkout[];
-    rejected: { workout: ParsedWorkout; problems: string[] }[];
+    prepared: Prepared;
+    fixable: Prepared;
+    fixes: Fixes;
+    setFixes: (f: Fixes) => void;
     duplicates: number;
     templates: number;
     existingTemplates: number;
@@ -329,6 +346,7 @@ function ReviewStep({ parsed, importable, rejected, duplicates, templates, exist
     onImport: () => void;
 }) {
     const byId = useMemo(() => new Map(catalog.map(e => [e.id, e])), [catalog]);
+    const { ok: importable, rejected } = prepared;
     const sets = importable.reduce((n, w) => n + w.exercises.reduce((m, e) => m + e.sets.length, 0), 0);
     const newExercises = keys.filter(k => choices.get(k)?.decision.kind === "create");
     const unchecked = keys.filter(k => statusOf(choices.get(k)) === "check").length;
@@ -338,7 +356,7 @@ function ReviewStep({ parsed, importable, rejected, duplicates, templates, exist
     }, [importable]);
     const nameFor = (ref: ParsedExerciseRef) => {
         const d = choices.get(keyOf(ref.name))?.decision;
-        return d?.kind === "existing" ? byId.get(d.exerciseId ?? "")?.name ?? ref.name : d?.name ?? ref.name;
+        return d?.kind === "existing" ? byId.get(d.exerciseId ?? "")?.name ?? ref.name : d?.kind === "create" ? d.name : ref.name;
     };
 
     // Workouts per month across the range, as a small bar strip.
@@ -382,7 +400,27 @@ function ReviewStep({ parsed, importable, rejected, duplicates, templates, exist
                         </div>
                     )}
 
-                    {(rejected.length > 0 || parsed.warnings.length > 0) && (
+                    {fixable.filledReps.sets + fixable.zeroWeights.sets > 0 && (
+                        <div className="imp-card imp-fixes">
+                            <p className="imp-eyebrow">Missing values</p>
+                            <label className="imp-fix">
+                                <input type="checkbox" checked={fixes.fillReps} onChange={e => setFixes({ ...fixes, fillReps: e.target.checked })} />
+                                <span>
+                                    <b>Fill in missing reps</b> with your usual reps for that exercise
+                                    {fixable.filledReps.sets > 0 && <small> · {plural(fixable.filledReps.sets, "set")} in {plural(fixable.filledReps.workouts, "workout")}, noted on the exercise</small>}
+                                </span>
+                            </label>
+                            <label className="imp-fix">
+                                <input type="checkbox" checked={fixes.zeroWeight} onChange={e => setFixes({ ...fixes, zeroWeight: e.target.checked })} />
+                                <span>
+                                    <b>Log sets without a weight as bodyweight</b> (0 kg)
+                                    {fixable.zeroWeights.sets > 0 && <small> · {plural(fixable.zeroWeights.sets, "set")} in {plural(fixable.zeroWeights.workouts, "workout")}</small>}
+                                </span>
+                            </label>
+                        </div>
+                    )}
+
+                    {(rejected.length > 0 || parsed.warnings.length > 0 || prepared.emptied > 0) && (
                         <div className="imp-card imp-warn">
                             <p className="imp-warn-title"><AlertTriangle size={15} /> Not imported</p>
                             {rejected.length > 0 && (
@@ -391,6 +429,7 @@ function ReviewStep({ parsed, importable, rejected, duplicates, templates, exist
                                     <ul>{rejected.slice(0, 30).map((r, i) => <li key={i}><b>{r.workout.name}</b> ({fmtDate(r.workout.loggedAt)}): {r.problems.join("; ")}</li>)}</ul>
                                 </details>
                             )}
+                            {prepared.emptied > 0 && <p className="imp-muted small">{plural(prepared.emptied, "workout")} only had skipped exercises.</p>}
                             {parsed.warnings.length > 0 && (
                                 <details>
                                     <summary>{plural(parsed.warnings.length, "row")} couldn't be read</summary>

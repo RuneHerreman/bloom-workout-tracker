@@ -13,7 +13,7 @@ export const STRONG_MATCH = 0.8;
 /** Below this a candidate isn't worth showing as an alternative. */
 const WEAK_MATCH = 0.45;
 
-export type Status = "check" | "matched" | "new";
+export type Status = "check" | "matched" | "new" | "skip";
 
 export interface Choice {
     decision: Decision;
@@ -25,7 +25,7 @@ export const keyOf = (name: string) => name.trim().toLowerCase();
 
 export function statusOf(choice: Choice | undefined): Status {
     if (!choice || !choice.checked) return "check";
-    return choice.decision.kind === "existing" ? "matched" : "new";
+    return choice.decision.kind === "existing" ? "matched" : choice.decision.kind === "skip" ? "skip" : "new";
 }
 
 /** Starting point: exact names linked, strong suggestions pre-selected, the rest proposed as new. */
@@ -113,6 +113,7 @@ export function timesLogged(logs: LoggedWorkout[]): Map<string, number> {
 export function choiceProblem(choice: Choice | undefined, catalogNames: Set<string>, otherNewNames: Set<string>): string | null {
     if (!choice) return "Choose what to do with this exercise.";
     const d = choice.decision;
+    if (d.kind === "skip") return null;
     if (d.kind === "existing") return d.exerciseId ? null : "Pick an exercise.";
     const name = d.name.trim().toLowerCase();
     if (!name) return "Give the new exercise a name.";
@@ -122,13 +123,108 @@ export function choiceProblem(choice: Choice | undefined, catalogNames: Set<stri
     return null;
 }
 
-/** Workouts that will import, and the ones the server would reject (with reasons). */
-export function splitByProblems(workouts: ParsedWorkout[]) {
-    const ok: ParsedWorkout[] = [];
-    const rejected: { workout: ParsedWorkout; problems: string[] }[] = [];
-    for (const w of workouts) {
-        const problems = workoutProblems(w);
-        if (problems.length) rejected.push({ workout: w, problems }); else ok.push(w);
+export interface Fixes {
+    /** Strength sets with a weight but no reps get your usual reps for that exercise. */
+    fillReps: boolean;
+    /** Strength sets with no weight are logged as bodyweight (0 kg). */
+    zeroWeight: boolean;
+}
+
+export interface Prepared {
+    ok: ParsedWorkout[];
+    rejected: { workout: ParsedWorkout; problems: string[] }[];
+    /** Workouts left with no exercises after skipping. */
+    emptied: number;
+    /** Sets that got assumed reps / 0 kg, and in how many workouts. */
+    filledReps: { sets: number; workouts: number };
+    zeroWeights: { sets: number; workouts: number };
+}
+
+const DEFAULT_REPS = 8;
+
+/** Most common reps for each exercise: from the file first, then your history, else 8. */
+function usualReps(workouts: ParsedWorkout[], logs: LoggedWorkout[], idFor: (key: string) => string | null): (key: string) => number {
+    const fromFile = new Map<string, Map<number, number>>();
+    for (const w of workouts) for (const e of w.exercises) for (const set of e.sets) {
+        if (!set.reps || set.reps < 1) continue;
+        const counts = fromFile.get(keyOf(e.ref.name)) ?? new Map<number, number>();
+        counts.set(set.reps, (counts.get(set.reps) ?? 0) + 1);
+        fromFile.set(keyOf(e.ref.name), counts);
     }
-    return { ok, rejected };
+    const fromHistory = new Map<string, Map<number, number>>();
+    for (const l of logs) for (const e of l.exercises) for (const set of e.sets) {
+        if (!set.reps || set.reps < 1 || set.marker === "WarmUp") continue;
+        const counts = fromHistory.get(e.exerciseId) ?? new Map<number, number>();
+        counts.set(set.reps, (counts.get(set.reps) ?? 0) + 1);
+        fromHistory.set(e.exerciseId, counts);
+    }
+    const mode = (counts: Map<number, number> | undefined) =>
+        counts && counts.size ? [...counts].sort((a, b) => b[1] - a[1] || b[0] - a[0])[0][0] : null;
+    return key => mode(fromFile.get(key)) ?? mode(fromHistory.get(idFor(key) ?? "")) ?? DEFAULT_REPS;
+}
+
+/**
+ * Applies the exercise decisions and fixes to the file's workouts, giving what
+ * would actually be imported:
+ * - skipped exercises are left out (and workouts left empty are dropped);
+ * - each set takes the type of the exercise it's matched to or created as, so
+ *   "Crunches" typed as cardio in the file become strength sets on Crunch;
+ * - missing reps / weights are filled in when the fix is on, with a note;
+ * - whatever the server would still reject is listed with the reason.
+ */
+export function prepareWorkouts(
+    workouts: ParsedWorkout[], choices: Map<string, Choice>, catalog: Exercise[], logs: LoggedWorkout[], fixes: Fixes,
+): Prepared {
+    const byId = new Map(catalog.map(e => [e.id, e]));
+    const typeFor = (key: string): ExerciseType | null => {
+        const d = choices.get(key)?.decision;
+        if (!d || d.kind === "skip") return null;
+        return d.kind === "create" ? d.type : (byId.get(d.exerciseId ?? "")?.type as ExerciseType | undefined) ?? null;
+    };
+    const idFor = (key: string) => { const d = choices.get(key)?.decision; return d?.kind === "existing" ? d.exerciseId : null; };
+    const reps = usualReps(workouts, logs, idFor);
+
+    const ok: ParsedWorkout[] = [];
+    const rejected: Prepared["rejected"] = [];
+    let emptied = 0;
+    const filled = { sets: 0, workouts: 0 }, zeroed = { sets: 0, workouts: 0 };
+
+    for (const w of workouts) {
+        let filledHere = false, zeroedHere = false;
+        const exercises = w.exercises.flatMap(e => {
+            const key = keyOf(e.ref.name);
+            if (choices.get(key)?.decision.kind === "skip") return [];
+            const type = typeFor(key) ?? e.sets[0]?.type ?? "Strength";
+            const notes: string[] = [];
+            const sets = e.sets.map(set => {
+                if (type === "Cardio") {
+                    return { ...set, type, reps: null, weight: null, weightUnit: null, rir: null };
+                }
+                let { reps: r, weight, weightUnit } = set;
+                if ((!r || r < 1) && fixes.fillReps) {
+                    r = reps(key);
+                    filled.sets++; filledHere = true;
+                    if (!notes.includes("reps")) notes.push("reps");
+                }
+                if ((weight == null || weight < 0) && fixes.zeroWeight) {
+                    weight = 0; weightUnit = "Kg";
+                    zeroed.sets++; zeroedHere = true;
+                    if (!notes.includes("weight")) notes.push("weight");
+                }
+                return { ...set, type, reps: r, weight, weightUnit: weight != null ? weightUnit ?? "Kg" : null, distance: null, distanceUnit: null, duration: null };
+            });
+            const added = [
+                notes.includes("reps") ? `Reps not recorded, assumed ${reps(key)}` : null,
+                notes.includes("weight") ? "Weight not recorded, logged as bodyweight" : null,
+            ].filter(Boolean).join(". ");
+            return [{ ...e, sets, note: [e.note, added].filter(Boolean).join(" · ") || null }];
+        });
+        if (exercises.length === 0) { emptied++; continue; }
+        if (filledHere) filled.workouts++;
+        if (zeroedHere) zeroed.workouts++;
+        const prepared = { ...w, exercises };
+        const problems = workoutProblems(prepared);
+        if (problems.length) rejected.push({ workout: prepared, problems }); else ok.push(prepared);
+    }
+    return { ok, rejected, emptied, filledReps: filled, zeroWeights: zeroed };
 }

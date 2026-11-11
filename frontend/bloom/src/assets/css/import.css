@@ -227,3 +227,14 @@
     .imp-footer-right { justify-content: space-between; }
     .imp-best { flex-direction: column; align-items: stretch; }
 }
+
+/* Review: fixes for missing values */
+.imp-fixes { display: flex; flex-direction: column; gap: 0.5rem; }
+.imp-fix { display: flex; align-items: flex-start; gap: 0.6rem; font-size: var(--text-sm); cursor: pointer; }
+.imp-fix input { margin-top: 0.2rem; }
+.imp-fix small { color: var(--ink-muted); }
+.imp-skip { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding-top: 0.9rem; border-top: 0.0625rem solid var(--border); }
+.imp-name.skip .imp-name-icon { color: var(--ink-muted); }
+.imp-name.skip .imp-name-file { text-decoration: line-through; color: var(--ink-muted); }
+.imp-filter.skip.active { background: var(--surface-light); }
+.imp-status svg { vertical-align: -0.15em; }

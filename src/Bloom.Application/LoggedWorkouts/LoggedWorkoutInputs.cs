@@ -51,11 +51,12 @@ public static class LoggedExerciseInputExtensions
 
         return type switch
         {
+            // Duration and distance are optional; the unit defaults to Km when a distance has none.
             ExerciseType.Cardio => LoggedSet.CreateCardio(
                 input.Order,
-                input.Duration ?? throw new ArgumentException("Duration required for Cardio set"),
-                input.Distance ?? throw new ArgumentException("Distance required for Cardio set"),
-                Enum.Parse<DistanceUnit>(input.DistanceUnit ?? throw new ArgumentException("DistanceUnit required for Cardio set"), ignoreCase: true),
+                input.Duration,
+                input.Distance,
+                string.IsNullOrWhiteSpace(input.DistanceUnit) ? null : Enum.Parse<DistanceUnit>(input.DistanceUnit, ignoreCase: true),
                 marker
             ),
             ExerciseType.Strength => LoggedSet.CreateStrength(
