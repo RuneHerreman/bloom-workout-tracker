@@ -42,8 +42,9 @@
 .lb-month-label {
     min-width: 8.5rem;
     text-align: center;
-    font-family: var(--serif), serif;
-    font-size: var(--text-md);
+    font-family: var(--sans), sans-serif;
+    font-size: var(--text-sm);
+    font-weight: 600;
     color: var(--dark-text);
 }
 

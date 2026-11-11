@@ -1,56 +1,66 @@
-// Each cell represents one day. Level 0 = no activity, 1–3 = increasing intensity.
+import { useLayoutEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import GeneralWidget from "./GeneralWidget.tsx";
 import WidgetHeader from "./WidgetHeader.tsx";
+import type { ActivityData, ActivityKind } from "../transforms.ts";
 
-export interface ActivityDay {
-    date: string;   // ISO date string
-    level: 0 | 1 | 2 | 3;
-    logId?: string;
-}
+const KIND_LABEL: Record<ActivityKind, string> = {
+    none: "Rest day", future: "", strength: "Strength", cardio: "Cardio", both: "Strength and cardio",
+};
 
-interface ActivityWidgetProps {
-    data?: ActivityDay[];
-}
+const DAY_LABELS = ["Mon", "", "Wed", "", "Fri", "", ""];
 
-function generatePlaceholder(): ActivityDay[] {
-    const today = new Date();
-    const days: ActivityDay[] = [];
-
-    for (let w = 51; w >= 0; w--) {
-        for (let d = 6; d >= 0; d--) {
-            const date = new Date(today);
-            date.setDate(today.getDate() - w * 7 - d);
-            const rand = Math.random();
-            const level = rand < 0.55 ? 0 : rand < 0.75 ? 1 : rand < 0.9 ? 2 : 3;
-            days.push({ date: date.toISOString().slice(0, 10), level: level as 0 | 1 | 2 | 3 });
-        }
-    }
-    return days;
-}
-
-function ActivityWidget({ data }: ActivityWidgetProps) {
-    const cells = data ?? generatePlaceholder();
+/** A year of training, one square per day, weeks as columns (Monday on top). */
+function ActivityWidget({ data }: { data: ActivityData }) {
     const navigate = useNavigate();
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    // On narrow screens the map scrolls sideways: start at the most recent weeks.
+    useLayoutEffect(() => {
+        const el = scrollRef.current;
+        if (el) el.scrollLeft = el.scrollWidth;
+    }, []);
 
     return (
         <GeneralWidget
+            className="activity-widget"
             header={
                 <WidgetHeader
-                    title={`${new Date().getFullYear()} activity`}
+                    title="Last 12 months"
+                    subtitle={`${data.total} workouts · ${data.perWeek} a week`}
+                    action={
+                        <ul className="activity-legend" aria-label="Legend">
+                            <li><span className="activity-cell" data-kind="strength" />Strength</li>
+                            <li><span className="activity-cell" data-kind="cardio" />Cardio</li>
+                            <li><span className="activity-cell" data-kind="both" />Both</li>
+                        </ul>
+                    }
                 />
             }
             content={
-                <div className="activity-grid">
-                    {cells.map(cell => (
-                        <div
-                            key={cell.date}
-                            className="activity-cell"
-                            data-level={cell.level}
-                            title={new Date(cell.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
-                            onClick={() => cell.logId && navigate("/logbook", { state: { selectedLogId: cell.logId } })}
-                        />
-                    ))}
+                <div className="activity-scroll" ref={scrollRef}>
+                    <div className="activity-map">
+                        {data.months.map(m => (
+                            <span key={m.column} className="activity-month" style={{ gridColumn: m.column + 2 }}>{m.label}</span>
+                        ))}
+                        {DAY_LABELS.map((d, r) => (
+                            <span key={r} className="activity-day" style={{ gridRow: r + 2 }}>{d}</span>
+                        ))}
+                        {data.weeks.map((week, c) => week.map((day, r) => {
+                            const clickable = !!day.logId;
+                            const label = day.kind === "future" ? undefined : `${new Date(day.date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}: ${day.names.length ? day.names.join(", ") : KIND_LABEL[day.kind]}`;
+                            return (
+                                <span
+                                    key={day.date}
+                                    className={`activity-cell${clickable ? " clickable" : ""}`}
+                                    data-kind={day.kind}
+                                    style={{ gridColumn: c + 2, gridRow: r + 2 }}
+                                    title={label}
+                                    onClick={clickable ? () => navigate("/logbook", { state: { selectedLogId: day.logId } }) : undefined}
+                                />
+                            );
+                        }))}
+                    </div>
                 </div>
             }
         />

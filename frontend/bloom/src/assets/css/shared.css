@@ -1124,10 +1124,11 @@
 
 .general-widget-titles { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
 
+/* Card headings: green sans-serif. The serif face is kept for page titles. */
 .general-widget-title {
-    font-family: var(--serif), serif;
-    font-size: var(--text-lg);
-    font-weight: 400;
+    font-family: var(--sans), sans-serif;
+    font-size: var(--text-md);
+    font-weight: 600;
     color: var(--dark-text);
     line-height: 1.2;
 }
@@ -1418,3 +1419,14 @@
         align-self: flex-start;
     }
 }
+
+/* Card headings stay green in dark mode too (dark-text is a neutral grey there). */
+.dark .general-widget-title,
+.dark .panel-title,
+.dark .detail-title,
+.dark .profile-section-title,
+.dark .info-hint-title,
+.dark .sidebar-month-label,
+.dark .lb-month-label,
+.dark .dash-prompt-title,
+.dark .up-next-name { color: #8fd0ac; }

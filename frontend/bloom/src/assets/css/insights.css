@@ -3,7 +3,7 @@
    categorical slots pass colour-blind separation on both surfaces, the zone
    ramp is a single-hue ordinal scale stepped separately for dark mode. */
 
-.insights-page {
+.insights-page, .dashboard {
     --viz-1: #1baf7a;
     --viz-2: #eb6834;
     --viz-grid: #ece7dd;
@@ -14,13 +14,15 @@
     --zone-1: #f0a07a; --zone-2: #e7804f; --zone-3: #d95926; --zone-4: #b3441a; --zone-5: #86300f;
     --trend-up: #1f8a5c;
     --trend-down: #b8452a;
+}
 
+.insights-page {
     display: flex;
     flex-direction: column;
     min-height: 100%;
 }
 
-.dark .insights-page {
+.dark .insights-page, .dark .dashboard {
     --viz-1: #199e70;
     --viz-2: #d95926;
     --viz-grid: rgb(255 255 255 / 0.07);
@@ -244,7 +246,7 @@ button.highlight:hover .highlight-link, button.highlight:focus-visible .highligh
 .detail { display: flex; flex-direction: column; gap: 1.1rem; padding: 1.25rem 1.5rem 1.5rem; }
 
 .detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-.detail-title { font-family: var(--serif), serif; font-size: var(--text-xl); font-weight: 400; color: var(--dark-text); line-height: 1.15; }
+.detail-title { font-family: var(--sans), sans-serif; font-size: var(--text-lg); font-weight: 600; color: var(--dark-text); line-height: 1.15; }
 .detail-sub { margin-top: 0.25rem; font-size: var(--text-sm); color: var(--ink-muted); }
 .detail-note { display: flex; align-items: center; gap: 0.15rem; margin-top: -0.6rem; font-size: var(--text-xs); color: var(--ink-muted); }
 
@@ -316,7 +318,7 @@ button.highlight:hover .highlight-link, button.highlight:focus-visible .highligh
 }
 
 .panel-head { display: flex; flex-direction: column; gap: 0.15rem; }
-.panel-title { font-family: var(--serif), serif; font-size: var(--text-lg); font-weight: 400; color: var(--dark-text); }
+.panel-title { font-family: var(--sans), sans-serif; font-size: var(--text-md); font-weight: 600; color: var(--dark-text); }
 .panel-desc { font-size: var(--text-sm); color: var(--ink-muted); }
 .panel-placeholder { justify-content: center; }
 .panel-map .insights-heatmap { height: 15rem; border-radius: var(--radius-md); overflow: hidden; }
@@ -612,6 +614,13 @@ button.highlight:hover .highlight-link, button.highlight:focus-visible .highligh
     background:
         radial-gradient(circle, var(--viz-surface) 0 2px, var(--viz-1) 2px 3.5px, transparent 3.5px) center / 0.6rem 0.6rem no-repeat,
         linear-gradient(var(--viz-1), var(--viz-1)) center / 100% 2px no-repeat;
+}
+.trend-key-series.plain { background: linear-gradient(var(--viz-1), var(--viz-1)) center / 100% 2px no-repeat; }
+.trend-key-record {
+    width: 1.4rem;
+    height: 0.6rem;
+    background: repeating-linear-gradient(90deg, var(--viz-1) 0 5px, transparent 5px 9px) center / 100% 1.5px no-repeat;
+    opacity: 0.7;
 }
 .trend-key-dot { width: 0.55rem; height: 0.55rem; border-radius: 50%; border: 1.5px solid var(--viz-1); background: var(--viz-surface); box-sizing: border-box; }
 .trend-key-dot.filled { width: 0.7rem; height: 0.7rem; background: var(--viz-1); border-color: var(--viz-1); }

@@ -68,8 +68,9 @@
 .info-hint-pop.above { transform: translate(-50%, calc(-100% - 0.5rem)); }
 
 .info-hint-title {
-    font-family: var(--serif), serif;
-    font-size: var(--text-md);
+    font-family: var(--sans), sans-serif;
+    font-size: var(--text-sm);
+    font-weight: 600;
     color: var(--dark-text);
     margin-bottom: 0.3rem;
 }
@@ -493,9 +494,9 @@
 }
 
 .sidebar-month-label {
-    font-family: var(--serif), serif;
-    font-size: var(--text-md);
-    font-weight: 400;
+    font-family: var(--sans), sans-serif;
+    font-size: var(--text-sm);
+    font-weight: 600;
     color: var(--dark-text);
 }
 
@@ -1086,7 +1087,7 @@
     background: color-mix(in srgb, var(--primary-light) 6%, var(--surface-lighter));
 }
 
-.dash-prompt-title { font-family: var(--serif), serif; font-size: var(--text-lg); color: var(--dark-text); }
+.dash-prompt-title { font-family: var(--sans), sans-serif; font-size: var(--text-md); font-weight: 600; color: var(--dark-text); }
 .dash-prompt-text { margin-top: 0.2rem; font-size: var(--text-sm); color: var(--ink-muted); }
 
 

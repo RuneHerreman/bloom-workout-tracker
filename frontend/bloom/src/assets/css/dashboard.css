@@ -1,485 +1,326 @@
-/* ── Entry animations ────────────────────────────────────────────────────────── */
-
-@keyframes fade-up {
-    from { opacity: 0; transform: translateY(0.6rem); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-
-
-/* ── Layout ──────────────────────────────────────────────────────────────────── */
+/* ── Layout ──────────────────────────────────────────────────────────────────
+   Stats across the top, then two stacks: progress on the left (key lifts, a
+   year of activity, training focus), and what you need before your next
+   session on the right (up next, technique notes, recent workouts). */
 
 .dashboard {
+    /* Calmer greens than the chart palette for the solid blocks (calendar, bars). */
+    --cal-strength: #2f7d55;
+    --cal-cardio: #d9682e;
+    --cal-empty: var(--grey-light);
+
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding-bottom: 3.75rem;
+    padding-bottom: 3rem;
+}
+
+.dark .dashboard {
+    --cal-strength: #2b9363;
+    --cal-cardio: #c85a26;
 }
 
 .dashboard-body {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: auto auto auto minmax(24rem, auto);
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
     grid-template-areas:
-        "stats      stats       stats       stats"
-        "activity   activity    training    training"
-        "notes      notes       training    training"
-        "volume     volume      volume      logs";
-    row-gap: 1.5rem;
-    column-gap: 1rem;
+        "stats stats"
+        "main  side";
+    align-items: start;
+    gap: 1rem;
     width: 100%;
-    padding: 1.75rem 2rem 0;
-}
-
-.dashboard-stats {
-    grid-area: stats;
-    display: flex;
-    border: 0.0625rem solid var(--border);
-    border-radius: var(--widget-border-radius);
-    overflow: hidden;
-}
-
-.dash-activity { grid-area: activity; }
-.dash-training { grid-area: training; }
-.dash-logs     { grid-area: logs; }
-.dash-volume   { grid-area: volume; }
-.dash-notes   { grid-area: notes; }
-
-/* Make widgets fill their grid area cell */
-.dash-activity .widget,
-.dash-training .widget,
-.dash-logs .widget,
-.dash-volume .widget {
-    height: 100%;
+    max-width: 96rem;
+    margin: 0 auto;
+    padding: 1.25rem 2rem 0;
     box-sizing: border-box;
 }
 
-.dash-training .general-widget,
-.dash-volume .general-widget,
-.dash-logs .general-widget {
-    height: 100%;
+.dash-top  { grid-area: stats; }
+.dash-main { grid-area: main; }
+.dash-side { grid-area: side; }
+.dash-main, .dash-side { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.dash-main > div, .dash-side > div { min-width: 0; }
+
+/* Denser widget chrome than the default card shell. */
+.dashboard .general-widget-header { padding: 0.75rem 1rem; min-height: 3.25rem; box-sizing: border-box; gap: 1rem; }
+.dashboard .general-widget-content { padding: 0.875rem 1rem; justify-content: flex-start; }
+
+.widget-link { font-size: var(--text-xs); color: var(--primary); font-weight: 500; white-space: nowrap; }
+.dark .widget-link { color: var(--primary-muted); }
+.widget-link:hover { text-decoration: underline; }
+.widget-empty { margin: auto; padding: 1.5rem 0; font-size: var(--text-sm); color: var(--ink-muted); text-align: center; }
+
+/* ── Stats strip ─────────────────────────────────────────────────────────── */
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--widget-border-radius);
+    background: var(--surface-lighter);
+    overflow: hidden;
 }
 
-/* ────── Stat Widget ────── */
 .stat-widget {
-    border: none;
-    border-radius: 0;
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.875rem 1.1rem;
     box-shadow: inset -0.0625rem 0 0 var(--border);
+    min-width: 0;
 }
+.stat-widget:last-child { box-shadow: none; }
 
-.stat-widget:last-child {
-    box-shadow: none;
+.stat-label { font-size: var(--text-xs); color: var(--ink-muted); }
+
+.stat-value {
+    font-family: var(--serif), serif;
+    font-size: var(--text-2xl);
+    line-height: 1.1;
+    color: var(--dark-text);
+    font-variant-numeric: tabular-nums;
 }
-
-.stat-change.positive { color: var(--primary); }
-.stat-change.negative { color: var(--danger); }
-.stat-subtext .stat-change { margin-left: 0.5rem; }
-
-.stat-label {
-    font-size: var(--text-sm);
-    color: var(--ink-muted);
-}
+.stat-unit { padding-left: 0.4rem; font-size: var(--text-sm); font-family: var(--sans), sans-serif; color: var(--ink-muted); }
 
 .stat-caption {
     display: flex;
     align-items: baseline;
-    gap: 0.5rem;
-    font-size: var(--text-xs);
-    color: var(--ink-muted);
-}
-
-.stat-unit {
-    padding-left: 0.5rem;
-    font-size: 50%;
-}
-
-.stat-value {
-    font-size: var(--text-3xl);
-    line-height: 1;
-    font-family: var(--serif), serif;
-    font-weight: normal;
-    margin: 0.8rem 0 0.4rem;
-}
-
-.stat-subtext {
+    flex-wrap: wrap;
+    gap: 0 0.4rem;
     font-size: var(--text-2xs);
     color: var(--ink-muted);
-    align-self: flex-end;
 }
+.stat-change { font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat-change.up { color: var(--trend-up); }
+.stat-change.down { color: var(--trend-down); }
 
-/* ────── Activity Widget ────── */
-.activity-grid {
+.week-days { display: flex; gap: 0.25rem; list-style: none; margin: 0.1rem 0 0; padding: 0; }
+.week-days li {
+    width: 1.3rem;
+    height: 1.3rem;
     display: grid;
-    grid-template-rows: repeat(7, 1fr);
-    grid-auto-flow: column;
-    grid-auto-columns: 1fr;
-    gap: 2px;
-    width: 100%;
-    aspect-ratio: 53 / 7;
-}
-
-.activity-cell {
-    border-radius: var(--radius-extra-sm);
-    background: var(--grey-light);
-    transition: transform var(--transition-spring), opacity var(--transition);
-    position: relative;
-}
-
-.activity-cell:hover:not([data-level="0"]) {
-    z-index: 1;
-    cursor: pointer;
-    opacity: 1 !important;
-    box-shadow: var(--shadow-sm);
-}
-
-.activity-cell[data-level="1"] { background: var(--accent); opacity: 0.9; }
-.activity-cell[data-level="2"] { background: var(--primary); opacity: 0.9; }
-.activity-cell[data-level="3"] { background: var(--primary-light); opacity: 0.85; }
-
-/* ── Training focus widget ───────────────────────────────────────────────────── */
-
-.training-focus-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-}
-
-.training-focus-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 3rem;
-    flex: 1;
-    min-height: 0;
-}
-
-.training-focus-chart {
-    width: max(18rem, 12rem);
-    aspect-ratio: 1;
-    flex-shrink: 0;
-}
-
-.focus-legend {
-    list-style: none;
-    margin: 0;
-    padding-right: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-    flex: 1;
-}
-
-.focus-legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: var(--text-xs);
-}
-
-.focus-legend-dot {
-    width: 0.55rem;
-    height: 0.55rem;
+    place-items: center;
     border-radius: 50%;
-    flex-shrink: 0;
-}
-
-.focus-legend-label {
-    flex: 1;
-    color: var(--ink);
-}
-
-.focus-legend-count {
+    font-size: 0.625rem;
+    font-weight: 600;
     color: var(--ink-muted);
-    font-variant-numeric: tabular-nums;
-    min-width: 1.2rem;
-    text-align: right;
+    background: var(--cal-empty);
 }
+.week-days li.done { background: var(--cal-strength); color: #fff; }
+.week-days li.today:not(.done) { box-shadow: inset 0 0 0 1.5px var(--cal-strength); color: var(--cal-strength); }
+.week-days li.later { opacity: 0.55; }
 
-.focus-legend-pct {
-    color: var(--ink-muted);
-    min-width: 2.5rem;
-    text-align: right;
-    font-weight: 300;
-}
+/* ── Key lifts (table) ───────────────────────────────────────────────────── */
 
-/* ── Focus chips ─────────────────────────────────────────────────────────────── */
+.lift-table { display: flex; flex-direction: column; margin: -0.25rem -0.5rem; }
 
-.focus-chips {
-    display: flex;
-    gap: 0.35rem;
-    margin-bottom: 0.75rem;
-    align-self: flex-start;
-}
-
-
-.focus-empty {
-    font-size: var(--text-sm);
-    color: var(--ink-muted);
-    text-align: center;
-    margin: auto;
-}
-
-/* ── Volume widget ───────────────────────────────────────────────────────────── */
-
-.volume-widget {
-    display: flex;
-    flex-direction: column;
-    height: 100%
-}
-
-.volume-widget-header {
-    display: flex;
-    justify-content: space-between;
+.lift-row {
+    display: grid;
+    grid-template-columns: minmax(8rem, 1.1fr) minmax(6rem, 2fr) 6.5rem 6.5rem;
     align-items: center;
-    margin-bottom: 1rem;
-}
-
-.volume-widget-header select {
-    font-size: var(--text-xs);
-    padding: 0.2rem 0.5rem;
-    border: 0.0625rem solid var(--border);
-    border-radius: var(--radius-md);
-    background: var(--surface-lighter);
-    color: var(--ink);
-    cursor: pointer;
-    font-family: inherit;
-}
-
-.chart-area {
-    width: 100%;
-    flex: 1;
-}
-
-
-/* ── Log widget ──────────────────────────────────────────────────────────────── */
-
-.log-widget {
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-}
-
-.log-widget-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.75rem;
-}
-
-.log-widget-view-all {
-    font-size: var(--text-xs);
-    color: var(--primary);
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.log-entry {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    padding: 0.75rem 0.35rem;
-    border-bottom: 0.0625rem solid var(--border);
+    gap: 1rem;
+    padding: 0.35rem 0.5rem;
     border-radius: var(--radius-sm);
-    margin: 0 -0.35rem;
     cursor: pointer;
-    transition: background var(--transition), padding-left var(--transition);
 }
+.lift-row + .lift-row { border-top: 0.0625rem solid var(--border); }
+.lift-row:not(.lift-row-head):hover { background: var(--surface-less-light); }
+.lift-row:focus-visible { outline: 2px solid var(--viz-1); outline-offset: -2px; }
+.lift-row-head { cursor: default; padding-block: 0.15rem 0.35rem; font-size: var(--text-2xs); color: var(--ink-muted); }
+.lift-row .num { text-align: right; }
 
-.log-entry:last-child { border-bottom: none; }
+.lift-row > span[role="cell"] { display: flex; flex-direction: column; min-width: 0; }
+.lift-row > span.num[role="cell"] { align-items: flex-end; }
+.lift-name { font-size: var(--text-sm); font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lift-strong { font-size: var(--text-sm); font-weight: 600; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lift-sub { font-size: var(--text-2xs); font-weight: 400; color: var(--ink-muted); white-space: nowrap; }
+.lift-star { color: var(--trend-up); }
+.lift-chart { height: 2.5rem; width: 100%; }
 
-.log-entry:hover {
-    background: var(--surface-less-light);
-    padding-left: 0.65rem;
-}
+/* ── Up next ─────────────────────────────────────────────────────────────── */
 
-.log-entry-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 0.5rem;
-}
+.up-next { display: flex; flex-direction: column; gap: 0.75rem; }
+.up-next-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.up-next-name { font-size: var(--text-lg); font-weight: 600; color: var(--dark-text); line-height: 1.2; }
+.up-next-meta { margin-top: 0.15rem; font-size: var(--text-xs); color: var(--ink-muted); }
+.up-next-group { display: flex; flex-direction: column; gap: 0.35rem; }
+.up-next-label { font-size: var(--text-2xs); color: var(--ink-muted); }
+.up-next-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; font-size: var(--text-sm); color: var(--ink-muted); }
 
-.log-entry-name {
-    font-size: var(--text-base);
-    font-weight: 500;
-    white-space: nowrap;
-    text-transform: capitalize;
-}
+.muscle-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; list-style: none; margin: 0; padding: 0; }
+.chip { padding: 0.15rem 0.5rem; border-radius: 999px; font-size: var(--text-2xs); font-weight: 500; white-space: nowrap; }
+.chip.rested { color: var(--cal-strength); background: color-mix(in srgb, var(--cal-strength) 13%, transparent); }
+.chip.recovering, .chip.more { color: var(--ink-muted); background: var(--cal-empty); }
+.dark .chip.rested { color: #6fd3a0; }
 
-.log-entry-date {
-    font-size: var(--text-2xs);
-    color: var(--ink-muted);
-    text-align: right;
-}
+/* ── Technique notes ─────────────────────────────────────────────────────── */
 
-.log-entry-count {
-    font-size: var(--text-2xs);
-    color: var(--ink-muted);
-}
+.notes-status { font-size: var(--text-2xs); color: var(--ink-muted); white-space: nowrap; }
+.notes-status.saved { color: var(--trend-up); }
+.notes-status.error { color: var(--danger); }
 
-.log-bars {
-    display: flex;
-    flex-direction: row;
-    gap: 0.22rem;
-    margin-top: 0.15rem;
-}
-
-.log-bar {
-    height: 0.35rem;
-    border-radius: var(--radius-sm);
-}
-
-.log-bar.cardio    { background: var(--accent); }
-.log-bar.strength  { background: var(--primary-muted); }
-
-/* ── Technical Points widget ─────────────────────────────────────────────────── */
-
-.technical-points {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    height: 100%;
-}
-
-.technical-points-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
+.technical-points { display: flex; flex-direction: column; gap: 0.5rem; height: 100%; }
+.technical-points-toolbar { display: flex; align-items: center; gap: 0.25rem; }
 .technical-points-toolbar button {
     background: none;
     border: 0.0625rem solid var(--border);
     border-radius: 0.25rem;
-    padding: 0.15rem 0.45rem;
+    padding: 0.1rem 0.45rem;
     font-size: var(--text-xs);
     cursor: pointer;
     color: var(--ink);
     line-height: 1.4;
 }
-
-.technical-points-toolbar button:hover {
-    background: var(--surface-light);
-}
-
-.technical-points-divider {
-    width: 0.0625rem;
-    height: 1rem;
-    background: var(--border);
-    margin-inline: 0.15rem;
-}
-
+.technical-points-toolbar button:hover { background: var(--surface-light); }
 .technical-points-editor {
-    flex: 1;
-    min-height: 8rem;
-    padding: 0.5rem;
+    min-height: 11rem;
+    max-height: 22rem;
+    padding: 0.6rem 0.75rem;
     border: 0.0625rem solid var(--border);
-    border-radius: 0.375rem;
+    border-radius: var(--radius-md);
+    background: var(--surface-light);
     font-size: var(--text-base);
     line-height: 1.6;
     outline: none;
     overflow-y: auto;
+    white-space: pre-wrap;
+}
+.technical-points-editor:focus { border-color: var(--primary-light); background: var(--surface-lighter); }
+.technical-points-editor:empty::before { content: attr(data-placeholder); color: var(--ink-muted); pointer-events: none; }
+
+/* ── Recent workouts ─────────────────────────────────────────────────────── */
+
+.log-list { list-style: none; margin: -0.25rem -0.5rem; padding: 0; display: flex; flex-direction: column; }
+.log-list li + li { border-top: 0.0625rem solid var(--border); }
+
+.log-row {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.6rem 0.5rem;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+.log-row:hover { background: var(--surface-less-light); }
+.log-row-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+.log-row-name { font-size: var(--text-sm); font-weight: 600; text-transform: capitalize; }
+.log-row-date { font-size: var(--text-2xs); color: var(--ink-muted); text-align: right; }
+.log-row-meta { font-size: var(--text-2xs); color: var(--ink-muted); }
+
+.log-bars { display: flex; gap: 0.2rem; margin-top: 0.2rem; }
+.log-bar { flex: 1; height: 0.35rem; border-radius: 2px; }
+.log-bar.strength { background: var(--cal-strength); }
+.log-bar.cardio { background: var(--cal-cardio); }
+
+/* ── Activity map ────────────────────────────────────────────────────────── */
+
+.activity-legend { display: flex; gap: 0.75rem; list-style: none; margin: 0; padding: 0; font-size: var(--text-2xs); color: var(--ink-muted); }
+.activity-legend li { display: inline-flex; align-items: center; gap: 0.3rem; }
+.activity-legend .activity-cell { width: 0.65rem; height: 0.65rem; }
+
+.activity-scroll { overflow-x: auto; scrollbar-width: thin; }
+
+.activity-map {
+    display: grid;
+    grid-template-columns: 1.75rem repeat(53, minmax(0, 1fr));
+    grid-template-rows: auto repeat(7, auto);
+    gap: 3px;
+    min-width: 36rem;
 }
 
-.technical-points-editor:focus {
-    border-color: var(--primary);
-}
+.activity-month { grid-row: 1; font-size: var(--text-2xs); color: var(--ink-muted); white-space: nowrap; line-height: 1.4; }
+.activity-day { grid-column: 1; font-size: 0.625rem; color: var(--ink-muted); line-height: 1; align-self: center; }
 
-.technical-points-editor:empty::before {
-    content: attr(data-placeholder);
+.activity-cell {
+    display: block;
+    aspect-ratio: 1;
+    border-radius: 2px;
+    background: var(--cal-empty);
+}
+.activity-cell[data-kind="future"] { background: transparent; }
+.activity-cell[data-kind="strength"] { background: var(--cal-strength); }
+.activity-cell[data-kind="cardio"] { background: var(--cal-cardio); }
+.activity-cell[data-kind="both"] { background: linear-gradient(135deg, var(--cal-strength) 50%, var(--cal-cardio) 50%); }
+.activity-cell.clickable { cursor: pointer; }
+/* Hover only lifts the square a little; the tooltip carries the detail. */
+.activity-cell.clickable:hover { filter: brightness(1.18) saturate(1.1); }
+.dark .activity-cell.clickable:hover { filter: brightness(1.3); }
+
+/* ── Training focus ──────────────────────────────────────────────────────── */
+
+.muscle-scale {
+    position: relative;
+    margin: 0 2.25rem 0.35rem 6.5rem;
+    height: 1rem;
+    font-size: var(--text-2xs);
     color: var(--ink-muted);
-    pointer-events: none;
 }
+.muscle-scale > span:first-child { position: absolute; left: -6.5rem; }
+.muscle-scale-band { position: absolute; top: 0; text-align: center; color: var(--cal-strength); }
 
-@media (max-width: 768px) {
-    .training-focus-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+.muscle-bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+.muscle-row { display: grid; grid-template-columns: 6rem minmax(0, 1fr) 1.75rem; align-items: center; gap: 0.5rem; }
+.muscle-name { font-size: var(--text-xs); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.muscle-track { position: relative; height: 0.7rem; border-radius: 2px; background: var(--cal-empty); overflow: hidden; }
+.muscle-band { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--cal-strength) 16%, transparent); }
+.muscle-fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 2px; background: var(--cal-strength); }
+.muscle-fill.low { background: color-mix(in srgb, var(--cal-strength) 60%, var(--cal-empty)); }
+.muscle-value { font-size: var(--text-xs); color: var(--ink-muted); text-align: right; font-variant-numeric: tabular-nums; }
+.muscle-untrained { margin-top: 0.75rem; font-size: var(--text-2xs); color: var(--ink-muted); }
 
-    .training-focus-chart {
-        width: min(100%, 13rem);
-        align-self: center;
-    }
-
-    .focus-legend {
-        width: 100%;
-        padding: 0;
-    }
-
-    .stat-value {
-        font-size: var(--text-2xl);
-    }
-
-    .activity-grid {
-        gap: 1px;
-    }
-}
-
-@media (max-width: 768px) {
-    .dash-volume {
-        min-height: 26rem;
-    }
-
-    .dashboard-body {
-        padding: 1rem;
-    }
-}
-
-@media(max-width: 1300px) {
-    .dashboard-body {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: auto;
-        grid-template-areas:
-            "stats    stats"
-            "activity activity"
-            "training training"
-            "notes    notes"
-            "volume   volume"
-            "logs     logs";
-        gap: 1.25rem;
-    }
-
-    .dashboard-stats {
-        flex-wrap: wrap;
-    }
-
-    .stat-widget {
-        flex: 0 0 50%;
-        box-shadow: inset -0.0625rem 0 0 var(--border), inset 0 -0.0625rem 0 var(--border);
-    }
-
-    .stat-widget:nth-child(even) {
-        box-shadow: inset 0 -0.0625rem 0 var(--border);
-    }
-
-    .stat-widget:nth-last-child(-n+2) {
-        box-shadow: inset -0.0625rem 0 0 var(--border);
-    }
-
-    .stat-widget:last-child {
-        box-shadow: none;
-    }
-}
-/* ── Loading skeleton ─────────────────────────────────────────────────────────── */
+/* ── Loading skeleton ────────────────────────────────────────────────────── */
 
 .dash-skeleton-widget {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 1.25rem;
+    padding: 1rem;
     border: 0.0625rem solid var(--border);
     border-radius: var(--widget-border-radius);
     background: var(--surface-lighter);
-    animation: none;
 }
 
-.dash-skeleton-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    padding: 1.25rem;
-    background: var(--surface-lighter);
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 1300px) {
+    /* One column; the side stack's cards go next to the next-workout prompt first. */
+    .dashboard-body { grid-template-columns: minmax(0, 1fr); grid-template-areas: "stats" "side" "main"; }
+    .dash-side { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+    .dash-logs { grid-column: 1 / -1; }
+    .dashboard-stats { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .stat-widget { grid-column: span 2; box-shadow: inset -0.0625rem 0 0 var(--border), inset 0 -0.0625rem 0 var(--border); }
+    .stat-widget:nth-child(n+4) { grid-column: span 3; box-shadow: inset -0.0625rem 0 0 var(--border); }
+    .stat-widget:nth-child(3) { box-shadow: inset 0 -0.0625rem 0 var(--border); }
+    .stat-widget:last-child { box-shadow: none; }
+}
+
+@media (max-width: 768px) {
+    .dashboard-body { padding: 1rem; gap: 0.875rem; }
+    /* Flatten both stacks so the order reads: up next, key lifts, notes, recent, activity, focus. */
+    .dash-main, .dash-side { display: contents; }
+    .dashboard-body { display: flex; flex-direction: column; align-items: stretch; }
+    .dash-top { order: 0; }
+    .dash-next { order: 1; }
+    .dash-lifts { order: 2; }
+    .dash-notes { order: 3; }
+    .dash-logs { order: 4; }
+    .dash-activity { order: 5; }
+    .dash-focus { order: 6; }
+
+    .dashboard-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stat-widget, .stat-widget:nth-child(n+4) { grid-column: auto; box-shadow: inset -0.0625rem 0 0 var(--border), inset 0 -0.0625rem 0 var(--border); }
+    .stat-widget:first-child { grid-column: 1 / -1; box-shadow: inset 0 -0.0625rem 0 var(--border); }
+    .stat-widget:nth-child(odd):not(:first-child) { box-shadow: inset 0 -0.0625rem 0 var(--border); }
+    .stat-widget:last-child { box-shadow: none; }
+    .stat-widget:nth-last-child(2) { box-shadow: inset -0.0625rem 0 0 var(--border); }
+
+    .lift-row { grid-template-columns: minmax(0, 1fr) 5.5rem 5.5rem; gap: 0.6rem; }
+    .lift-row > span:nth-child(4) { display: none; }
+    .activity-legend { display: none; }
+    .technical-points-editor { min-height: 8rem; }
 }

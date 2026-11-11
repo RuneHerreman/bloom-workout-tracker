@@ -67,6 +67,7 @@ function StrengthDetail({ exercise, range }: { exercise: ExerciseProgress; range
                 ariaLabel={`${exercise.name}: ${METRICS.find(m => m.value === metric)!.label} per session`}
                 seriesLabel={METRICS.find(m => m.value === metric)!.desc}
                 highlightLabel={metric === "volume" ? "" : "New personal record"}
+                recordLine={metric !== "volume"}
                 renderTooltip={p => (
                     <VizTooltip
                         title={fmtDate(p.session.date)}

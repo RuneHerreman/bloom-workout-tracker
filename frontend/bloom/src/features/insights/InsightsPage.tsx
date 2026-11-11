@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
+import { useLocation } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { LoggedWorkout, User } from "../../assets/js/data/apiTypes.ts";
 import { getLogs, peekLogs } from "../logbook/api.ts";
@@ -46,10 +47,12 @@ function InsightsPage() {
     const [user, setUser] = useState<User | null>(() => peekMe() ?? null);
     const [loading, setLoading] = useState(() => !(peekLogs() && peekExercises()));
     const [error, setError] = useState<string | null>(null);
+    // Opened from a dashboard lift or record: show that exercise over the same six months.
+    const linkedExercise = (useLocation().state as { exerciseId?: string } | null)?.exerciseId ?? null;
     // Open on the shortest period that has training in it; the user's choice wins afterwards.
-    const [period, setPeriod] = useState<Period>(() => suggestPeriod(peekLogs() ?? []));
-    const periodTouched = useRef(false);
-    const [selectedStrength, setSelectedStrength] = useState<string | null>(null);
+    const [period, setPeriod] = useState<Period>(() => (linkedExercise ? "6m" : suggestPeriod(peekLogs() ?? [])));
+    const periodTouched = useRef(linkedExercise !== null);
+    const [selectedStrength, setSelectedStrength] = useState<string | null>(linkedExercise);
     const [selectedCardio, setSelectedCardio] = useState<string | null>(null);
     const explorerRef = useRef<HTMLDivElement>(null);
 

@@ -31,9 +31,9 @@
 
 .profile-section-title {
     text-transform: none;
-    font-family: var(--serif), serif;
-    font-size: var(--text-lg);
-    font-weight: 400;
+    font-family: var(--sans), sans-serif;
+    font-size: var(--text-md);
+    font-weight: 600;
     color: var(--dark-text);
 }
 

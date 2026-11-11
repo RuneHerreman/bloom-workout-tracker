@@ -6,7 +6,7 @@
 // arrives. Warming both up after sign-in makes most navigations instant.
 
 import { getMe } from "./features/auth/api.ts";
-import { getLogs, getVolume } from "./features/logbook/api.ts";
+import { getLogs } from "./features/logbook/api.ts";
 import { getTemplates } from "./features/templates/api.ts";
 import { searchExercises } from "./features/exercises/api.ts";
 
@@ -39,7 +39,6 @@ export function prefetchCoreData(): void {
     quiet(getLogs());
     quiet(searchExercises());
     quiet(getTemplates());
-    quiet(getVolume());
 }
 
 /** Warm everything once the browser is idle so it never competes with the current page. */

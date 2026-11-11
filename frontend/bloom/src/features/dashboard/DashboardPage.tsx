@@ -1,207 +1,189 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../assets/css/insights.css";
 import "../../assets/css/dashboard.css";
-import { getMe, peekMe } from "../auth/api.ts";
+import { getMe, peekMe, updateTechnicalPoints } from "../auth/api.ts";
 import type { User } from "../auth/api.ts";
-import StatWidget from "./components/StatWidget.tsx";
-import ActivityWidget from "./components/ActivityWidget.tsx";
-import type { ActivityDay } from "./components/ActivityWidget";
-import TrainingFocusWidget from "./components/TrainingFocusWidget.tsx";
-import type { FocusSegment } from "./components/TrainingFocusWidget";
-import VolumeWidget from "./components/VolumeWidget.tsx";
-import type { ExerciseSeries } from "./components/VolumeWidget";
-import LogWidget from "./components/LogWidget.tsx";
-import type { LogEntryData } from "./components/LogWidget";
-import { getLogs, getVolume, peekLogs, peekVolume } from "../logbook/api.ts";
+import { getLogs, peekLogs } from "../logbook/api.ts";
 import { searchExercises, peekExercises } from "../exercises/api.ts";
+import { getTemplates, peekTemplates } from "../templates/api.ts";
 import type { Exercise } from "../exercises/api.ts";
-import type { ExerciseVolumeResponse, LoggedWorkout } from "../../assets/js/data/apiTypes.ts";
-import { updateTechnicalPoints } from "../auth/api.ts";
+import type { LoggedWorkout, WorkoutTemplate } from "../../assets/js/data/apiTypes.ts";
 import Skeleton from "../../components/general/Skeleton.tsx";
-import {
-    transFormVolumeDataForLineGraph,
-    transformWorkoutLogsForLogPanel,
-    transformWorkoutsForFocusChart,
-    transformWorkoutsForMuscleChart,
-    transformLogsForActivityCalendar,
-    calculateDashboardStats,
-    type DashboardStats,
-} from "./transforms.ts";
 import Button from "../../components/general/ButtonComponent.tsx";
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
-import TechnicalPointsWidget from "./components/TechnicalPointsWidget.tsx";
 import { PlusIcon } from "lucide-react";
 import { formatWorkoutDate, formatDate } from "../../utils/workoutUtils.ts";
+import StatWidget from "./components/StatWidget.tsx";
+import ActivityWidget from "./components/ActivityWidget.tsx";
+import KeyLiftsWidget from "./components/KeyLiftsWidget.tsx";
+import UpNextWidget from "./components/UpNextWidget.tsx";
+import MuscleFocusWidget from "./components/MuscleFocusWidget.tsx";
+import LogWidget from "./components/LogWidget.tsx";
+import TechnicalPointsWidget from "./components/TechnicalPointsWidget.tsx";
+import {
+    buildActivity, buildKeyLifts, buildMuscleFocus, buildRecentWorkouts, calculateDashboardStats, formatVolume, suggestNext,
+} from "./transforms.ts";
 
-interface DashboardState {
-    user: User | null;
-    stats: DashboardStats | null;
-    activityData: ActivityDay[];
-    focusSegments: FocusSegment[];
-    muscleFocusSegments: FocusSegment[];
-    volumeSeries: ExerciseSeries[];
-    volumeLabels: string[];
-    logEntries: LogEntryData[];
-    loading: boolean;
-    error: string | null;
-}
+const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
 
-type DashboardAction =
-    | { type: "SET_USER"; user: User }
-    | { type: "LOADED"; payload: LoadedPayload }
-    | { type: "ERROR"; error: string };
-
-const initial: DashboardState = {
-    user: null,
-    stats: null,
-    activityData: [],
-    focusSegments: [],
-    muscleFocusSegments: [],
-    volumeSeries: [],
-    volumeLabels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
-    logEntries: [],
-    loading: true,
-    error: null,
-};
-
-type LoadedPayload = Omit<DashboardState, "user" | "loading" | "error">;
-
-function buildPayload(volume: ExerciseVolumeResponse[], workouts: LoggedWorkout[], exercises: Exercise[]): LoadedPayload {
-    const { series, labels } = transFormVolumeDataForLineGraph(volume);
-    return {
-        stats: calculateDashboardStats(workouts),
-        activityData: transformLogsForActivityCalendar(workouts),
-        focusSegments: transformWorkoutsForFocusChart(workouts),
-        muscleFocusSegments: transformWorkoutsForMuscleChart(workouts, exercises),
-        volumeSeries: series,
-        volumeLabels: labels,
-        logEntries: transformWorkoutLogsForLogPanel(workouts).slice(0, 5),
-    };
-}
-
-/** If everything is already cached (prefetched or visited before), start fully rendered. */
-function initialState(): DashboardState {
-    const volume = peekVolume(), workouts = peekLogs(), exercises = peekExercises();
-    const user = peekMe() ?? null;
-    if (volume && workouts && exercises) {
-        return { ...initial, ...buildPayload(volume, workouts, exercises), user, loading: false };
-    }
-    return { ...initial, user };
-}
-
-function reducer(state: DashboardState, action: DashboardAction): DashboardState {
-    switch (action.type) {
-        case "SET_USER": return { ...state, user: action.user };
-        case "LOADED":   return { ...state, ...action.payload, loading: false, error: null };
-        case "ERROR":    return { ...state, loading: false, error: action.error };
-        default:         return state;
-    }
-}
+const change = (now: number, before: number) => (now > 0 && before > 0 ? Math.round(((now - before) / before) * 100) : undefined);
 
 /** Mirrors the dashboard grid so the layout doesn't jump when data lands. */
 function DashboardSkeleton() {
     const block = (area: string, height: string) => (
         <div className={`${area} dash-skeleton-widget`}>
-            <Skeleton width="6rem" height="0.6rem" />
-            <Skeleton width="10rem" height="1rem" />
+            <Skeleton width="8rem" height="1rem" />
             <Skeleton height={height} radius="var(--radius-md)" style={{ marginTop: "0.75rem", flex: 1 }} />
         </div>
     );
     return (
         <div className="dashboard-body" role="status" aria-label="Loading dashboard">
             <div className="dashboard-stats">
-                {[0, 1, 2, 3].map(i => (
-                    <div key={i} className="stat-widget dash-skeleton-stat">
+                {[0, 1, 2, 3, 4].map(i => (
+                    <div key={i} className="stat-widget">
+                        <Skeleton width="6rem" height="0.6rem" />
+                        <Skeleton width="4rem" height="1.6rem" />
                         <Skeleton width="7rem" height="0.6rem" />
-                        <Skeleton width="4rem" height="1.9rem" />
-                        <Skeleton width="5rem" height="0.6rem" />
                     </div>
                 ))}
             </div>
-            {block("dash-activity", "9rem")}
-            {block("dash-training", "9rem")}
-            {block("dash-notes", "12rem")}
-            {block("dash-logs", "16rem")}
-            {block("dash-volume", "16rem")}
+            <div className="dash-main">
+                {block("dash-lifts", "18rem")}
+                {block("dash-activity", "9rem")}
+            </div>
+            <div className="dash-side">
+                {block("dash-next", "6rem")}
+                {block("dash-notes", "10rem")}
+            </div>
         </div>
     );
 }
 
 function DashboardPage() {
-    const [state, dispatch] = useReducer(reducer, undefined, initialState);
     const navigate = useNavigate();
+    const [user, setUser] = useState<User | null>(() => peekMe() ?? null);
+    const [logs, setLogs] = useState<LoggedWorkout[] | null>(() => peekLogs() ?? null);
+    const [exerciseList, setExerciseList] = useState<Exercise[] | null>(() => peekExercises() ?? null);
+    const [templates, setTemplates] = useState<WorkoutTemplate[]>(() => peekTemplates() ?? []);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        getMe().then(user => dispatch({ type: "SET_USER", user })).catch(() => null);
-
-        Promise.all([getVolume(), getLogs(), searchExercises()])
-            .then(([volume, workouts, exercises]) => {
-                dispatch({ type: "LOADED", payload: buildPayload(volume, workouts, exercises) });
-            })
-            .catch(e => dispatch({ type: "ERROR", error: e instanceof Error ? e.message : "Failed to load dashboard" }));
+        getMe().then(setUser).catch(() => null);
+        getTemplates().then(setTemplates).catch(() => null);
+        Promise.all([getLogs(), searchExercises()])
+            .then(([l, e]) => { setLogs(l); setExerciseList(e); })
+            .catch(e => setError(e instanceof Error ? e.message : "Failed to load dashboard"));
     }, []);
 
-    const { user, stats, activityData, focusSegments, muscleFocusSegments, volumeSeries, volumeLabels, logEntries, error, loading } = state;
+    const loading = !logs || !exerciseList;
+    const goal = user?.activeDays || 3;
+    const exercises = useMemo(() => Object.fromEntries((exerciseList ?? []).map(e => [e.id, e])), [exerciseList]);
+    const stats = useMemo(() => (logs ? calculateDashboardStats(logs, goal) : null), [logs, goal]);
+    const activity = useMemo(() => buildActivity(logs ?? []), [logs]);
+    const lifts = useMemo(() => buildKeyLifts(logs ?? [], exercises), [logs, exercises]);
+    const focus = useMemo(() => buildMuscleFocus(logs ?? [], exercises), [logs, exercises]);
+    const recent = useMemo(() => buildRecentWorkouts(logs ?? []), [logs]);
+    const next = useMemo(() => suggestNext(templates, logs ?? [], exercises), [templates, logs, exercises]);
+
     const startLog = () => navigate("/logbook", { state: { openStart: true } });
-    const monthName = new Date().toLocaleDateString("en-US", { month: "long" });
-    const lastMonthName = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toLocaleDateString("en-US", { month: "long" });
-    const lastMonthCaption = (value: string | number, unit = "") => `${value}${unit ? ` ${unit}` : ""} in ${lastMonthName}`;
+    const now = new Date();
+    const monthName = now.toLocaleDateString("en-GB", { month: "long" });
+    const lastMonthName = new Date(now.getFullYear(), now.getMonth() - 1, 1).toLocaleDateString("en-GB", { month: "long" });
+    const volume = formatVolume(stats?.volumeThisMonthKg ?? 0);
+    const volumeBefore = formatVolume(stats?.volumeLastMonthToDateKg ?? 0);
+    const weekLeft = stats ? Math.max(0, stats.goal - stats.workoutsThisWeek) : 0;
 
     return (
         <div className="dashboard">
             <HeaderComponent
                 title={`Welcome back, ${user?.firstName ?? "Stranger"}!`}
-                subtitle={formatWorkoutDate(new Date())}
+                subtitle={formatWorkoutDate(now)}
                 action={<Button text="Log workout" icon={<PlusIcon size={15} />} style="green hide-on-phone" onClick={startLog} />}
             />
 
             {error && <div className="error-banner" style={{ margin: "0 2rem" }}>{error}</div>}
 
-            {loading ? <DashboardSkeleton /> : (
-            <div className="dashboard-body">
-                <div className="dash-top">
-                    {stats && stats.workoutsThisMonth === 0 && (
-                        <div className="dash-prompt">
-                            <div>
-                                <p className="dash-prompt-title">
-                                    {stats.lastWorkoutAt ? `No workouts yet in ${monthName}` : "Log your first workout"}
-                                </p>
-                                <p className="dash-prompt-text">
-                                    {stats.lastWorkoutAt
-                                        ? stats.workoutsLastMonth > 0
-                                            ? `You trained ${stats.workoutsLastMonth} time${stats.workoutsLastMonth !== 1 ? "s" : ""} in ${lastMonthName}. Start this month's first session.`
-                                            : `Your last workout was on ${formatDate(stats.lastWorkoutAt)}. Pick up where you left off.`
-                                        : "Your stats, streaks and PRs show up here once you log a session."}
-                                </p>
+            {loading || !stats ? <DashboardSkeleton /> : (
+                <div className="dashboard-body">
+                    <div className="dash-top">
+                        {stats.workoutsThisMonth === 0 && (
+                            <div className="dash-prompt">
+                                <div>
+                                    <p className="dash-prompt-title">
+                                        {stats.lastWorkoutAt ? `No workouts yet in ${monthName}` : "Log your first workout"}
+                                    </p>
+                                    <p className="dash-prompt-text">
+                                        {stats.lastWorkoutAt
+                                            ? stats.workoutsLastMonth > 0
+                                                ? `You trained ${stats.workoutsLastMonth} time${stats.workoutsLastMonth !== 1 ? "s" : ""} in ${lastMonthName}. Start this month's first session.`
+                                                : `Your last workout was on ${formatDate(stats.lastWorkoutAt)}. Pick up where you left off.`
+                                            : "Your stats, records and progress show up here once you log a session."}
+                                    </p>
+                                </div>
+                                <Button text="Log workout" icon={<PlusIcon size={15} />} style="green" onClick={startLog} />
                             </div>
-                            <Button text="Log workout" icon={<PlusIcon size={15} />} style="green" onClick={startLog} />
+                        )}
+
+                        <div className="dashboard-stats">
+                            <StatWidget
+                                label="This week"
+                                value={`${stats.workoutsThisWeek} / ${stats.goal}`}
+                                unit="workouts"
+                                caption={weekLeft === 0 ? "Weekly goal reached" : `${weekLeft} more to reach your goal`}
+                            >
+                                <ol className="week-days" aria-label="Days trained this week">
+                                    {WEEKDAYS.map((d, i) => (
+                                        <li
+                                            key={i}
+                                            className={`${stats.weekDays[i] ? "done" : ""}${i === stats.todayIndex ? " today" : ""}${i > stats.todayIndex ? " later" : ""}`}
+                                            aria-label={`${["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][i]}${stats.weekDays[i] ? ": trained" : ""}`}
+                                        >{d}</li>
+                                    ))}
+                                </ol>
+                            </StatWidget>
+                            <StatWidget
+                                label="Week streak"
+                                value={stats.weekStreak}
+                                unit={stats.weekStreak === 1 ? "week" : "weeks"}
+                                caption={`Weeks with ${stats.goal}+ workouts · best ${stats.bestWeekStreak}`}
+                            />
+                            <StatWidget
+                                label={`Workouts in ${monthName}`}
+                                value={stats.workoutsThisMonth}
+                                unit={stats.workoutsThisMonth === 1 ? "session" : "sessions"}
+                                changePercent={change(stats.workoutsThisMonth, stats.workoutsLastMonthToDate)}
+                                caption={`vs ${stats.workoutsLastMonthToDate} by this point in ${lastMonthName}`}
+                            />
+                            <StatWidget
+                                label={`Volume in ${monthName}`}
+                                value={volume.value}
+                                unit={volume.unit}
+                                changePercent={change(stats.volumeThisMonthKg, stats.volumeLastMonthToDateKg)}
+                                caption={`vs ${volumeBefore.value} ${volumeBefore.unit} by this point in ${lastMonthName}`}
+                            />
+                            <StatWidget
+                                label={`Records in ${monthName}`}
+                                value={stats.prsThisMonth}
+                                unit={stats.prsThisMonth === 1 ? "record" : "records"}
+                                caption={`${stats.prsLastMonth} in ${lastMonthName}`}
+                            />
                         </div>
-                    )}
-                    <div className="dashboard-stats">
-                        <StatWidget label={`Workouts in ${monthName}`} value={stats?.workoutsThisMonth ?? 0} unit="sessions"
-                            caption={lastMonthCaption(stats?.workoutsLastMonth ?? 0)}
-                            changePercent={stats?.workoutsThisMonth ? stats.workoutChange : undefined} />
-                        <StatWidget label={`Volume in ${monthName}`} value={stats?.volumeThisMonth ?? "0"} unit={stats?.volumeUnit ?? "kg"}
-                            caption={lastMonthCaption(stats?.volumeLastMonth ?? "0", stats?.volumeLastMonthUnit)}
-                            changePercent={stats?.workoutsThisMonth ? stats.volumeChange : undefined} />
-                        <StatWidget label="Current streak" value={stats?.currentStreak ?? 0} unit="days"
-                            caption={`Best: ${stats?.bestStreak ?? 0} days`} />
-                        <StatWidget label={`New PRs in ${monthName}`} value={stats?.totalPRs ?? 0} unit="PRs"
-                            caption={lastMonthCaption(stats?.prsLastMonth ?? 0)} />
+                    </div>
+
+                    <div className="dash-main">
+                        <div className="dash-lifts"><KeyLiftsWidget lifts={lifts} /></div>
+                        <div className="dash-activity"><ActivityWidget data={activity} /></div>
+                        <div className="dash-focus"><MuscleFocusWidget focus={focus} /></div>
+                    </div>
+                    <div className="dash-side">
+                        <div className="dash-next"><UpNextWidget next={next} hasTemplates={templates.length > 0} /></div>
+                        <div className="dash-notes">
+                            <TechnicalPointsWidget initialContent={user?.technicalPoints} onSave={updateTechnicalPoints} />
+                        </div>
+                        <div className="dash-logs"><LogWidget entries={recent} /></div>
                     </div>
                 </div>
-
-                <div className="dash-activity"><ActivityWidget data={activityData} /></div>
-                <div className="dash-training"><TrainingFocusWidget segments={focusSegments} muscleSegments={muscleFocusSegments} /></div>
-                <div className="dash-notes">
-                    <TechnicalPointsWidget
-                        initialContent={user?.technicalPoints}
-                        onSave={content => updateTechnicalPoints(content).catch(() => null)}
-                    />
-                </div>
-                <div className="dash-logs"><LogWidget entries={logEntries} /></div>
-                <div className="dash-volume"><VolumeWidget series={volumeSeries} monthLabels={volumeLabels} /></div>
-            </div>
             )}
         </div>
     );

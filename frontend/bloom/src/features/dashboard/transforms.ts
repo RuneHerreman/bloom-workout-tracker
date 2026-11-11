@@ -1,421 +1,345 @@
-import type { ExerciseVolumeResponse, LoggedWorkout } from "../../assets/js/data/apiTypes.ts";
-import { formatWorkoutDate } from "../../utils/workoutUtils.ts";
-import type { ActivityDay } from "./components/ActivityWidget";
-import type { ExerciseSeries } from "./components/VolumeWidget";
-import type { FocusSegment } from "./components/TrainingFocusWidget";
-import type { LogEntryData } from "./components/LogWidget";
+// Turns raw logs into what the dashboard shows: this week against the goal,
+// this month against the same point last month, key lifts, records, a year of
+// activity and where the last four weeks of sets went.
+
+import type { LoggedWorkout, WorkoutTemplate } from "../../assets/js/data/apiTypes.ts";
+import type { Exercise } from "../exercises/api.ts";
+import { exerciseProgress, muscleBalance, toKg, type MuscleVolume, type Range } from "../insights/analysis.ts";
+
+const DAY = 86_400_000;
+
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const startOfWeek = (d: Date) => addDays(startOfDay(d), -((d.getDay() + 6) % 7)); // Monday
+const dayKey = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const isCardioOnly = (w: LoggedWorkout) => {
+    const sets = w.exercises.flatMap(e => e.sets);
+    return sets.length > 0 && sets.every(s => s.type === "Cardio");
+};
+
+export function workoutVolumeKg(w: LoggedWorkout): number {
+    return w.exercises.reduce((t, ex) =>
+        t + ex.sets.reduce((s, set) => s + (set.type === "Cardio" ? 0 : toKg(set.weight, set.weightUnit) * (set.reps ?? 0)), 0), 0);
+}
+
+export function formatVolume(kg: number): { value: string; unit: string } {
+    return kg >= 1000 ? { value: (kg / 1000).toFixed(1), unit: "tonnes" } : { value: String(Math.round(kg)), unit: "kg" };
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+
 export interface DashboardStats {
-    workoutsThisYear: number;
+    /** Mon → Sun: whether you trained that day. */
+    weekDays: boolean[];
+    todayIndex: number;
+    workoutsThisWeek: number;
+    goal: number;
+    /** Consecutive weeks reaching the goal (this week counts once it's reached). */
+    weekStreak: number;
+    bestWeekStreak: number;
+
     workoutsThisMonth: number;
-    workoutChange?: number;
-    volumeThisMonth: string;
-    volumeUnit: string;
-    volumeChange?: number;
-    currentStreak: number;
-    bestStreak: number;
-    totalPRs: number;
-    /** Comparison values so an empty month doesn't read as "nothing ever happened". */
-    workoutsLastMonth: number;
-    volumeLastMonth: string;
-    volumeLastMonthUnit: string;
+    /** Last month up to the same day of the month, so early-month numbers compare fairly. */
+    workoutsLastMonthToDate: number;
+    volumeThisMonthKg: number;
+    volumeLastMonthToDateKg: number;
+    prsThisMonth: number;
     prsLastMonth: number;
     lastWorkoutAt: string | null;
+    workoutsLastMonth: number;
 }
 
-export function calculateDashboardStats(workouts: LoggedWorkout[]): DashboardStats {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
+export function calculateDashboardStats(workouts: LoggedWorkout[], goal: number, now = new Date()): DashboardStats {
+    const today = startOfDay(now);
+    const weekStart = startOfWeek(now);
 
-    const { workoutsThisYear, workoutsThisMonth, workoutChange } = calculateWorkoutCounts(workouts, currentYear, currentMonth);
-    const { volumeThisMonth, volumeUnit, volumeChange } = calculateVolume(workouts, currentYear, currentMonth);
-    const { currentStreak, bestStreak } = calculateStreaks(workouts, now);
-    const totalPRs = calculateMonthlyPRs(workouts, currentYear, currentMonth);
-    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const prsLastMonth = calculateMonthlyPRs(workouts, prevYear, prevMonth);
-    const workoutsLastMonth = workouts.filter(w => {
+    const weekDays = Array.from({ length: 7 }, () => false);
+    const perWeek = new Map<number, number>();
+    for (const w of workouts) {
         const d = new Date(w.loggedAt);
-        return d.getFullYear() === prevYear && d.getMonth() === prevMonth;
-    }).length;
-    const lastVol = monthVolume(workouts, prevYear, prevMonth);
-    const lastWorkoutAt = workouts.reduce<string | null>((latest, w) => (!latest || w.loggedAt > latest ? w.loggedAt : latest), null);
+        const ws = startOfWeek(d).getTime();
+        perWeek.set(ws, (perWeek.get(ws) ?? 0) + 1);
+        if (ws === weekStart.getTime()) weekDays[(d.getDay() + 6) % 7] = true;
+    }
+    const workoutsThisWeek = perWeek.get(weekStart.getTime()) ?? 0;
+
+    let weekStreak = workoutsThisWeek >= goal ? 1 : 0;
+    for (let w = addDays(weekStart, -7); (perWeek.get(w.getTime()) ?? 0) >= goal; w = addDays(w, -7)) weekStreak++;
+
+    let bestWeekStreak = 0;
+    const weeks = [...perWeek.keys()].sort((a, b) => a - b);
+    if (weeks.length) {
+        let run = 0;
+        for (let w = new Date(weeks[0]); w <= weekStart; w = addDays(w, 7)) {
+            run = (perWeek.get(w.getTime()) ?? 0) >= goal ? run + 1 : 0;
+            bestWeekStreak = Math.max(bestWeekStreak, run);
+        }
+    }
+
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    // Same day-of-month last month (clamped: 31 March compares with 28/29 February).
+    const lastMonthDays = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+    const lastMonthCutoff = addDays(lastMonthStart, Math.min(now.getDate(), lastMonthDays));
+
+    const between = (from: Date, to: Date) => workouts.filter(w => {
+        const t = new Date(w.loggedAt);
+        return t >= from && t < to;
+    });
+    const thisMonth = between(monthStart, addDays(today, 1));
+    const lastMonthToDate = between(lastMonthStart, lastMonthCutoff);
 
     return {
-        workoutsThisYear,
-        workoutsThisMonth,
-        workoutChange,
-        volumeThisMonth,
-        volumeUnit,
-        volumeChange,
-        currentStreak,
-        bestStreak,
-        totalPRs,
-        workoutsLastMonth,
-        volumeLastMonth: lastVol >= 1000 ? (lastVol / 1000).toFixed(1) : String(Math.round(lastVol)),
-        volumeLastMonthUnit: lastVol >= 1000 ? "tonnes" : "kg",
-        prsLastMonth,
-        lastWorkoutAt,
+        weekDays,
+        todayIndex: (now.getDay() + 6) % 7,
+        workoutsThisWeek,
+        goal,
+        weekStreak,
+        bestWeekStreak,
+        workoutsThisMonth: thisMonth.length,
+        workoutsLastMonthToDate: lastMonthToDate.length,
+        volumeThisMonthKg: thisMonth.reduce((t, w) => t + workoutVolumeKg(w), 0),
+        volumeLastMonthToDateKg: lastMonthToDate.reduce((t, w) => t + workoutVolumeKg(w), 0),
+        prsThisMonth: countRecords(workouts, monthStart, addDays(today, 1)),
+        prsLastMonth: countRecords(workouts, lastMonthStart, monthStart),
+        lastWorkoutAt: workouts.reduce<string | null>((l, w) => (!l || w.loggedAt > l ? w.loggedAt : l), null),
+        workoutsLastMonth: between(lastMonthStart, monthStart).length,
     };
 }
 
-function monthVolume(workouts: LoggedWorkout[], year: number, month: number): number {
-    return workouts.reduce((total, w) => {
-        const d = new Date(w.loggedAt);
-        if (d.getFullYear() !== year || d.getMonth() !== month) return total;
-        return total + w.exercises.reduce((exTotal, ex) =>
-            exTotal + ex.sets.reduce((setTotal, set) => setTotal + ((set.weight || 0) * (set.reps || 0)), 0), 0);
-    }, 0);
+/** Exercises whose heaviest weight in [from, to) beats everything before `from`. */
+function countRecords(workouts: LoggedWorkout[], from: Date, to: Date): number {
+    const before = new Map<string, number>();
+    const during = new Map<string, number>();
+    for (const w of workouts) {
+        const t = new Date(w.loggedAt);
+        if (t >= to) continue;
+        const target = t >= from ? during : before;
+        for (const ex of w.exercises) {
+            const max = Math.max(0, ...ex.sets.filter(s => s.type !== "Cardio" && s.marker !== "WarmUp").map(s => toKg(s.weight, s.weightUnit)));
+            if (max > 0) target.set(ex.exerciseId, Math.max(target.get(ex.exerciseId) ?? 0, max));
+        }
+    }
+    let n = 0;
+    for (const [id, max] of during) if (before.has(id) && max > before.get(id)!) n++;
+    return n;
 }
 
-function calculateVolume(workouts: LoggedWorkout[], currentYear: number, currentMonth: number) {
-    const calcVolForMonth = (year: number, month: number) => {
-        return workouts.reduce((total, w) => {
-            const d = new Date(w.loggedAt);
-            if (d.getFullYear() === year && d.getMonth() === month) {
-                const workoutVol = w.exercises.reduce((exTotal, ex) => {
-                    return exTotal + ex.sets.reduce((setTotal, set) => {
-                        return setTotal + ((set.weight || 0) * (set.reps || 0));
-                    }, 0);
-                }, 0);
-                return total + workoutVol;
-            }
-            return total;
-        }, 0);
-    };
+// ── Activity (last 12 months, Monday-aligned weeks) ───────────────────────────
 
-    const volThisMonth = calcVolForMonth(currentYear, currentMonth);
+export type ActivityKind = "none" | "strength" | "cardio" | "both" | "future";
 
-    const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const volLastMonth = calcVolForMonth(prevMonthYear, prevMonth);
+export interface ActivityDay { date: string; kind: ActivityKind; logId?: string; names: string[] }
 
-    const useTonnes = volThisMonth >= 1000;
-    const volumeThisMonthStr = useTonnes ? (volThisMonth / 1000).toFixed(1) : volThisMonth.toString();
-    const volumeUnit = useTonnes ? "tonnes" : "kg";
-    const volumeChange = volLastMonth > 0
-        ? Math.round(((volThisMonth - volLastMonth) / volLastMonth) * 100)
-        : undefined;
-
-    return { volumeThisMonth: volumeThisMonthStr, volumeUnit, volumeChange };
+export interface ActivityData {
+    /** 53 columns of 7 days (Mon → Sun). */
+    weeks: ActivityDay[][];
+    months: { column: number; label: string }[];
+    total: number;
+    perWeek: number;
 }
 
-function calculateStreaks(workouts: LoggedWorkout[], now: Date) {
-    const dates = [...new Set(workouts.map(w => w.loggedAt.slice(0, 10)))].sort((a, b) => b.localeCompare(a));
+export function buildActivity(workouts: LoggedWorkout[], now = new Date()): ActivityData {
+    const today = startOfDay(now);
+    const first = addDays(startOfWeek(now), -52 * 7);
 
-    let currentStreak = 0;
-    let bestStreak = 0;
+    const byDay = new Map<string, LoggedWorkout[]>();
+    for (const w of workouts) {
+        const k = dayKey(new Date(w.loggedAt));
+        byDay.set(k, [...(byDay.get(k) ?? []), w]);
+    }
 
-    if (dates.length > 0) {
-        let tempStreak = 1;
-        let maxStreak = 1;
-
-        // Calculate best streak overall
-        for (let i = 0; i < dates.length - 1; i++) {
-            const d1 = new Date(dates[i]);
-            const d2 = new Date(dates[i + 1]);
-            const diffDays = Math.round(Math.abs(d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24));
-
-            if (diffDays === 1) {
-                tempStreak++;
-                maxStreak = Math.max(maxStreak, tempStreak);
-            } else {
-                tempStreak = 1;
+    let total = 0;
+    const weeks: ActivityDay[][] = [];
+    const months: ActivityData["months"] = [];
+    for (let c = 0; c < 53; c++) {
+        const monday = addDays(first, c * 7);
+        if (c === 0 || monday.getMonth() !== addDays(monday, -7).getMonth()) {
+            // Skip a first label that would collide with the next month's.
+            if (!(c === 0 && monday.getDate() > 20)) {
+                months.push({ column: c, label: monday.toLocaleDateString("en-GB", { month: "short" }) });
             }
         }
-        bestStreak = Math.max(maxStreak, tempStreak);
+        const week: ActivityDay[] = [];
+        for (let r = 0; r < 7; r++) {
+            const d = addDays(monday, r);
+            const k = dayKey(d);
+            if (d > today) { week.push({ date: k, kind: "future", names: [] }); continue; }
+            const logs = byDay.get(k) ?? [];
+            total += logs.length;
+            const cardio = logs.some(isCardioOnly);
+            const strength = logs.some(l => !isCardioOnly(l));
+            week.push({
+                date: k,
+                kind: cardio && strength ? "both" : cardio ? "cardio" : strength ? "strength" : "none",
+                logId: logs[0]?.id,
+                names: logs.map(l => l.name),
+            });
+        }
+        weeks.push(week);
+    }
+    const spanWeeks = (today.getTime() - first.getTime()) / (7 * DAY);
+    return { weeks, months, total, perWeek: Math.round((total / spanWeeks) * 10) / 10 };
+}
 
-        // Calculate current streak
-        const getLocalDateStr = (d: Date) => {
-            const pad = (n: number) => String(n).padStart(2, '0');
-            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-        };
+// ── Key lifts ─────────────────────────────────────────────────────────────────
 
-        const todayStr = getLocalDateStr(now);
-        const yesterday = new Date(now);
-        yesterday.setDate(now.getDate() - 1);
-        const yesterdayStr = getLocalDateStr(yesterday);
+export interface LiftPoint { t: number; value: number; reps: number; record: boolean }
 
-        if (dates[0] === todayStr || dates[0] === yesterdayStr) {
-            currentStreak = 1;
-            for (let i = 0; i < dates.length - 1; i++) {
-                const d1 = new Date(dates[i]);
-                const d2 = new Date(dates[i + 1]);
-                const diffDays = Math.round(Math.abs(d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24));
+export interface KeyLift {
+    id: string;
+    name: string;
+    points: LiftPoint[];
+    last: { weight: number; reps: number; date: string };
+    record: { weight: number; date: string };
+    lastWasRecord: boolean;
+    sessions: number;
+}
 
-                if (diffDays === 1) {
-                    currentStreak++;
-                } else {
-                    break;
+/** The most-trained lifts of the last six months, with every session's heaviest set. */
+export function buildKeyLifts(workouts: LoggedWorkout[], exercises: Record<string, Exercise>, count = 6, now = new Date()): KeyLift[] {
+    const range: Range = { start: new Date(now.getTime() - 182 * DAY), end: now, days: 182 };
+    return exerciseProgress(workouts, exercises, range)
+        .filter(p => p.sessions.length >= 2)
+        .slice(0, count)
+        .map(p => {
+            const all = p.allSessions;
+            const best = all.reduce((a, b) => (b.heaviest > a.heaviest ? b : a));
+            const last = all[all.length - 1];
+            return {
+                id: p.id,
+                name: p.name,
+                points: p.sessions.map(s => ({ t: new Date(s.date).getTime(), value: s.heaviest, reps: s.heaviestReps, record: s.isWeightPr })),
+                last: { weight: last.heaviest, reps: last.heaviestReps, date: last.date },
+                record: { weight: best.heaviest, date: best.date },
+                lastWasRecord: last.isWeightPr,
+                sessions: p.sessions.length,
+            };
+        });
+}
+
+// ── Muscle focus (last 4 weeks) ───────────────────────────────────────────────
+
+export interface MuscleFocus {
+    muscles: MuscleVolume[];
+    untrained: string[];
+    strengthSessions: number;
+    cardioSessions: number;
+}
+
+export function buildMuscleFocus(workouts: LoggedWorkout[], exercises: Record<string, Exercise>, now = new Date()): MuscleFocus {
+    const range: Range = { start: new Date(now.getTime() - 28 * DAY), end: now, days: 28 };
+    const recent = workouts.filter(w => new Date(w.loggedAt) >= range.start);
+    const muscles = muscleBalance(recent, exercises, range);
+    const trained = new Set(muscles.map(m => m.muscle));
+    // Muscles you've trained at some point that got nothing in the last four weeks.
+    const everTrained = new Set(workouts.flatMap(w => w.exercises.flatMap(e =>
+        e.sets.some(s => s.type !== "Cardio") ? exercises[e.exerciseId]?.targetMuscles ?? [] : [])));
+    return {
+        muscles,
+        untrained: [...everTrained].filter(m => !trained.has(m)).sort(),
+        strengthSessions: recent.filter(w => !isCardioOnly(w)).length,
+        cardioSessions: recent.filter(isCardioOnly).length,
+    };
+}
+
+// ── Readiness & up next ───────────────────────────────────────────────────────
+
+/** Days of rest after which a muscle counts as recovered (a common 48–72 h guideline, rounded up). */
+export const RESTED_DAYS = 3;
+
+export interface MuscleRest { muscle: string; days: number }
+
+export interface UpNext {
+    template: WorkoutTemplate;
+    lastDone: string | null;
+    rested: MuscleRest[];
+    recovering: MuscleRest[];
+}
+
+/** Whole days since each muscle last got working sets. */
+export function muscleRest(workouts: LoggedWorkout[], exercises: Record<string, Exercise>, now = new Date()): Map<string, number> {
+    const last = new Map<string, number>();
+    for (const w of workouts) {
+        const t = startOfDay(new Date(w.loggedAt)).getTime();
+        for (const ex of w.exercises) {
+            if (!ex.sets.some(s => s.type !== "Cardio" && s.marker !== "WarmUp")) continue;
+            for (const m of exercises[ex.exerciseId]?.targetMuscles ?? []) {
+                if (t > (last.get(m) ?? 0)) last.set(m, t);
+            }
+        }
+    }
+    const today = startOfDay(now).getTime();
+    return new Map([...last].map(([m, t]) => [m, Math.round((today - t) / DAY)]));
+}
+
+/**
+ * Follows the rotation you actually train: of the templates whose muscles are
+ * (nearly) all rested, the one you did longest ago. Templates you've never
+ * logged come after those. If nothing is fully rested, the most rested wins.
+ */
+export function suggestNext(
+    templates: WorkoutTemplate[], workouts: LoggedWorkout[], exercises: Record<string, Exercise>, now = new Date(),
+): UpNext | null {
+    const rest = muscleRest(workouts, exercises, now);
+    const lastDoneByName = new Map<string, string>();
+    for (const w of workouts) {
+        const k = w.name.trim().toLowerCase();
+        if (!lastDoneByName.has(k) || w.loggedAt > lastDoneByName.get(k)!) lastDoneByName.set(k, w.loggedAt);
+    }
+
+    const scored = templates
+        .filter(t => t.exercises.length > 0)
+        .map(t => {
+            const weight = new Map<string, number>();
+            for (const ex of t.exercises) {
+                for (const m of exercises[ex.exerciseId]?.targetMuscles ?? []) {
+                    weight.set(m, (weight.get(m) ?? 0) + Math.max(1, ex.sets.length));
                 }
             }
-        }
-    }
-
-    return { currentStreak, bestStreak };
-}
-
-function calculateMonthlyPRs(workouts: LoggedWorkout[], currentYear: number, currentMonth: number) {
-    const historicalMaxes: Record<string, number> = {};
-    const thisMonthMaxes: Record<string, number> = {};
-    const startOfThisMonth = new Date(currentYear, currentMonth, 1);
-    const startOfNextMonth = new Date(currentYear, currentMonth + 1, 1);
-
-    workouts.forEach(workout => {
-        const workoutDate = new Date(workout.loggedAt);
-        if (workoutDate >= startOfNextMonth) return;
-        const isThisMonth = workoutDate >= startOfThisMonth;
-
-        workout.exercises.forEach(ex => {
-            const exerciseId = ex.exerciseId;
-            const maxWeightInWorkout = Math.max(...ex.sets.map(s => s.weight || 0), 0);
-
-            if (isThisMonth) {
-                thisMonthMaxes[exerciseId] = Math.max(thisMonthMaxes[exerciseId] || 0, maxWeightInWorkout);
-            } else {
-                historicalMaxes[exerciseId] = Math.max(historicalMaxes[exerciseId] || 0, maxWeightInWorkout);
+            let total = 0, score = 0;
+            const rested: MuscleRest[] = [], recovering: MuscleRest[] = [];
+            for (const [m, w] of weight) {
+                const days = rest.get(m) ?? Infinity;
+                total += w;
+                score += w * Math.min(1, days / RESTED_DAYS);
+                (days >= RESTED_DAYS ? rested : recovering).push({ muscle: m, days });
             }
+            const lastDone = lastDoneByName.get(t.name.trim().toLowerCase()) ?? null;
+            const byWeight = (a: MuscleRest, b: MuscleRest) => (weight.get(b.muscle) ?? 0) - (weight.get(a.muscle) ?? 0);
+            return { template: t, lastDone, rested: rested.sort(byWeight), recovering: recovering.sort(byWeight), score: total ? score / total : 0 };
         });
-    });
 
-    let prsThisMonthCount = 0;
-    for (const [exerciseId, thisMonthMax] of Object.entries(thisMonthMaxes)) {
-        const historicalMax = historicalMaxes[exerciseId] || 0;
-        if (thisMonthMax > 0 && thisMonthMax > historicalMax) {
-            prsThisMonthCount++;
-        }
-    }
-
-    return prsThisMonthCount;
+    const READY = 0.9; // sets-weighted share of the template's muscles that are rested
+    const rank = (x: typeof scored[number]) => (x.score >= READY ? (x.lastDone ? 0 : 1) : 2);
+    scored.sort((a, b) =>
+        rank(a) - rank(b)
+        || (rank(a) === 2 ? b.score - a.score : 0)
+        || (a.lastDone ?? "").localeCompare(b.lastDone ?? ""));
+    const best = scored[0];
+    return best ? { template: best.template, lastDone: best.lastDone, rested: best.rested, recovering: best.recovering } : null;
 }
 
-function calculateWorkoutCounts(workouts: LoggedWorkout[], currentYear: number, currentMonth: number) {
-    const thisYearCount = workouts.filter(w => new Date(w.loggedAt).getFullYear() === currentYear).length;
+// ── Recent workouts ───────────────────────────────────────────────────────────
 
-    const thisMonthCount = workouts.filter(w => {
-        const d = new Date(w.loggedAt);
-        return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
-    }).length;
-
-    const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const lastMonthCount = workouts.filter(w => {
-        const d = new Date(w.loggedAt);
-        return d.getFullYear() === prevMonthYear && d.getMonth() === prevMonth;
-    }).length;
-
-    const workoutChange = lastMonthCount > 0
-        ? Math.round(((thisMonthCount - lastMonthCount) / lastMonthCount) * 100)
-        : undefined;
-
-    return { workoutsThisYear: thisYearCount, workoutsThisMonth: thisMonthCount, workoutChange };
+export interface LogEntryData {
+    id: string;
+    name: string;
+    date: string;
+    /** One entry per exercise: drawn as the coloured bar strip. */
+    exerciseTypes: ("strength" | "cardio")[];
 }
 
-
-/**
- * Transform ExerciseVolumeResponse[] to ExerciseSeries[] for VolumeWidget
- */
-export function transFormVolumeDataForLineGraph(volumeData: ExerciseVolumeResponse[]): { series: ExerciseSeries[]; labels: string[] } {
-    // 1. Calculate the most recent PR date for each exercise
-    const exercisesWithPrDate = volumeData.map(exercise => {
-        // Sort history chronologically to accurately track historical maximums
-        const sortedVolume = [...exercise.monthlyVolume].sort((a, b) => {
-            if (a.year !== b.year) return a.year - b.year;
-            return a.month - b.month;
-        });
-
-        let historicalMax = 0;
-        let lastPrScore = 0; // We'll use (year * 12 + month) for easy chronological sorting
-
-        sortedVolume.forEach(m => {
-            const weight = typeof m.maxWeight === "string" ? parseFloat(m.maxWeight) : m.maxWeight;
-
-            // If this month's max beats the all-time max, it's a new PR
-            if (weight > historicalMax) {
-                historicalMax = weight;
-                lastPrScore = m.year * 12 + m.month;
-            }
-        });
-
-        return { ...exercise, lastPrScore };
-    });
-
-    // 2. Sort exercises by their most recent PR date (descending) and grab the top 5
-    const top5Exercises = exercisesWithPrDate
-        .sort((a, b) => b.lastPrScore - a.lastPrScore)
-        .slice(0, 5);
-
-    // 3. Find all unique year/month pairs ONLY for the top 5 exercises
-    const uniqueMonthsMap = new Map<string, { year: number; month: number }>();
-    top5Exercises.forEach(ex => {
-        ex.monthlyVolume.forEach(m => {
-            uniqueMonthsMap.set(`${m.year}-${m.month}`, { year: m.year, month: m.month });
-        });
-    });
-
-    // Sort chronologically for the X-axis
-    const sortedMonths = Array.from(uniqueMonthsMap.values()).sort((a, b) => {
-        if (a.year !== b.year) return a.year - b.year;
-        return a.month - b.month;
-    });
-
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const labels = sortedMonths.map(m => `${monthNames[m.month - 1]} ${m.year}`);
-
-    // 4. Build the series data for the graph
-    const series = top5Exercises.map((exercise) => {
-        const data = sortedMonths.map(sm => {
-            const match = exercise.monthlyVolume.find(m => m.year === sm.year && m.month === sm.month);
-            if (!match) return 0;
-            return typeof match.maxWeight === "string" ? parseFloat(match.maxWeight) : match.maxWeight;
-        });
-
-        return {
-            name: exercise.exerciseName,
-            data,
-        };
-    });
-
-    return { series, labels };
+export function buildRecentWorkouts(workouts: LoggedWorkout[], count = 5): LogEntryData[] {
+    return [...workouts]
+        .sort((a, b) => b.loggedAt.localeCompare(a.loggedAt))
+        .slice(0, count)
+        .map(w => ({
+            id: w.id,
+            name: w.name,
+            date: w.loggedAt,
+            exerciseTypes: w.exercises.map(e => (e.sets.length > 0 && e.sets.every(s => s.type === "Cardio") ? "cardio" : "strength")),
+        }));
 }
-/**
- * Transform LoggedWorkout[] to LogEntryData[] for LogWidget
- */
-export function transformWorkoutLogsForLogPanel(workouts: LoggedWorkout[]): LogEntryData[] {
-    return workouts.map((workout) => {
-        // Map each exercise to its type
-        const exerciseTypes = workout.exercises.map(ex => {
-            // Check the first set to determine if the exercise is cardio or strength
-            const firstSetType = ex.sets[0]?.type?.toLowerCase() || "strength";
-            return firstSetType;
-        });
-
-        return {
-            id: workout.id,
-            name: workout.name,
-            date: formatWorkoutDate(new Date(workout.loggedAt)),
-            exerciseCount: workout.exercises.length,
-            exerciseTypes: exerciseTypes,
-        };
-    });
-}
-
-export function transformWorkoutsForMuscleChart(workouts: LoggedWorkout[], exerciseData: Array<{ exerciseId?: string; id?: string; targetMuscles: string[] }>): FocusSegment[] {
-    const muscleColors: Record<string, string> = {
-        "chest": "#2D5A8E",
-        "back": "#003E1F",
-        "shoulders": "#5B7E3F",
-        "biceps": "#E9762B",
-        "triceps": "#C14B1E",
-        "quadriceps": "#7B1616",
-        "hamstrings": "#8B3A62",
-        "glutes": "#4A2D8B",
-        "core": "#595959",
-        "calves": "#2D8055",
-        "forearms": "#8B6A2D",
-    };
-
-    const muscleMap = new Map<string, string[]>();
-    exerciseData.forEach(ex => {
-        const id = ex.exerciseId ?? ex.id;
-        if (id) muscleMap.set(id, ex.targetMuscles);
-    });
-
-    const now = new Date();
-    const counts = new Map<string, number>();
-
-    workouts
-        .filter(w => {
-            const d = new Date(w.loggedAt);
-            return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-        })
-        .forEach(w => {
-            w.exercises.forEach(ex => {
-                const muscles = muscleMap.get(ex.exerciseId) ?? [];
-                muscles.forEach(muscle => {
-                    const key = muscle.toLowerCase();
-                    counts.set(key, (counts.get(key) ?? 0) + 1);
-                });
-            });
-        });
-
-    return Array.from(counts.entries()).map(([label, count]) => ({
-        label: label.charAt(0).toUpperCase() + label.slice(1),
-        value: count,
-        color: muscleColors[label] ?? "#595959",
-    }));
-}
-
-
-export function transformWorkoutsForFocusChart(workouts: LoggedWorkout[]): FocusSegment[] {
-    const colors: Record<string, string> = {
-        "strength": "#003E1F",
-        "cardio": "#E9762B",
-        "plyometric": "#2D8055",
-        "flexibility": "#7B1616",
-        "recovery": "#595959",
-    };
-    const now = new Date();
-    const typeMap = new Map<string, number>();
-
-    workouts
-        .filter(w => {
-            const d = new Date(w.loggedAt);
-            return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-        })
-        .forEach(w => {
-            w.exercises.forEach(ex => {
-                const type = ex.sets[0]?.type?.toLowerCase() ?? "strength";
-                typeMap.set(type, (typeMap.get(type) ?? 0) + 1);
-            });
-        });
-
-    return Array.from(typeMap.entries()).map(([label, count]) => ({
-        label: label.charAt(0).toUpperCase() + label.slice(1),
-        value: count,
-        color: colors[label] ?? "#595959",
-    }));
-}
-
-/**
- * Transform LoggedWorkout[] to ActivityDay[] for ActivityWidget
- * Colors by workout type: Level 1 = cardio, Level 2 = strength, Level 3 = mix
- */
-export function transformLogsForActivityCalendar(workouts: LoggedWorkout[]): ActivityDay[] {
-    const today = new Date();
-    const days: ActivityDay[] = [];
-
-    for (let w = 51; w >= 0; w--) {
-        for (let d = 6; d >= 0; d--) {
-            const date = new Date(today);
-            date.setDate(today.getDate() - w * 7 - d);
-            const dateStr = date.toISOString().slice(0, 10);
-
-            const workout = workouts.find(w => w.loggedAt.slice(0, 10) === dateStr);
-
-            let level: 0 | 1 | 2 | 3 = 0;
-            if (workout) {
-                const allSets = workout.exercises.flatMap(ex => ex.sets);
-                const cardioCount = allSets.filter(s => s.type?.toLowerCase() === "cardio").length;
-                const strengthCount = allSets.filter(s => s.type?.toLowerCase() === "strength").length;
-                const plyoCount = allSets.filter(s => s.type?.toLowerCase() === "plyometric").length;
-
-                const totalCardio = cardioCount;
-                const totalStrength = strengthCount + plyoCount;
-
-                if (totalCardio > 0 && totalStrength > 0) {
-                    level = 3;
-                } else if (totalCardio > 0) {
-                    level = 1;
-                } else if (totalStrength > 0) {
-                    level = 2;
-                }
-            }
-
-            days.push({ date: dateStr, level, logId: workout?.id });
-        }
-    }
-
-    return days;
-}
-
