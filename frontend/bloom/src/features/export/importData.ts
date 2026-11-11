@@ -124,6 +124,33 @@ const asNumber = (v: unknown): number | null => {
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
+
+/**
+ * Pulls a time out of an exercise name: a range like "17:00 - 21:00" / "17u-21u"
+ * (end before start means past midnight), or a length like "90 min" / "1u30" / "2h".
+ * Returns the name without it, the minutes, and the original text (kept as a note).
+ */
+export function splitTimeFromName(raw: string): { name: string; minutes: number | null; text: string | null } {
+    const range = raw.match(/(\d{1,2})(?:[:.hu](\d{2}))?\s*[hu]?\s*(?:-|–|to|tot)\s*(\d{1,2})(?:[:.hu](\d{2}))?\s*[hu]?(?!\d)/i);
+    if (range) {
+        const start = Number(range[1]) * 60 + Number(range[2] ?? 0);
+        const end = Number(range[3]) * 60 + Number(range[4] ?? 0);
+        const minutes = (end - start + 24 * 60) % (24 * 60);
+        // Only treat it as a clock range when both ends look like times of day.
+        if (Number(range[1]) < 24 && Number(range[3]) < 24 && minutes > 0 && (range[2] || range[4] || /[hu]/i.test(range[0]))) {
+            return { name: clean(raw.replace(range[0], "")), minutes, text: range[0].trim() };
+        }
+    }
+    const length = raw.match(/(\d{1,3})\s*(?:min|mins|minutes|minuten|m)\b|(\d{1,2})\s*[hu](?:\s*(\d{2}))?\b/i);
+    if (length) {
+        const minutes = length[1] ? Number(length[1]) : Number(length[2]) * 60 + Number(length[3] ?? 0);
+        if (minutes > 0) return { name: clean(raw.replace(length[0], "")), minutes, text: length[0].trim() };
+    }
+    return { name: raw, minutes: null, text: null };
+}
+
+/** Tidies a name after cutting a time out of it: spaces, and dangling "in", "van", dashes or brackets. */
+const clean = (s: string) => s.replace(/[([]\s*[)\]]/g, "").replace(/\s{2,}/g, " ").replace(/[\s,–-]+$/, "").replace(/\s+(in|van|from|at|om)$/i, "").trim();
 const hms = (seconds: number) => `${pad(Math.floor(seconds / 3600))}:${pad(Math.floor((seconds % 3600) / 60))}:${pad(Math.round(seconds % 60))}`;
 
 function asWeightUnit(v: unknown): "Kg" | "Lbs" {
@@ -219,8 +246,14 @@ function parseJson(text: string, fileName: string): ParsedFile {
             loggedAt: at,
             note: w.note ?? null,
             exercises: (w.exercises ?? []).map(e => {
-                const r = ref(e.exerciseId, e.exerciseName, e.exerciseType);
-                return { ref: r, note: e.note ?? null, gear: e.gear ?? [], gpx: e.gpx ?? null, sets: (e.sets ?? []).map((s, j) => toSet(s, j, r.type)) };
+                const named = splitTimeFromName(e.exerciseName ?? "");
+                const r = ref(e.exerciseId, named.name || e.exerciseName, e.exerciseType);
+                const sets = (e.sets ?? []).map((s, j) => toSet(s, j, r.type));
+                // A time in the name fills cardio sets that have no duration.
+                const withTime = named.minutes
+                    ? sets.map(s => (s.type === "Cardio" && !s.duration ? { ...s, duration: hms(named.minutes! * 60) } : s))
+                    : sets;
+                return { ref: r, note: [e.note, named.text].filter(Boolean).join(" · ") || null, gear: e.gear ?? [], gpx: e.gpx ?? null, sets: withTime };
             }),
         });
     });
@@ -368,7 +401,9 @@ function parseTable(rows: (string | number)[][], format: "csv" | "xlsx", fileNam
         const line = n + 2;
         const day = dayOf(get(r, idx.date), order);
         const workoutName = text(r, idx.workout);
-        const exerciseName = text(r, idx.exercise);
+        // "Indoor Snowboard 17:00 - 21:00": the time goes into the duration, the rest is the exercise.
+        const named = splitTimeFromName(text(r, idx.exercise));
+        const exerciseName = named.name;
         if (!day || !workoutName || !exerciseName) {
             warnings.push(`Row ${line}: missing a date, workout or exercise, skipped.`);
             return;
@@ -393,7 +428,7 @@ function parseTable(rows: (string | number)[][], format: "csv" | "xlsx", fileNam
                     type: asType(text(r, idx.type)),
                     muscles: text(r, idx.muscles).split(",").map(s => s.trim()).filter(Boolean),
                 },
-                note: text(r, idx.exNote) || null,
+                note: [text(r, idx.exNote), named.text].filter(Boolean).join(" · ") || null,
                 gear: text(r, idx.gear).split(",").map(s => s.trim()).filter(Boolean),
                 gpx: null,
                 sets: [],
@@ -406,7 +441,8 @@ function parseTable(rows: (string | number)[][], format: "csv" | "xlsx", fileNam
         const rawDuration = text(r, idx.duration);
         const duration = /^\d+:\d{2}(:\d{2})?$/.test(rawDuration)
             ? (rawDuration.split(":").length === 2 ? `00:${rawDuration}` : rawDuration).padStart(8, "0")
-            : seconds != null ? hms(seconds) : null;
+            : seconds != null ? hms(seconds)
+            : named.minutes ? hms(named.minutes * 60) : null;
         const weight = asNumber(get(r, idx.weight));
         const type = entry.ref.type ?? (distance != null || duration ? "Cardio" : "Strength");
         entry.sets.push({
@@ -527,17 +563,50 @@ export type Decision =
     /** Leave this exercise out (e.g. a placeholder like "CANT REMEMBER"). */
     | { kind: "skip" };
 
+/**
+ * Words people write for the same thing, mapped to the words Bloom's exercise
+ * names use: abbreviations, spelling variants, plurals and common Dutch terms.
+ * A value can be several words ("bankdrukken" → "bench press").
+ */
 const ALIASES: Record<string, string> = {
-    db: "dumbbell", dbs: "dumbbell", dumbell: "dumbbell", dumbbells: "dumbbell", dumbel: "dumbbell",
-    bb: "barbell", barbells: "barbell", kb: "kettlebell", kettlebells: "kettlebell",
-    ez: "ez", bw: "bodyweight", cable: "cable", machine: "machine",
-    flye: "fly", flyes: "fly", flys: "fly", flies: "fly", pulldown: "pulldown", pullup: "pull up", chinup: "chin up",
+    // Equipment and abbreviations
+    db: "dumbbell", dbs: "dumbbell", dumbell: "dumbbell", dumbbells: "dumbbell", dumbel: "dumbbell", halter: "dumbbell", halters: "dumbbell",
+    bb: "barbell", barbells: "barbell", stang: "barbell", kb: "kettlebell", kettlebells: "kettlebell",
+    bw: "bodyweight", kabel: "cable", machine: "machine", toestel: "machine", smith: "smith machine",
+    ohp: "overhead press", rdl: "romanian deadlift", rdls: "romanian deadlift", sldl: "stiff leg deadlift", hspu: "handstand push up",
+    flye: "fly", flyes: "fly", flys: "fly", flies: "fly",
+    pullup: "pull up", pullups: "pull up", chinup: "chin up", chinups: "chin up", pushup: "push up", pushups: "push up",
+    situp: "sit up", situps: "sit up", pulldown: "pulldown", pulldowns: "pulldown",
+    tricep: "tricep", triceps: "tricep", bicep: "bicep", biceps: "bicep", ab: "crunch", abs: "crunch", crunches: "crunch",
+    // Cardio
+    jog: "run", jogging: "run", joggen: "run", jogger: "run", running: "run", runs: "run", hardlopen: "run", lopen: "run", loop: "run", rennen: "run",
+    bike: "cycling", biking: "cycling", cycle: "cycling", fietsen: "cycling", fiets: "cycling", wielrennen: "road cycling", spinning: "indoor cycling", spinnen: "indoor cycling",
+    walk: "walking", walks: "walking", wandelen: "walking", wandeling: "walking", stappen: "walking", tredmill: "treadmill", loopband: "treadmill",
+    swim: "swimming", zwemmen: "swimming", roeien: "rowing", roeimachine: "rowing machine", crosstrainer: "elliptical",
+    boulderen: "bouldering", klimmen: "climbing", snowboard: "snowboarding", snowboarden: "snowboarding", skien: "skiing", ski: "skiing",
+    schaatsen: "ice skating", touwtjespringen: "jump rope", springtouw: "jump rope", voetbal: "soccer", dansen: "dance", traplopen: "stair climber",
+    // Dutch strength terms
+    bankdrukken: "bench press", schouderdrukken: "shoulder press", schouderpers: "shoulder press", beenpers: "leg press",
+    optrekken: "pull up", opdrukken: "push up", kniebuiging: "squat", kniebuigingen: "squat", squatten: "squat",
+    buikspieren: "crunch", buikspier: "crunch", kuiten: "calf raise", kuitheffen: "calf raise", kuitheffingen: "calf raise",
+    zijheffing: "lateral raise", zijheffingen: "lateral raise", beenstrekken: "leg extension", beenkrul: "leg curl",
+    plankje: "plank", dippen: "dip", heupstoot: "hip thrust", hipthrust: "hip thrust",
 };
+
+/** Plurals to singular: "presses" → "press", "rows" → "row" (leaves "press", "biceps" alias first). */
+function singular(t: string): string {
+    if (t.length > 4 && /(ss|sh|ch|x|z)es$/.test(t)) return t.slice(0, -2);
+    if (t.length > 3 && t.endsWith("s") && !t.endsWith("ss")) return t.slice(0, -1);
+    return t;
+}
 
 function tokens(name: string): string[] {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter(Boolean)
-        .map(t => ALIASES[t] ?? (t.length > 3 && t.endsWith("s") ? t.slice(0, -1) : t));
+        .flatMap(t => (ALIASES[t] ?? singular(t)).split(" "));
 }
+
+/** For a one-word name ("Run"), the usual exercise wins ties over variants (Treadmill Run, Interval Run…). */
+const USUAL = new Set(["outdoor run", "walking", "cycling", "swimming", "rowing machine", "squat", "deadlift", "bench press", "crunch", "plank", "push up", "pull up", "dip", "lunge", "shrug"]);
 
 function editDistance(a: string, b: string): number {
     const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
@@ -565,7 +634,11 @@ export function nameSimilarity(a: string, b: string): number {
     const ratio = 1 - editDistance(ca, cb) / Math.max(ca.length, cb.length);
     // One name contained in the other ("cable fly" in "cable reverse fly") is worth suggesting, not pre-selecting.
     const subset = Math.min(sa.size, sb.size) >= 2 && (shared === sa.size || shared === sb.size) ? 0.72 : 0;
-    return Math.max(ratio, jaccard * 0.95, subset);
+    // A one-word name inside a longer one ("run" in "Treadmill Run"): a suggestion, shorter and usual names first.
+    const single = sa.size === 1 && shared === 1
+        ? 0.68 - 0.03 * (sb.size - 1) + (USUAL.has(tb.join(" ")) ? 0.04 : 0)
+        : 0;
+    return Math.max(ratio, jaccard * 0.95, subset, single);
 }
 
 /** Your exercises, most similar to `query` first (all of them, so the picker can list the rest). */

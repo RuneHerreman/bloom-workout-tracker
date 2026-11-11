@@ -13,7 +13,10 @@ public sealed record ImportLoggedWorkoutsRequest(
 );
 
 public sealed record ImportLoggedWorkoutsBody(
-    [Required, MaxLength(ImportLoggedWorkouts.MaxWorkouts)] List<ImportWorkoutBody> Workouts
+    [Required, MaxLength(ImportLoggedWorkouts.MaxWorkouts)] List<ImportWorkoutBody> Workouts,
+    [MaxLength(200)] string? FileName = null,
+    List<Guid>? CreatedExerciseIds = null,
+    List<Guid>? CreatedTemplateIds = null
 );
 
 /// <summary>
@@ -53,7 +56,7 @@ public sealed record ImportSetBody(
 
 public sealed record ImportFailureResponse(int Index, string Name, DateTime LoggedAt, string Reason);
 
-public sealed record ImportLoggedWorkoutsResponse(int Imported, int Skipped, IReadOnlyList<ImportFailureResponse> Failures, IReadOnlyList<Guid> ImportedIds);
+public sealed record ImportLoggedWorkoutsResponse(int Imported, int Skipped, IReadOnlyList<ImportFailureResponse> Failures, IReadOnlyList<Guid> ImportedIds, Guid? BatchId);
 
 public static class ImportLoggedWorkoutsController
 {
@@ -75,7 +78,7 @@ public static class ImportLoggedWorkoutsController
             )).ToList(),
             w.Note,
             w.SourceId
-        )).ToList());
+        )).ToList(), request.Body.FileName, request.Body.CreatedExerciseIds, request.Body.CreatedTemplateIds);
 
         var output = await request.UseCase.Execute(input, ct);
 
@@ -83,7 +86,8 @@ public static class ImportLoggedWorkoutsController
             output.Imported,
             output.Skipped,
             output.Failures.Select(f => new ImportFailureResponse(f.Index, f.Name, f.LoggedAt, f.Reason)).ToList(),
-            output.ImportedIds
+            output.ImportedIds,
+            output.BatchId
         ));
     }
 }

@@ -59,7 +59,8 @@ public static class ApplicationModule
         //      LOGS
         services.AddScoped<IUseCase<CreateLoggedWorkoutInput, CreateLoggedWorkoutOutput>, CreateLoggedWorkout>();
         services.AddScoped<IUseCase<ImportLoggedWorkoutsInput, ImportLoggedWorkoutsOutput>, ImportLoggedWorkouts>();
-        services.AddScoped<IUseCase<UndoImportedWorkoutsInput, UndoImportedWorkoutsOutput>, UndoImportedWorkouts>();
+        services.AddScoped<IUseCase<ListImportBatchesInput, ListImportBatchesOutput>, ListImportBatches>();
+        services.AddScoped<IUseCase<UndoImportBatchInput, UndoImportBatchOutput>, UndoImportBatch>();
         services.AddScoped<IUseCase<UpdateLoggedWorkoutInput, UpdateLoggedWorkoutOutput>, UpdateLoggedWorkout>();
         services.AddScoped<IUseCase<DeleteLoggedWorkoutInput>, DeleteLoggedWorkout>();
 

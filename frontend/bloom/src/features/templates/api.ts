@@ -86,6 +86,11 @@ export function peekTemplates(): WorkoutTemplate[] | undefined {
     return peek(_templatesCache);
 }
 
+/** Drops the cached templates (e.g. after an import was undone). */
+export function forgetTemplates(): void {
+    _templatesCache = null;
+}
+
 export async function getTemplate(templateId: string): Promise<WorkoutTemplate> {
     return fetchFromServer<WorkoutTemplate>(`templates/${templateId}`, "GET");
 }

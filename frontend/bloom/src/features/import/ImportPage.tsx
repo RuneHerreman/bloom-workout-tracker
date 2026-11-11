@@ -6,9 +6,9 @@ import {
 } from "lucide-react";
 import "../../assets/css/import.css";
 import HeaderComponent from "../../components/general/HeaderComponent.tsx";
-import { getLogs, importLogs, undoImport, type ImportResult } from "../logbook/api.ts";
-import { createTemplate, deleteTemplate, getTemplates } from "../templates/api.ts";
-import { createCustomExercise, deleteCustomExercise, searchExercises } from "../exercises/api.ts";
+import { getImportHistory, getLogs, importLogs, undoImportBatch, type ImportBatchSummary, type ImportResult } from "../logbook/api.ts";
+import { createTemplate, getTemplates } from "../templates/api.ts";
+import { createCustomExercise, searchExercises } from "../exercises/api.ts";
 import type { Exercise, LoggedWorkout, WorkoutTemplate } from "../../assets/js/data/apiTypes.ts";
 import { downloadBlob } from "../export/exportData.ts";
 import {
@@ -16,6 +16,7 @@ import {
     type DateOrder, type ParsedExerciseRef, type ParsedFile,
 } from "../export/importData.ts";
 import ExercisesStep from "./ExercisesStep.tsx";
+import ImportHistory from "./ImportHistory.tsx";
 import {
     choiceProblem, evidenceByKey, initialChoices, keyOf, prepareWorkouts, statusOf, timesLogged, type Choice, type Fixes, type Prepared,
 } from "./importSession.ts";
@@ -60,6 +61,22 @@ function ImportPage() {
     const [fixes, setFixes] = useState<Fixes>({ fillReps: true, zeroWeight: true });
     const [progress, setProgress] = useState("");
     const [done, setDone] = useState<Done | null>(null);
+    const [history, setHistory] = useState<ImportBatchSummary[] | null>(null);
+    const loadHistory = () => getImportHistory().then(setHistory).catch(() => setHistory([]));
+    useEffect(() => { loadHistory(); }, []);
+
+    async function undoFromHistory(id: string) {
+        setError(null);
+        try {
+            await undoImportBatch(id);
+            // Reload what the page matches against, since workouts and exercises were removed.
+            const [c, l, t] = await Promise.all([searchExercises(), getLogs(), getTemplates()]);
+            setCatalog(c); setLogs(l); setTemplates(t);
+        } catch {
+            setError("Couldn't undo that import. Try again.");
+        }
+        await loadHistory();
+    }
 
     const plan = useMemo(() => (parsed ? planImport(parsed, catalog, logs, templates) : null), [parsed, catalog, logs, templates]);
 
@@ -91,6 +108,7 @@ function ImportPage() {
 
     function reset() {
         setFile(null); setParsed(null); setChoices(new Map()); setDone(null); setError(null); setStep("file");
+        loadHistory();
     }
 
     async function run() {
@@ -115,11 +133,7 @@ function ImportPage() {
             }
             const idFor = (ref: ParsedExerciseRef) => ids.get(keyOf(ref.name))!;
 
-            setProgress(`Importing ${plural(importable.length, "workout")}`);
-            const result = importable.length
-                ? await importLogs(toImportBodies(importable, idFor))
-                : { imported: 0, skipped: 0, failures: [], importedIds: [] };
-
+            // Templates before workouts, so the import's history entry can include them.
             if (usedTemplates.length) {
                 setProgress("Adding templates");
                 for (const t of usedTemplates) {
@@ -127,6 +141,11 @@ function ImportPage() {
                     templateIds.push(await createTemplate(t.name, toTemplateExercises(kept, idFor)));
                 }
             }
+
+            setProgress(`Importing ${plural(importable.length, "workout")}`);
+            const result = await importLogs(toImportBodies(importable, idFor), {
+                fileName: parsed.fileName, createdExerciseIds: exerciseIds, createdTemplateIds: templateIds,
+            });
             setDone({ result, templateIds, exerciseIds, undone: false });
             setStep("done");
         } catch {
@@ -140,9 +159,7 @@ function ImportPage() {
         setStep("importing");
         setProgress("Removing the imported workouts");
         try {
-            if (done.result.importedIds.length) await undoImport(done.result.importedIds);
-            for (const id of done.templateIds) await deleteTemplate(id);
-            for (const id of done.exerciseIds) await deleteCustomExercise(id);
+            if (done.result.batchId) await undoImportBatch(done.result.batchId);
             setDone({ ...done, undone: true });
         } catch {
             setError("Couldn't undo everything. Try again; what was already removed stays removed.");
@@ -177,6 +194,8 @@ function ImportPage() {
 
                 {step === "file" && (
                     <FileStep
+                        history={history}
+                        onUndoHistory={undoFromHistory}
                         ready={catalog.length > 0}
                         parsed={parsed && !dateConfirmed ? parsed : null}
                         onFile={f => read(f)}
@@ -248,7 +267,9 @@ function ImportPage() {
 
 // ── Step 1: file ──────────────────────────────────────────────────────────────
 
-function FileStep({ ready, parsed, onFile, onDateOrder, onCancel }: {
+function FileStep({ history, onUndoHistory, ready, parsed, onFile, onDateOrder, onCancel }: {
+    history: ImportBatchSummary[] | null;
+    onUndoHistory: (id: string) => Promise<void>;
     ready: boolean;
     parsed: ParsedFile | null;
     onFile: (f: File) => void;
@@ -321,6 +342,8 @@ function FileStep({ ready, parsed, onFile, onDateOrder, onCancel }: {
                 <button type="button" className="imp-link" onClick={() => downloadBlob(exampleBlob("csv"), "bloom-import-example.csv")}><Download size={14} /> Example CSV</button>
                 <Link className="imp-link" to="/docs/import" target="_blank"><BookOpen size={14} /> Every column and value</Link>
             </p>
+
+            <ImportHistory history={history} onUndo={onUndoHistory} />
         </div>
     );
 }

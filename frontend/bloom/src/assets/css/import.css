@@ -238,3 +238,16 @@
 .imp-name.skip .imp-name-file { text-decoration: line-through; color: var(--ink-muted); }
 .imp-filter.skip.active { background: var(--surface-light); }
 .imp-status svg { vertical-align: -0.15em; }
+
+/* Import history (file step) */
+.imp-history { display: flex; flex-direction: column; gap: 0.6rem; }
+.imp-history h2 { font-size: var(--text-md); font-weight: 600; color: var(--ink); }
+.imp-history ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.imp-history li { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0; border-top: 0.0625rem solid var(--border); flex-wrap: wrap; }
+.imp-history li > svg { color: var(--primary-light); flex-shrink: 0; }
+.imp-history li.undone > svg, .imp-history li.undone b { color: var(--ink-muted); }
+.imp-history-main { display: flex; flex-direction: column; flex: 1; min-width: 12rem; }
+.imp-history-main b { font-size: var(--text-sm); overflow-wrap: anywhere; }
+.imp-history-tag { font-size: var(--text-2xs); padding: 0.15rem 0.55rem; border-radius: 999px; background: var(--surface-light); color: var(--ink-muted); }
+.imp-history-confirm { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.imp-history .imp-spin { vertical-align: -0.15em; }

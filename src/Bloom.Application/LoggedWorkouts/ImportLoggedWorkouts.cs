@@ -1,5 +1,6 @@
 using Bloom.Application.Contracts;
 using Bloom.Application.Contracts.Ports;
+using Bloom.Domain.Imports;
 using Bloom.Domain.LoggedWorkouts;
 using Bloom.Domain.Users;
 using Bloom.Shared.Exceptions;
@@ -16,12 +17,21 @@ public sealed record ImportWorkoutInput(
     string? SourceId = null
 );
 
-public sealed record ImportLoggedWorkoutsInput(List<ImportWorkoutInput> Workouts);
+/// <param name="FileName">Shown in the import history.</param>
+/// <param name="CreatedExerciseIds">Custom exercises the client created for this import, so undo can remove them.</param>
+/// <param name="CreatedTemplateIds">Templates the client created for this import, so undo can remove them.</param>
+public sealed record ImportLoggedWorkoutsInput(
+    List<ImportWorkoutInput> Workouts,
+    string? FileName = null,
+    List<Guid>? CreatedExerciseIds = null,
+    List<Guid>? CreatedTemplateIds = null
+);
 
 public sealed record ImportFailure(int Index, string Name, DateTime LoggedAt, string Reason);
 
 /// <param name="ImportedIds">Ids of the workouts this import created, so the import can be undone.</param>
-public sealed record ImportLoggedWorkoutsOutput(int Imported, int Skipped, IReadOnlyList<ImportFailure> Failures, IReadOnlyList<Guid> ImportedIds);
+/// <param name="BatchId">The import in the history (null when nothing was added).</param>
+public sealed record ImportLoggedWorkoutsOutput(int Imported, int Skipped, IReadOnlyList<ImportFailure> Failures, IReadOnlyList<Guid> ImportedIds, Guid? BatchId = null);
 
 /// <summary>
 /// Imports many workouts at once (from a Bloom export or another app's file) in a
@@ -119,13 +129,23 @@ public class ImportLoggedWorkouts(
             }
         }
 
-        if (imported > 0) await uow.Do(ct);
+        // Record the import so it can be undone later from the history.
+        var createdExercises = input.CreatedExerciseIds ?? [];
+        var createdTemplates = input.CreatedTemplateIds ?? [];
+        ImportBatch? batch = null;
+        if (importedIds.Count > 0 || createdExercises.Count > 0 || createdTemplates.Count > 0)
+        {
+            batch = ImportBatch.Create(userId, input.FileName, importedIds, createdExercises, createdTemplates);
+            await uow.Repo<IImportBatchRepository>().Save(batch);
+        }
+
+        if (batch is not null) await uow.Do(ct);
 
         logger.LogInformation(
             "Import done | User: {UserId} - Imported: {Imported}, Skipped: {Skipped}, Failed: {Failed}",
             userId, imported, skipped, failures.Count);
 
-        return new ImportLoggedWorkoutsOutput(imported, skipped, failures, importedIds);
+        return new ImportLoggedWorkoutsOutput(imported, skipped, failures, importedIds, batch?.Id.Value);
     }
 
     /// <summary>Same workout = same name (case-insensitive) at the same minute.</summary>

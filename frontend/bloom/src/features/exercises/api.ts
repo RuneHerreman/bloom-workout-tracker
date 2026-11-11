@@ -48,6 +48,11 @@ export function peekExercises(): Exercise[] | undefined {
     return peek(_allExercises);
 }
 
+/** Drops the cached exercise list (e.g. after an import was undone). */
+export function forgetExercises(): void {
+    _allExercises = null;
+}
+
 export async function getExercise(exerciseId: string): Promise<Exercise> {
     return fetchFromServer<Exercise>(`exercises/${exerciseId}`, "GET");
 }

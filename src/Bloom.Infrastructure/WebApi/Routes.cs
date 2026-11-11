@@ -164,9 +164,13 @@ public static class Routes
             .WithName(nameof(CreateLoggedWorkoutController))
             .WithDescription("Create a new workout log.");
 
-        logGroup.MapPost("/import/undo", UndoImportedWorkoutsController.Invoke)
-            .WithName(nameof(UndoImportedWorkoutsController))
-            .WithDescription("Undo an import: delete the workouts it created (the importedIds it returned). Ids of other users are ignored.");
+        logGroup.MapGet("/imports", ListImportBatchesController.Invoke)
+            .WithName(nameof(ListImportBatchesController))
+            .WithDescription("Your import history, newest first.");
+
+        logGroup.MapPost("/imports/{ImportBatchId:guid}/undo", UndoImportBatchController.Invoke)
+            .WithName(nameof(UndoImportBatchController))
+            .WithDescription("Undo an import: removes its workouts and templates, and the exercises it created unless they're used elsewhere.");
 
         logGroup.MapPost("/import", ImportLoggedWorkoutsController.Invoke)
             .WithName(nameof(ImportLoggedWorkoutsController))

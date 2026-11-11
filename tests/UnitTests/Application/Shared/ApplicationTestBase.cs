@@ -1,4 +1,5 @@
 using Bloom.Domain.Exercises;
+using Bloom.Domain.Imports;
 using Bloom.Domain.LoggedWorkouts;
 using Bloom.Domain.Users;
 using Bloom.Domain.WorkoutTemplates;
@@ -13,6 +14,7 @@ public abstract class ApplicationTestBase
     protected readonly InMemoryExerciseRepository ExerciseRepository;
     protected readonly InMemoryLoggedWorkoutRepository LoggedWorkoutRepository;
     protected readonly InMemoryWorkoutTemplateRepository WorkoutTemplateRepository;
+    protected readonly InMemoryImportBatchRepository ImportBatchRepository;
     protected readonly InMemoryUnitOfWork UnitOfWork;
 
     protected ApplicationTestBase()
@@ -22,12 +24,14 @@ public abstract class ApplicationTestBase
         ExerciseRepository = new InMemoryExerciseRepository();
         LoggedWorkoutRepository = new InMemoryLoggedWorkoutRepository();
         WorkoutTemplateRepository = new InMemoryWorkoutTemplateRepository();
+        ImportBatchRepository = new InMemoryImportBatchRepository();
 
         UnitOfWork = new InMemoryUnitOfWork(DomainEventPublisher);
         UnitOfWork.RegisterRepository<IUserRepository>(UserRepository);
         UnitOfWork.RegisterRepository<IExerciseRepository>(ExerciseRepository);
         UnitOfWork.RegisterRepository<ILoggedWorkoutRepository>(LoggedWorkoutRepository);
         UnitOfWork.RegisterRepository<IWorkoutTemplateRepository>(WorkoutTemplateRepository);
+        UnitOfWork.RegisterRepository<IImportBatchRepository>(ImportBatchRepository);
     }
 
     protected static TestLogger<T> CreateLogger<T>() => new();

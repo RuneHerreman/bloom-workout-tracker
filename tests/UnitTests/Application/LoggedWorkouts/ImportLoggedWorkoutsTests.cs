@@ -153,31 +153,81 @@ public sealed class ImportLoggedWorkoutsTests : ApplicationTestBase
     }
 
     [Fact]
-    public async Task Execute_ShouldReturnCreatedIds_AndUndoShouldRemoveExactlyThose()
+    public async Task Execute_ShouldRecordTheImportInTheHistory()
     {
         var useCase = await Setup();
-        var output = await useCase.Execute(new ImportLoggedWorkoutsInput([Push(Monday), Push(Monday.AddDays(1))]));
-        Assert.Equal(2, output.ImportedIds.Count);
+        var exerciseId = Guid.NewGuid();
+        var output = await useCase.Execute(new ImportLoggedWorkoutsInput([Push(Monday), Push(Monday.AddDays(1))], "my-log.csv", [exerciseId], []));
 
-        var owner = (await LoggedWorkoutRepository.ById(LogId(output.ImportedIds[0]))).Value.UserId;
-        var undo = new UndoImportedWorkouts(UnitOfWork, StubCurrentUser.With(owner), CreateLogger<UndoImportedWorkouts>());
-        var result = await undo.Execute(new UndoImportedWorkoutsInput([.. output.ImportedIds]));
+        Assert.NotNull(output.BatchId);
+        var batch = (await ImportBatchRepository.ById(Bloom.Domain.Shared.EntityId.New<Bloom.Domain.Imports.ImportBatchId>(output.BatchId!.Value))).Value;
+        Assert.Equal("my-log.csv", batch.FileName);
+        Assert.Equal(output.ImportedIds, batch.WorkoutIds);
+        Assert.Equal([exerciseId], batch.ExerciseIds);
 
-        Assert.Equal(2, result.Deleted);
-        foreach (var id in output.ImportedIds)
-            Assert.False((await LoggedWorkoutRepository.ById(LogId(id))).HasValue);
+        var list = await new ListImportBatches(UnitOfWork, StubCurrentUser.With(batch.UserId)).Execute(new ListImportBatchesInput());
+        var summary = Assert.Single(list.Imports);
+        Assert.Equal(2, summary.Workouts);
+        Assert.Null(summary.UndoneAt);
     }
 
     [Fact]
-    public async Task Undo_ShouldIgnoreWorkoutsOfOtherUsers()
+    public async Task Execute_WhenNothingIsAdded_ShouldNotRecordAnImport()
+    {
+        var useCase = await Setup(uid => [new LoggedWorkoutData { Id = Guid.NewGuid(), UserId = uid, Name = "Push", LoggedAt = Monday }]);
+
+        var output = await useCase.Execute(new ImportLoggedWorkoutsInput([Push(Monday)], "again.csv"));
+
+        Assert.Null(output.BatchId);
+    }
+
+    [Fact]
+    public async Task UndoBatch_ShouldRemoveWorkoutsAndUnusedNewExercises_KeepingOnesUsedElsewhere()
     {
         var useCase = await Setup();
-        var output = await useCase.Execute(new ImportLoggedWorkoutsInput([Push(Monday)]));
+        var output = await useCase.Execute(new ImportLoggedWorkoutsInput([Push(Monday), Push(Monday.AddDays(1))], "my-log.csv"));
+        var userId = (await LoggedWorkoutRepository.ById(LogId(output.ImportedIds[0]))).Value.UserId;
 
-        var undo = new UndoImportedWorkouts(UnitOfWork, StubCurrentUser.Random(), CreateLogger<UndoImportedWorkouts>());
-        var result = await undo.Execute(new UndoImportedWorkoutsInput([.. output.ImportedIds]));
+        var unused = Bloom.Domain.Exercises.Exercise.CreateCustom(userId, "Morning jog", "Imported", Bloom.Domain.Exercises.Enums.ExerciseType.Cardio, []);
+        var usedLater = Bloom.Domain.Exercises.Exercise.CreateCustom(userId, "Sled drag", "Imported", Bloom.Domain.Exercises.Enums.ExerciseType.Strength, []);
+        await ExerciseRepository.Save(unused);
+        await ExerciseRepository.Save(usedLater);
+        var batch = Bloom.Domain.Imports.ImportBatch.Create(userId, "my-log.csv", output.ImportedIds, [unused.Id.Value, usedLater.Id.Value], []);
+        await ImportBatchRepository.Save(batch);
 
-        Assert.Equal(0, result.Deleted);
+        // A workout logged by hand after the import uses "Sled drag".
+        var later = new LoggedWorkoutData
+        {
+            Id = Guid.NewGuid(), UserId = userId.Value, Name = "Legs", LoggedAt = Monday.AddDays(7),
+            LoggedExercises = [new LoggedExerciseData { ExerciseId = usedLater.Id.Value }],
+        };
+        var undo = new UndoImportBatch(UnitOfWork, StubCurrentUser.With(userId),
+            new MockFindLoggedWorkoutsQuery([later]), new UnitTests.Application.WorkoutTemplates.MockFindWorkoutTemplatesQuery([]),
+            CreateLogger<UndoImportBatch>());
+
+        var result = await undo.Execute(new UndoImportBatchInput(batch.Id.Value));
+
+        Assert.Equal(new UndoImportBatchOutput(2, 0, 1, 1), result);
+        foreach (var id in output.ImportedIds) Assert.False((await LoggedWorkoutRepository.ById(LogId(id))).HasValue);
+        Assert.False((await ExerciseRepository.ById(unused.Id)).HasValue);
+        Assert.True((await ExerciseRepository.ById(usedLater.Id)).HasValue);
+        Assert.True(batch.IsUndone);
+
+        // Undoing again changes nothing.
+        Assert.Equal(new UndoImportBatchOutput(0, 0, 0, 0), await undo.Execute(new UndoImportBatchInput(batch.Id.Value)));
+    }
+
+    [Fact]
+    public async Task UndoBatch_OfAnotherUser_ShouldBeNotFound()
+    {
+        var useCase = await Setup();
+        var output = await useCase.Execute(new ImportLoggedWorkoutsInput([Push(Monday)], "mine.csv"));
+
+        var undo = new UndoImportBatch(UnitOfWork, StubCurrentUser.Random(),
+            new MockFindLoggedWorkoutsQuery([]), new UnitTests.Application.WorkoutTemplates.MockFindWorkoutTemplatesQuery([]),
+            CreateLogger<UndoImportBatch>());
+
+        await Assert.ThrowsAsync<ImportBatchNotFoundException>(() => undo.Execute(new UndoImportBatchInput(output.BatchId!.Value)));
         Assert.True((await LoggedWorkoutRepository.ById(LogId(output.ImportedIds[0]))).HasValue);
     }
 
