@@ -85,7 +85,7 @@ function InsightsPage() {
         id: p.id,
         name: p.name,
         sub: p.muscles.join(", "),
-        spark: p.sessions.map(s => s.e1rm),
+        spark: p.sessions.map(s => s.heaviest),
         change: changeOf(p.changePct),
         meta: `${p.sessions.length} session${p.sessions.length !== 1 ? "s" : ""}`,
     })), [progress]);

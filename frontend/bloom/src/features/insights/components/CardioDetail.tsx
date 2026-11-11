@@ -65,6 +65,8 @@ function CardioDetail({ activity, range }: { activity: CardioActivity; range: Ra
                 invert={active === "pace"}
                 formatValue={format}
                 ariaLabel={`${activity.name}: ${active} per session`}
+                seriesLabel={active === "distance" ? "Distance per session" : active === "pace" ? "Average pace per session" : "Duration per session"}
+                highlightLabel={active === "pace" ? "Fastest" : active === "distance" ? "Longest" : ""}
                 renderTooltip={p => (
                     <VizTooltip
                         title={fmtDate(p.session.date)}
@@ -76,7 +78,7 @@ function CardioDetail({ activity, range }: { activity: CardioActivity; range: Ra
                     />
                 )}
             />
-            {active === "pace" && <p className="detail-note">Faster is higher. Larger dot: your fastest session.</p>}
+            {active === "pace" && <p className="detail-note">Faster is higher on this chart.</p>}
 
             <dl className="records">
                 <div><dt>Total distance</dt><dd>{activity.totalKm} km</dd><span>this period</span></div>

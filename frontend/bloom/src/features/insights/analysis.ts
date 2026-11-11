@@ -123,10 +123,15 @@ export interface ExerciseSession {
     /** Set with the highest estimated 1RM. */
     topSet: { weight: number; reps: number };
     heaviest: number;
+    /** Reps done with the heaviest weight (most reps if that weight was used more than once). */
+    heaviestReps: number;
     bestSetVolume: number;
     workingSets: number;
     volumeKg: number;
+    /** New best estimated 1RM. */
     isPr: boolean;
+    /** Heavier set than any earlier session. */
+    isWeightPr: boolean;
 }
 
 export interface ExerciseProgress {
@@ -154,20 +159,20 @@ export function exerciseProgress(
         for (const ex of log.exercises) {
             const sets = ex.sets.filter(s => isWorkingStrengthSet(s) && (s.weight ?? 0) > 0 && (s.reps ?? 0) > 0);
             if (!sets.length) continue;
-            let best = 0, top = { weight: 0, reps: 0 }, volume = 0, heaviest = 0, bestSetVolume = 0;
+            let best = 0, top = { weight: 0, reps: 0 }, volume = 0, heaviest = 0, heaviestReps = 0, bestSetVolume = 0;
             for (const s of sets) {
                 const kg = toKg(s.weight, s.weightUnit);
                 const est = e1rm(kg, s.reps!);
                 volume += kg * s.reps!;
-                heaviest = Math.max(heaviest, kg);
+                if (kg > heaviest || (kg === heaviest && s.reps! > heaviestReps)) { heaviest = kg; heaviestReps = s.reps!; }
                 bestSetVolume = Math.max(bestSetVolume, kg * s.reps!);
                 if (est > best) { best = est; top = { weight: round1(kg), reps: s.reps! }; }
             }
             const list = byExercise.get(ex.exerciseId) ?? [];
             list.push({
                 logId: log.id, date: log.loggedAt, e1rm: round1(best), topSet: top,
-                heaviest: round1(heaviest), bestSetVolume: Math.round(bestSetVolume),
-                workingSets: sets.length, volumeKg: Math.round(volume), isPr: false,
+                heaviest: round1(heaviest), heaviestReps, bestSetVolume: Math.round(bestSetVolume),
+                workingSets: sets.length, volumeKg: Math.round(volume), isPr: false, isWeightPr: false,
             });
             byExercise.set(ex.exerciseId, list);
         }
@@ -176,13 +181,16 @@ export function exerciseProgress(
     const result: ExerciseProgress[] = [];
     for (const [id, all] of byExercise) {
         const info = exercises[id];
-        let runningBest = 0;
+        // Progress is measured by heaviest weight: the number people recognise
+        // from the gym. Estimated 1RM PRs are still flagged for that chart.
+        let bestE1rm = 0, bestWeight = 0;
         let lastImprovement: string | null = null;
         for (let i = 0; i < all.length; i++) {
             const s = all[i];
-            if (s.e1rm > runningBest) {
-                s.isPr = i > 0; // the first session is the baseline
-                runningBest = s.e1rm;
+            if (s.e1rm > bestE1rm) { s.isPr = i > 0; bestE1rm = s.e1rm; } // the first session is the baseline
+            if (s.heaviest > bestWeight) {
+                s.isWeightPr = i > 0;
+                bestWeight = s.heaviest;
                 lastImprovement = s.date;
             }
         }
@@ -190,8 +198,9 @@ export function exerciseProgress(
         if (!sessions.length) continue;
         const before = all.filter(s => new Date(s.date) < range.start);
         // Start = best before the period (or the first session in it); current = best of the last two sessions.
-        const start = before.length ? Math.max(...before.map(s => s.e1rm)) : sessions[0].e1rm;
-        const current = Math.max(...sessions.slice(-2).map(s => s.e1rm));
+        // Start = heaviest before the period (or the first session in it); current = heaviest of the last two sessions.
+        const start = before.length ? Math.max(...before.map(s => s.heaviest)) : sessions[0].heaviest;
+        const current = Math.max(...sessions.slice(-2).map(s => s.heaviest));
         const bestSession = sessions.reduce((a, b) => (b.topSet.weight > a.topSet.weight ? b : a));
         result.push({
             id,
@@ -207,7 +216,7 @@ export function exerciseProgress(
             daysSinceImprovement: lastImprovement
                 ? Math.floor((range.end.getTime() - new Date(lastImprovement).getTime()) / DAY)
                 : null,
-            prsInPeriod: sessions.filter(s => s.isPr).length,
+            prsInPeriod: sessions.filter(s => s.isWeightPr).length,
         });
     }
     // Most-trained first: that's what people look for.
@@ -301,7 +310,7 @@ export function strengthHighlights(
         out.push({
             id: "progress", kind: "progress", tone: "good", exerciseId: improver.id,
             title: `${improver.name} up ${improver.changePct}%`,
-            detail: `Estimated 1RM ${improver.start} → ${improver.current} kg.`,
+            detail: `Heaviest set ${improver.start} → ${improver.current} kg.`,
         });
     }
 
@@ -333,7 +342,7 @@ export function strengthHighlights(
         out.push({
             id: "prs", kind: "prs", tone: "neutral",
             title: `${prs} new personal record${prs !== 1 ? "s" : ""}`,
-            detail: `Across ${exercisesWithPr} exercise${exercisesWithPr !== 1 ? "s" : ""}, by estimated 1RM.`,
+            detail: `Heavier than ever on ${exercisesWithPr} exercise${exercisesWithPr !== 1 ? "s" : ""}.`,
         });
     }
     return out.slice(0, 4);

@@ -588,3 +588,30 @@ button.highlight:hover .highlight-link, button.highlight:focus-visible .highligh
     .viz-chart { height: 13rem; }
     .history-table th:nth-child(4), .history-table td:nth-child(4) { display: none; }
 }
+
+
+/* ── Trend chart legend ─────────────────────────────────────────────────────── */
+
+.trend-legend {
+    list-style: none;
+    margin: -0.4rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 1.25rem;
+    font-size: var(--text-xs);
+    color: var(--ink-muted);
+}
+
+.trend-legend li { display: inline-flex; align-items: center; gap: 0.45rem; }
+.trend-key { display: inline-block; flex-shrink: 0; }
+.trend-key-series {
+    width: 1.4rem;
+    height: 0.6rem;
+    background:
+        radial-gradient(circle, var(--viz-surface) 0 2px, var(--viz-1) 2px 3.5px, transparent 3.5px) center / 0.6rem 0.6rem no-repeat,
+        linear-gradient(var(--viz-1), var(--viz-1)) center / 100% 2px no-repeat;
+}
+.trend-key-dot { width: 0.55rem; height: 0.55rem; border-radius: 50%; border: 1.5px solid var(--viz-1); background: var(--viz-surface); box-sizing: border-box; }
+.trend-key-dot.filled { width: 0.7rem; height: 0.7rem; background: var(--viz-1); border-color: var(--viz-1); }
