@@ -239,7 +239,7 @@
 .activity-legend li { display: inline-flex; align-items: center; gap: 0.3rem; }
 .activity-legend .activity-cell { width: 0.65rem; height: 0.65rem; }
 
-.activity-scroll { overflow-x: auto; scrollbar-width: thin; }
+.activity-scroll { overflow-x: auto; }
 
 .activity-map {
     display: grid;

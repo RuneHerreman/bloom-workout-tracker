@@ -106,3 +106,7 @@ html, body {
 .hidden {
     display: none;
 }
+
+/* No visible scrollbars anywhere; areas still scroll with wheel, touch and keys. */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }

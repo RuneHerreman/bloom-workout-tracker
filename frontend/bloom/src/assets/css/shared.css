@@ -85,31 +85,31 @@
    ============================================================================= */
 
 .dark {
-    /* Deep green-tinted charcoal. Three clear steps: the page sinks, cards and the
-       sidebar lift above it, hover/fills lift again — borders are just visible on each. */
-    --surface-light:      #111412; /* page */
-    --surface-lighter:    #191d1a; /* cards, sidebar */
-    --surface-less-light: #232925; /* hover, form fills */
-    --surface-dark:       #e9ece7; /* inverted tooltips */
+    /* Neutral greys. Three clear steps: the page sinks, cards and the sidebar
+       lift above it, hover/fills lift again. Green is only an accent. */
+    --surface-light:      #121212; /* page */
+    --surface-lighter:    #1b1b1b; /* cards, sidebar */
+    --surface-less-light: #262626; /* hover, form fills */
+    --surface-dark:       #ececec; /* inverted tooltips */
 
     /* Text — ink-muted stays above 6:1 on cards */
-    --ink:       #eceee9;
-    --ink-muted: #a1a9a2;
-    --dark-text: #a6dcbd; /* headings and big numbers keep the brand green */
+    --ink:       #ededed;
+    --ink-muted: #a3a3a3;
+    --dark-text: #f2f2f2; /* headings and big numbers */
 
     /* Borders */
-    --border:       #303732;
-    --border-light: #272d29;
-    --grey-light:   #29302b;
-    --grey:         #4a524c;
+    --border:       #303030;
+    --border-light: #282828;
+    --grey-light:   #2b2b2b;
+    --grey:         #4a4a4a;
 
-    /* Brand — the same greens, raised for dark surfaces */
-    --primary:             #4cc28a; /* text, tints */
-    --primary-muted:       #8fd6af; /* links, active text */
+    /* Brand accents — buttons, links, active states, charts */
+    --primary:             #4cc28a;
+    --primary-muted:       #7fd3a6;
     --primary-light:       #2b8257; /* solid buttons, white text on it */
     --primary-glow:        rgb(125 211 165 / 0.45);
-    --primary-faded:       rgb(76 194 138 / 0.16);
-    --primary-transparent: #b2e6c9; /* active sidebar item text */
+    --primary-faded:       rgb(76 194 138 / 0.14);
+    --primary-transparent: #9fdcbb; /* active sidebar item text */
     --accent:              #ef8a4a;
 
     /* Semantic */
@@ -119,7 +119,7 @@
 
     /* Misc */
     --backdrop-bg: rgb(0 0 0 / 0.6);
-    --kbd-bg:      #262c28;
+    --kbd-bg:      #262626;
 
     --shadow-sm:     0 1px 4px rgb(0 0 0 / 0.35);
     --shadow-widget: 0 2px 12px rgb(0 0 0 / 0.4);
@@ -128,8 +128,8 @@
     --marker-drop:    #7fd6a6;
     --marker-failure: #f28b82;
 
-    --skeleton-base:  #20251f;
-    --skeleton-shine: #2b312c;
+    --skeleton-base:  #222222;
+    --skeleton-shine: #2d2d2d;
 }
 
 
