@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback, useDeferredValue, memo } from "react";
 import { createPortal } from "react-dom";
 import type { Exercise } from "../../exercises/api.ts";
 import { X, Info, Search, Plus, Pencil, Sparkles } from "lucide-react";
@@ -7,6 +7,9 @@ import ExerciseForm from "../../exercises/components/ExerciseForm.tsx";
 import { useRecentExercises } from "../hooks/useRecentExercises.ts";
 
 const TYPE_LABELS: Record<string, string> = { Strength: "Strength", Cardio: "Cardio", Plyometric: "Plyo" };
+
+/** Rows rendered per page; more are added as you scroll or arrow towards the end. */
+const PAGE = 60;
 
 type TooltipState = { text: string; x: number; y: number } | null;
 
@@ -66,18 +69,21 @@ interface ExerciseLibraryProps {
     onSaved?: (exercise: Exercise) => void;
 }
 
-function ExerciseRow({ exercise: e, highlighted, onSelect, onHover, onEdit }: {
+/**
+ * Memoised: with 300+ exercises, re-rendering every row on each keystroke or
+ * arrow-key press is what made the menu lag. Handlers receive the exercise so
+ * the parent can pass the same function to every row.
+ */
+const ExerciseRow = memo(function ExerciseRow({ exercise: e, highlighted, onSelect, onEdit }: {
     exercise: Exercise;
     highlighted?: boolean;
-    onSelect: () => void;
-    onHover?: () => void;
-    onEdit?: () => void;
+    onSelect: (exercise: Exercise) => void;
+    onEdit?: (exercise: Exercise) => void;
 }) {
     return (
         <li
             className={`exercise-library-row${highlighted ? " highlighted" : ""}`}
-            onClick={onSelect}
-            onMouseEnter={onHover}
+            onClick={() => onSelect(e)}
         >
             <span className={`type-dot ${e.type.toLowerCase()}`} data-label={TYPE_LABELS[e.type] ?? e.type} />
             <div>
@@ -93,7 +99,7 @@ function ExerciseRow({ exercise: e, highlighted, onSelect, onHover, onEdit }: {
                         type="button"
                         className="exercise-library-edit"
                         aria-label={`Edit ${e.name}`}
-                        onClick={ev => { ev.stopPropagation(); onEdit(); }}
+                        onClick={ev => { ev.stopPropagation(); onEdit(e); }}
                     >
                         <Pencil size={12} />
                     </button>
@@ -102,7 +108,7 @@ function ExerciseRow({ exercise: e, highlighted, onSelect, onHover, onEdit }: {
             </span>
         </li>
     );
-}
+});
 
 function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: ExerciseLibraryProps) {
     const [view, setView] = useState<View>({ mode: "browse" });
@@ -114,7 +120,6 @@ function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: Exercis
     );
     const [search, setSearch] = useState("");
     const [activeMuscles, setActiveMuscles] = useState<Set<string>>(new Set());
-    const [highlighted, setHighlighted] = useState(0);
     const searchRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
     const { recentIds, addRecent } = useRecentExercises();
@@ -133,22 +138,47 @@ function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: Exercis
             return next;
         });
 
+    // Typing updates the input straight away; the list catches up a moment later.
+    const deferredSearch = useDeferredValue(search);
     const filtered = useMemo(() => {
-        const q = search.trim().toLowerCase();
+        const q = deferredSearch.trim().toLowerCase();
         return exercises.filter(e => {
             const matchesSearch = !q || e.name.toLowerCase().includes(q);
             const matchesMuscle = activeMuscles.size === 0 || e.targetMuscles.some(m => activeMuscles.has(m));
             return matchesSearch && matchesMuscle && (!onlyCustom || e.isCustom);
         });
-    }, [exercises, search, activeMuscles, onlyCustom]);
+    }, [exercises, deferredSearch, activeMuscles, onlyCustom]);
     const hasCustom = exercises.some(e => e.isCustom);
 
-    useEffect(() => { setHighlighted(0); }, [filtered]);
+    // Keyboard highlight; the mouse uses CSS :hover so moving over rows never re-renders the list.
+    // Kept per filter result, so a new search starts at the top again.
+    const [highlight, setHighlight] = useState<{ list: Exercise[]; index: number }>({ list: filtered, index: 0 });
+    const highlighted = highlight.list === filtered ? highlight.index : 0;
+
+    // Mounting all 300+ rows at once (e.g. when the search is cleared) froze the
+    // input; render a page and add the next one when the end comes into view.
+    const [shown, setShown] = useState<{ list: Exercise[]; count: number }>({ list: filtered, count: PAGE });
+    const visibleCount = shown.list === filtered ? shown.count : PAGE;
+    const visible = filtered.length > visibleCount ? filtered.slice(0, visibleCount) : filtered;
+    const sentinelRef = useRef<HTMLLIElement>(null);
+    const hasMore = visible.length < filtered.length;
 
     useEffect(() => {
-        const item = listRef.current?.children[highlighted] as HTMLElement | undefined;
+        const el = sentinelRef.current;
+        if (!el || !hasMore) return;
+        const io = new IntersectionObserver(entries => {
+            if (entries.some(e => e.isIntersecting)) setShown({ list: filtered, count: visibleCount + PAGE });
+        }, { rootMargin: "400px 0px" });
+        io.observe(el);
+        return () => io.disconnect();
+    }, [filtered, visibleCount, hasMore]);
+
+    function moveHighlight(index: number) {
+        if (index >= visibleCount - 5) setShown({ list: filtered, count: visibleCount + PAGE });
+        setHighlight({ list: filtered, index });
+        const item = listRef.current?.children[index] as HTMLElement | undefined;
         item?.scrollIntoView({ block: "nearest" });
-    }, [highlighted]);
+    }
 
     const isFiltering = search.trim() !== "" || activeMuscles.size > 0 || onlyCustom;
 
@@ -157,10 +187,15 @@ function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: Exercis
         [recentIds, exercises]
     );
 
-    function handleSelect(exercise: Exercise) {
-        addRecent(exercise.id);
-        onSelect(exercise);
-    }
+    // The parents pass inline callbacks; read the latest ones through a ref so
+    // handleSelect keeps one identity and the memoised rows don't re-render.
+    const latest = useRef({ onSelect, addRecent });
+    useLayoutEffect(() => { latest.current = { onSelect, addRecent }; });
+    const handleSelect = useCallback((exercise: Exercise) => {
+        latest.current.addRecent(exercise.id);
+        latest.current.onSelect(exercise);
+    }, []);
+    const handleEdit = useCallback((exercise: Exercise) => setView({ mode: "edit", exercise }), []);
 
     const clearAll = () => {
         setSearch("");
@@ -204,10 +239,10 @@ function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: Exercis
         if (filtered.length === 0) return;
         if (e.key === "ArrowDown") {
             e.preventDefault();
-            setHighlighted(h => Math.min(h + 1, filtered.length - 1));
+            moveHighlight(Math.min(highlighted + 1, filtered.length - 1));
         } else if (e.key === "ArrowUp") {
             e.preventDefault();
-            setHighlighted(h => Math.max(h - 1, 0));
+            moveHighlight(Math.max(highlighted - 1, 0));
         } else if (e.key === "Enter") {
             e.preventDefault();
             handleSelect(filtered[highlighted]);
@@ -262,18 +297,13 @@ function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: Exercis
                     <p className="exercise-library-section-label">Recently used</p>
                     <ul className="exercise-library-list exercise-library-recents">
                         {recents.map(e => (
-                            <ExerciseRow
-                                key={e.id}
-                                exercise={e}
-                                onSelect={() => handleSelect(e)}
-                                onEdit={() => setView({ mode: "edit", exercise: e })}
-                            />
+                            <ExerciseRow key={e.id} exercise={e} onSelect={handleSelect} onEdit={handleEdit} />
                         ))}
                     </ul>
                 </>
             )}
             <hr className="exercise-library-divider" />
-            <ul ref={listRef} className="exercise-library-list">
+            <ul ref={listRef} className={`exercise-library-list${deferredSearch !== search ? " is-stale" : ""}`}>
                 {filtered.length === 0 ? (
                     <div className="exercise-library-empty">
                         <p>No exercises found</p>
@@ -286,16 +316,10 @@ function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: Exercis
                             {search.trim() ? <>Create “{search.trim()}”</> : "Create a custom exercise"}
                         </button>
                     </div>
-                ) : filtered.map((e, i) => (
-                    <ExerciseRow
-                        key={e.id}
-                        exercise={e}
-                        highlighted={i === highlighted}
-                        onSelect={() => handleSelect(e)}
-                        onHover={() => setHighlighted(i)}
-                        onEdit={() => setView({ mode: "edit", exercise: e })}
-                    />
+                ) : visible.map((e, i) => (
+                    <ExerciseRow key={e.id} exercise={e} highlighted={i === highlighted} onSelect={handleSelect} onEdit={handleEdit} />
                 ))}
+                {hasMore && <li ref={sentinelRef} className="exercise-library-more" aria-hidden />}
             </ul>
         </div>
     );

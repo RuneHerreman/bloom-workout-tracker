@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { DndContext, closestCenter, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { LoggedWorkout, LoggedExercise, LoggedSet } from "../api.ts";
@@ -42,6 +42,8 @@ function LogDetail({
 }: LogDetailProps) {
     const initialDate = toDateInputValue(log.loggedAt);
 
+    // Stable list for the exercise library, so it doesn't re-filter on every render of this view.
+    const exerciseList = useMemo(() => Object.values(exercises), [exercises]);
     const [logExercises, setLogExercises] = useState<LoggedExercise[]>(() =>
         [...log.exercises].sort((a, b) => a.order - b.order)
     );
@@ -213,7 +215,7 @@ function LogDetail({
             {addExerciseOpen && (
                 <Overlay title="Add exercise" onClose={() => setAddExerciseOpen(false)}>
                     <ExerciseLibrary
-                        exercises={Object.values(exercises)}
+                        exercises={exerciseList}
                         onSelect={e => handleAddExercise(e.id, e.type)}
                         onSaved={onExerciseCreated}
                     />

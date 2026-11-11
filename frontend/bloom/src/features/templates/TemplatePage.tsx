@@ -53,6 +53,7 @@ const TemplatePage = () => {
         getMe().then(u => setUserGear(u.gear ?? [])).catch(() => null);
     }, []);
 
+    const exerciseList = useMemo(() => Object.values(exercises), [exercises]);
     const selectedTemplate = useMemo(() => templates.find(t => t.id === selectedId) ?? null, [templates, selectedId]);
     selectedTemplateRef.current = selectedTemplate;
 
@@ -184,7 +185,7 @@ const TemplatePage = () => {
             {addExerciseOpen && (
                 <Overlay title="Add exercise" onClose={() => setAddExerciseOpen(false)}>
                     <ExerciseLibrary
-                        exercises={Object.values(exercises)}
+                        exercises={exerciseList}
                         onSelect={e => {
                             setPendingExerciseId(e.id);
                             setAddExerciseOpen(false);

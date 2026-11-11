@@ -258,13 +258,14 @@ const LogbookPage = () => {
         }
     }, []);
 
-    function handleSelect(id: string) {
+    // Stable between edits so the memoised sidebar doesn't re-render all its cards.
+    const handleSelect = useCallback((id: string) => {
         if (dirtyInfo && id !== selectedId) {
             setPendingAction({ type: 'select', id });
         } else {
             setSelectedId(id);
         }
-    }
+    }, [dirtyInfo, selectedId]);
 
     function handleBack() {
         if (dirtyInfo) {

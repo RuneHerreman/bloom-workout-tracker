@@ -1430,3 +1430,14 @@
 .dark .lb-month-label,
 .dark .dash-prompt-title,
 .dark .up-next-name { color: #8fd0ac; }
+
+/* Exercise library: the mouse highlight is pure CSS (no re-render per row), and
+   while the pointer is over the list the keyboard highlight steps aside. */
+.exercise-library-list:hover .exercise-library-row.highlighted:not(:hover) { background: transparent; }
+/* Off-screen rows skip layout and paint until they're scrolled into view. */
+.exercise-library-list .exercise-library-row { content-visibility: auto; contain-intrinsic-size: auto 3.25rem; }
+/* The list is catching up with what was typed. */
+.exercise-library-list.is-stale { opacity: 0.7; }
+.exercise-library-more { height: 1px; list-style: none; }
+.feature-sidebar-more { height: 1px; flex-shrink: 0; }
+.feature-sidebar-list.is-stale { opacity: 0.7; }
