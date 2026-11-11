@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-COMPOSE_FILE="config/with-tailscale/docker-compose.yml"
+COMPOSE_FILE="config/local-run/docker-compose.yml"
 BACKUP_DIR="backups"
 HEALTH_WAIT=20
 

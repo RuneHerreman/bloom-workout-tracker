@@ -2,7 +2,7 @@ services:
   bloom-api:
     build: ../../
     ports:
-      - "8080:5000"
+      - "127.0.0.1:5080:5000"
     env_file:
       - .local.env
     environment:
@@ -53,7 +53,7 @@ services:
       args:
         VITE_API_BASE_URL: /api/
     ports:
-      - "3000:80"
+      - "8000:80"
     depends_on:
       bloom-api:
         condition: service_healthy
