@@ -1,5 +1,5 @@
-import type { LoggedWorkout, LoggedSet } from "./api.ts";
-import type { SetMarker } from "../../assets/js/data/apiTypes.ts";
+import type { LoggedWorkout, LoggedSet, LoggedExercise } from "./api.ts";
+import type { SetMarker, SetHint } from "../../assets/js/data/apiTypes.ts";
 import {
     dominantType as _dominantType,
     formatDate,
@@ -76,11 +76,14 @@ export function groupByMonth<T>(items: T[], dateOf: (item: T) => string): MonthG
 
 // ── Previous performance ──────────────────────────────────────────────────────
 
-/** Fallback sets for an exercise that has never been logged. */
+/**
+ * An empty set: nothing is made up for an exercise you've never logged. For one
+ * you have, the values from last time ride along as a hint (see withHint).
+ */
 export function defaultSet(type: string, order = 1): LoggedSet {
     return type === "Cardio"
-        ? { type: "Cardio", order, reps: null, weight: null, weightUnit: null, rir: null, marker: null, duration: "00:30:00", distance: 5, distanceUnit: "km" }
-        : { type, order, reps: 10, weight: 60, weightUnit: "kg", rir: null, marker: null, duration: null, distance: null, distanceUnit: null };
+        ? { type: "Cardio", order, reps: null, weight: null, weightUnit: null, rir: null, marker: null, duration: null, distance: null, distanceUnit: "km" }
+        : { type, order, reps: null, weight: null, weightUnit: "kg", rir: null, marker: null, duration: null, distance: null, distanceUnit: null };
 }
 
 export type PreviousSetsLookup = (exerciseId: string, beforeIso?: string) => LoggedSet[] | undefined;
@@ -105,14 +108,56 @@ export function buildPreviousSetsLookup(logs: LoggedWorkout[], excludeLogId?: st
     };
 }
 
-/** First set for a newly added exercise: copies the values of last time's first set. */
-export function prefilledFirstSet(type: string, previous: LoggedSet[] | undefined): LoggedSet {
-    const first = previous?.[0];
-    if (!first || first.type !== type) return defaultSet(type);
-    return { ...first, order: 1, marker: null };
+/** What a set shows (typed value, else its own hint): the hint for the set that follows it. */
+export function hintFrom(set: LoggedSet): SetHint {
+    return {
+        reps: set.reps ?? set.hint?.reps ?? null,
+        weight: set.weight ?? set.hint?.weight ?? null,
+        duration: set.duration ?? set.hint?.duration ?? null,
+        distance: set.distance ?? set.hint?.distance ?? null,
+    };
 }
 
-/** Copy of the previous row for "Add set": same values, but a fresh (working) set type. */
+/** An empty set of the given type whose placeholders show `reference` (last time's set, or the row above). */
+export function hintedSet(type: string, order: number, reference: LoggedSet | undefined): LoggedSet {
+    const empty = defaultSet(type, order);
+    if (!reference || reference.type !== type) return empty;
+    return {
+        ...empty,
+        weightUnit: reference.weightUnit ?? empty.weightUnit,
+        distanceUnit: reference.distanceUnit ?? empty.distanceUnit,
+        hint: hintFrom(reference),
+    };
+}
+
+/** First set for a newly added exercise: empty, with last time's first set as placeholders. */
+export function prefilledFirstSet(type: string, previous: LoggedSet[] | undefined): LoggedSet {
+    return hintedSet(type, 1, previous?.[0]);
+}
+
+/** "Add set": an empty working set showing the row above as placeholders. */
 export function duplicateSet(last: LoggedSet, order: number): LoggedSet {
-    return { ...last, order, marker: null };
+    return hintedSet(last.type, order, last);
+}
+
+/**
+ * Fills each empty field with the placeholder it showed and drops the client-only
+ * hint, giving the sets that get saved. Strength sets with no weight are bodyweight (0).
+ */
+export function resolveHints(exercises: LoggedExercise[]): LoggedExercise[] {
+    return exercises.map(ex => ({
+        ...ex,
+        sets: ex.sets.map(({ hint, ...set }) => set.type === "Cardio"
+            ? { ...set, duration: set.duration ?? hint?.duration ?? null, distance: set.distance ?? hint?.distance ?? null }
+            : { ...set, reps: set.reps ?? hint?.reps ?? null, weight: set.weight ?? hint?.weight ?? 0 }),
+    }));
+}
+
+/** The first strength set left without reps (nothing typed, nothing from last time), if any. */
+export function findMissingReps(exercises: LoggedExercise[]): { exercise: LoggedExercise; setIndex: number } | null {
+    for (const exercise of exercises) {
+        const setIndex = exercise.sets.findIndex(s => s.type !== "Cardio" && s.reps == null && s.hint?.reps == null);
+        if (setIndex >= 0) return { exercise, setIndex };
+    }
+    return null;
 }

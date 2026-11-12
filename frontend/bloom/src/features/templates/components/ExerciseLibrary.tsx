@@ -5,6 +5,11 @@ import { X, Info, Search, Plus, Pencil, Sparkles } from "lucide-react";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import ExerciseForm from "../../exercises/components/ExerciseForm.tsx";
 import { useRecentExercises } from "../hooks/useRecentExercises.ts";
+import { useLoggedExerciseUsage } from "../hooks/useLoggedExerciseUsage.ts";
+import { matchScore } from "../exerciseSearch.ts";
+
+/** How many exercises the "Recently used" list shows. */
+const RECENT_COUNT = 8;
 
 const TYPE_LABELS: Record<string, string> = { Strength: "Strength", Cardio: "Cardio", Plyometric: "Plyo" };
 
@@ -123,6 +128,7 @@ function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: Exercis
     const searchRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
     const { recentIds, addRecent } = useRecentExercises();
+    const usage = useLoggedExerciseUsage();
 
     useEffect(() => { if (view.mode === "browse") searchRef.current?.focus(); }, [view.mode]);
 
@@ -141,13 +147,23 @@ function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: Exercis
     // Typing updates the input straight away; the list catches up a moment later.
     const deferredSearch = useDeferredValue(search);
     const filtered = useMemo(() => {
-        const q = deferredSearch.trim().toLowerCase();
-        return exercises.filter(e => {
-            const matchesSearch = !q || e.name.toLowerCase().includes(q);
-            const matchesMuscle = activeMuscles.size === 0 || e.targetMuscles.some(m => activeMuscles.has(m));
-            return matchesSearch && matchesMuscle && (!onlyCustom || e.isCustom);
+        const q = deferredSearch.trim();
+        const matches: { e: Exercise; score: number; i: number }[] = [];
+        exercises.forEach((e, i) => {
+            if (activeMuscles.size > 0 && !e.targetMuscles.some(m => activeMuscles.has(m))) return;
+            if (onlyCustom && !e.isCustom) return;
+            const score = q ? matchScore(e.name, q) : 0;
+            if (score !== null) matches.push({ e, score, i });
         });
-    }, [exercises, deferredSearch, activeMuscles, onlyCustom]);
+        // Searching: best match first, then the ones you log most, then A–Z.
+        if (q) {
+            matches.sort((a, b) =>
+                a.score - b.score
+                || (usage.counts.get(b.e.id) ?? 0) - (usage.counts.get(a.e.id) ?? 0)
+                || a.i - b.i);
+        }
+        return matches.map(m => m.e);
+    }, [exercises, deferredSearch, activeMuscles, onlyCustom, usage]);
     const hasCustom = exercises.some(e => e.isCustom);
 
     // Keyboard highlight; the mouse uses CSS :hover so moving over rows never re-renders the list.
@@ -182,10 +198,13 @@ function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: Exercis
 
     const isFiltering = search.trim() !== "" || activeMuscles.size > 0 || onlyCustom;
 
-    const recents = useMemo(() =>
-        recentIds.map(id => exercises.find(e => e.id === id)).filter(Boolean) as Exercise[],
-        [recentIds, exercises]
-    );
+    // What you've logged lately (from your logbook, so it follows you across devices),
+    // topped up with picks made in this browser that aren't logged yet.
+    const recents = useMemo(() => {
+        const byId = new Map(exercises.map(e => [e.id, e]));
+        const ids = [...new Set([...usage.recentIds, ...recentIds])];
+        return ids.map(id => byId.get(id)).filter((e): e is Exercise => !!e).slice(0, RECENT_COUNT);
+    }, [usage.recentIds, recentIds, exercises]);
 
     // The parents pass inline callbacks; read the latest ones through a ref so
     // handleSelect keeps one identity and the memoised rows don't re-render.

@@ -20,26 +20,24 @@ import UnsavedChangesDialog from "../../components/general/UnsavedChangesDialog.
 import { useToast } from "../../context/ToastContext.tsx";
 import { Plus, ChevronLeft, Download, Upload } from "lucide-react";
 import { useShortcut } from "../../hooks/useShortcut.ts";
-import { buildPreviousSetsLookup, defaultSet, type PreviousSetsLookup } from "./logbookUtils.ts";
+import { buildPreviousSetsLookup, hintedSet, type PreviousSetsLookup } from "./logbookUtils.ts";
 import { DRAFT_ID, createDraft, isDraftId, loadDraft, saveDraft } from "./drafts.ts";
 
 const newestFirst = (a: LoggedWorkout, b: LoggedWorkout) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime();
 
 /**
- * Template sets become logged sets prefilled with what you lifted last time
- * (same set position, else the first set), falling back to defaults for
- * exercises you've never logged.
+ * Template sets become empty logged sets whose placeholders show the plan, else
+ * what you did last time (same set position, else the first set). Exercises
+ * you've never logged and have no plan for start fully empty.
  */
 function plannedToLogged(s: PlannedSet, order: number, previous: LoggedSet[] | undefined): LoggedSet {
-    if (s.type === "Cardio") {
-        return { type: "Cardio", order, reps: null, weight: null, weightUnit: null, rir: null, marker: null,
-            duration: s.duration, distance: s.distance, distanceUnit: s.distanceUnit };
-    }
     const ref = previous?.[order - 1] ?? previous?.[0];
-    const fallback = defaultSet(s.type);
-    return { type: s.type, order, reps: s.reps ?? ref?.reps ?? fallback.reps, rir: null, marker: null,
-        weight: ref?.weight ?? fallback.weight, weightUnit: ref?.weightUnit ?? fallback.weightUnit,
-        duration: null, distance: null, distanceUnit: null };
+    const set = hintedSet(s.type, order, ref);
+    const hint = set.hint ?? {};
+    return s.type === "Cardio"
+        ? { ...set, distanceUnit: s.distanceUnit ?? set.distanceUnit,
+            hint: { ...hint, duration: s.duration ?? hint.duration ?? null, distance: s.distance ?? hint.distance ?? null } }
+        : { ...set, hint: { ...hint, reps: s.reps ?? hint.reps ?? null } };
 }
 
 function templateToExercises(template: WorkoutTemplate, previousSets: PreviousSetsLookup): LoggedExercise[] {
@@ -308,7 +306,7 @@ const LogbookPage = () => {
     useShortcut("k", () => { if (!startOpen) setStartOpen(true); }, true);
 
     return (
-        <div className="panel-page">
+        <div className="panel-page logbook-page">
             {showDialog && dirtyInfo && (
                 <UnsavedChangesDialog
                     name={dirtyInfo.name}

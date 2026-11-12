@@ -52,8 +52,10 @@
     outline: none;
 }
 
+/* `translate`, not `transform`: the pop-in animation owns `transform`, and with it
+   the popover lost its centring and ran off the right edge on phones. */
 .info-hint-pop {
-    transform: translate(-50%, 0.5rem);
+    translate: -50% 0.5rem;
     width: max-content;
     max-width: 17rem;
     padding: 0.7rem 0.85rem;
@@ -65,7 +67,7 @@
     text-align: left;
 }
 
-.info-hint-pop.above { transform: translate(-50%, calc(-100% - 0.5rem)); }
+.info-hint-pop.above { translate: -50% calc(-100% - 0.5rem); }
 
 .info-hint-title {
     font-family: var(--sans), sans-serif;

@@ -4,7 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import type { LoggedWorkout, LoggedExercise, LoggedSet } from "../api.ts";
 import { updateLog, createLog } from "../api.ts";
 import type { Exercise } from "../../exercises/api.ts";
-import { toDateInputValue, withDate, prefilledFirstSet, type PreviousSetsLookup } from "../logbookUtils.ts";
+import { toDateInputValue, withDate, prefilledFirstSet, resolveHints, findMissingReps, workingSetNumbers, type PreviousSetsLookup } from "../logbookUtils.ts";
 import { useExerciseDnd } from "../../templates/hooks/useExerciseDnd.ts";
 import { useShortcut } from "../../../hooks/useShortcut.ts";
 import LogExerciseCard from "./LogExerciseCard.tsx";
@@ -192,8 +192,18 @@ function LogDetail({
         setSaving(true);
         setError(null);
         try {
+            const missing = findMissingReps(logExercises);
+            if (missing) {
+                const name = exercises[missing.exercise.exerciseId]?.name ?? "An exercise";
+                const n = workingSetNumbers(missing.exercise.sets)[missing.setIndex];
+                setError(`${name}: fill in the reps for ${n ? `set ${n}` : "the warm-up set"}, or remove it.`);
+                // Take the user to the empty field; the banner is out of sight when scrolled down.
+                const row = document.querySelectorAll(`[data-exercise-id="${missing.exercise.order}"] .set-row`)[missing.setIndex];
+                row?.querySelector<HTMLInputElement>("input")?.focus();
+                return;
+            }
             const loggedAt = currentLoggedAt();
-            const cleaned = logExercises.map(ex => ({ ...ex, note: ex.note?.trim() ? ex.note.trim() : null }));
+            const cleaned = resolveHints(logExercises).map(ex => ({ ...ex, note: ex.note?.trim() ? ex.note.trim() : null }));
             const finalName = name.trim() || "Untitled workout";
             if (isDraft) {
                 const id = await createLog(finalName, cleaned, note || null, loggedAt);
@@ -213,7 +223,7 @@ function LogDetail({
     return (
         <div className="detail-view">
             {addExerciseOpen && (
-                <Overlay title="Add exercise" onClose={() => setAddExerciseOpen(false)}>
+                <Overlay title="Add exercise" panelClassName="overlay-panel-fixed" onClose={() => setAddExerciseOpen(false)}>
                     <ExerciseLibrary
                         exercises={exerciseList}
                         onSelect={e => handleAddExercise(e.id, e.type)}
@@ -268,7 +278,7 @@ function LogDetail({
                             <div className="overflow-menu-dropdown">
                                 <button
                                     className="overflow-menu-item"
-                                    onClick={() => { setMenuOpen(false); onCreateTemplate(name, logExercises); }}
+                                    onClick={() => { setMenuOpen(false); onCreateTemplate(name, resolveHints(logExercises)); }}
                                 >
                                     <BookmarkPlus size={14} />
                                     Create template from log
@@ -328,7 +338,7 @@ function LogDetail({
             {logExercises.length === 0 && (
                 <div className="log-empty-exercises">
                     <p>No exercises yet.</p>
-                    <p>Add one and its first set is filled in from the last time you did it.</p>
+                    <p>Add one and last time's numbers show in grey; leave a field empty to keep them.</p>
                 </div>
             )}
             <Button text="Add exercise" style="grey" icon={<Plus size={15} />} onClick={() => setAddExerciseOpen(true)} />

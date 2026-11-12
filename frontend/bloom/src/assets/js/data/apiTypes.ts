@@ -60,6 +60,18 @@ export interface LoggedSet {
     rir: number | null;
     /** Set type marker — warm-up, drop set, failure. Null/absent for a regular working set. */
     marker?: SetMarker | null;
+    /**
+     * Client-only: what you did last time, shown as greyed placeholders while logging.
+     * An empty field takes this value when the log is saved; never sent to the server.
+     */
+    hint?: SetHint | null;
+}
+
+export interface SetHint {
+    reps?: number | null;
+    weight?: number | null;
+    duration?: string | null;
+    distance?: number | null;
 }
 
 export type SetMarker = "WarmUp" | "DropSet" | "Failure";

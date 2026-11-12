@@ -276,3 +276,36 @@
         width: 100%;
     }
 }
+/* ── Phone: more of the workout on screen while logging ──────────────────────── */
+
+@media (max-width: 768px) {
+    /* With a log open, the "‹ Logbook" link is the header; export/import live on the list. */
+    .logbook-page:has(.panel-body.has-selection) > .page-header { display: none; }
+
+    .logbook-page .panel-detail { padding: 0.75rem 1rem 1.5rem; }
+    .logbook-page .panel-back-btn { padding-bottom: 0.5rem; }
+    .logbook-page .detail-view { gap: 0.75rem; }
+    .logbook-page .detail-header { gap: 0.6rem; }
+
+    /* One line until you write more. */
+    .logbook-page .log-note-area {
+        min-height: 2.6rem;
+        padding: 0.55rem 0.85rem;
+        field-sizing: content;
+    }
+
+    .logbook-page .exercise-card header { padding: 0.6rem 0.9rem; }
+    .logbook-page .exercise-card header > div:first-child { gap: 0.1rem; }
+    .logbook-page .set-grid-header > * { padding: 0.4rem 0.35rem; }
+    .logbook-page .exercise-footer { padding: 0.5rem 0.9rem; gap: 0.5rem; }
+
+    .logbook-page .log-body.is-strength .set-grid-header,
+    .logbook-page .log-body.is-strength .set-row {
+        grid-template-columns: 2.75rem 1fr 1fr 1fr 3.5rem;
+    }
+
+    .logbook-page .log-body.is-cardio .set-grid-header,
+    .logbook-page .log-body.is-cardio .set-row {
+        grid-template-columns: 2.75rem 1fr 1fr 3.5rem;
+    }
+}

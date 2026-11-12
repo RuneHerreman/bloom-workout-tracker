@@ -58,7 +58,7 @@ function StartSessionOverlay({ draft, onFromTemplate, onBlank, onResumeDraft, on
                     <p className="start-session-empty">No templates yet</p>
                 )}
                 <Button style="grey" onClick={onBlank} icon={<Plus size={14} />} text="Empty workout" />
-                <p className="start-session-hint">Weights are filled in from the last time you did each exercise. Nothing is saved until you press Save.</p>
+                <p className="start-session-hint">Grey numbers are what you did last time: leave a field empty to keep them. Nothing is saved until you press Save.</p>
             </div>
         </Overlay>
     );

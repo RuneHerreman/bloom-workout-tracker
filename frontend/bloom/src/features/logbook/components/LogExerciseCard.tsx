@@ -116,6 +116,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
     }
 
     const exerciseType = exerciseInfo?.type ?? "Strength";
+    const exerciseName = exerciseInfo?.name ?? "Unknown exercise";
     const isCardio = exerciseType === "Cardio";
     const bodyClass = `log-body ${isCardio ? "is-cardio" : "is-strength"}`;
     const numbers = workingSetNumbers(items.map(i => i.set));
@@ -162,12 +163,12 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
         >
             <header>
                 <div>
-                    <h3 className="exercise-name">{exerciseInfo?.name ?? "Unknown exercise"}</h3>
+                    <h3 className="exercise-name">{exerciseName}</h3>
                     <p className="exercise-info">{exerciseType} · {exerciseInfo?.targetMuscles.join(" - ")}</p>
                 </div>
                 <div className="exercise-card-actions">
-                    <span className="exercise-drag-handle" {...attributes} {...listeners} tabIndex={-1}><GripVertical size={16} /></span>
-                    <button className="exercise-delete-btn" tabIndex={-1} onClick={() => onDelete(exercise.order)}><X size={14} /></button>
+                    <span className="exercise-drag-handle" {...attributes} {...listeners} tabIndex={-1} aria-label={`Reorder ${exerciseName}`}><GripVertical size={16} /></span>
+                    <button type="button" className="exercise-delete-btn" tabIndex={-1} aria-label={`Remove ${exerciseName}`} onClick={() => onDelete(exercise.order)}><X size={14} /></button>
                 </div>
             </header>
             {noteOpen && onNoteChange && (
@@ -196,6 +197,7 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
                                 item={item}
                                 number={numbers[index]}
                                 type={exerciseType}
+                                exerciseName={exerciseName}
                                 onSetChange={handleSetChange}
                                 onDelete={handleDeleteSet}
                             />

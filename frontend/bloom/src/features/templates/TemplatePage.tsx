@@ -183,7 +183,7 @@ const TemplatePage = () => {
                 ]}
             />
             {addExerciseOpen && (
-                <Overlay title="Add exercise" onClose={() => setAddExerciseOpen(false)}>
+                <Overlay title="Add exercise" panelClassName="overlay-panel-fixed" onClose={() => setAddExerciseOpen(false)}>
                     <ExerciseLibrary
                         exercises={exerciseList}
                         onSelect={e => {
