@@ -216,11 +216,12 @@
     transition: border-color var(--transition), background var(--transition);
 }
 .tool-choice:hover { border-color: var(--grey); }
+/* Picked: the app sidebar's faded green fill. */
 .tool-choice.active {
-    border-color: var(--primary-light);
-    background: color-mix(in srgb, var(--primary-light) 7%, transparent);
-    box-shadow: inset 0.1875rem 0 0 var(--primary-light);
+    border-color: transparent;
+    background: color-mix(in srgb, var(--primary-faded) 80%, transparent);
 }
+.tool-choice.active .tool-choice-title { color: var(--primary-transparent); font-weight: 550; }
 .tool-choice-title { display: flex; align-items: center; gap: 0.5rem; font-size: var(--text-sm); font-weight: 500; }
 .tool-choice-desc { font-size: var(--text-xs); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
 .tool-tag {
@@ -282,11 +283,13 @@
 /* A caveat that changes how to read the number: same weight, warmer colour. */
 .tool-note { margin: 0.2rem 0 0; font-size: var(--text-xs); color: var(--marker-warmup); line-height: 1.45; }
 
+/* Beside the number when the card is wide, under it when not; as many columns as fit. */
 .tool-hero-stats {
+    flex: 1 1 22rem;
+    min-width: 0;
     display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(8.5rem, auto);
-    gap: 0 1.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+    gap: 0.9rem 1.5rem;
     margin: 0;
     padding-top: 0.2rem;
 }
@@ -330,23 +333,112 @@
 .tool-table th.cross { background: color-mix(in srgb, var(--ink) 3.5%, transparent); }
 .tool-table th.cross { color: var(--ink); }
 .tool-table td.hit { background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); }
-.tool-table td.current {
-    background: color-mix(in srgb, var(--primary-light) 14%, transparent);
-    color: var(--ink);
-    font-weight: 550;
-}
 
 /* ── Macros ── */
 
-.macro-stack { display: flex; gap: 0.15rem; height: 0.75rem; border-radius: 0.2rem; overflow: hidden; }
+.macro-stack { display: flex; gap: 0.15rem; overflow: hidden; }
 .macro-stack span { flex: 0 1 0; min-width: 0.25rem; }
-.macro-stack .protein, .macro-row.protein .macro-dot { background: var(--viz-1); }
-.macro-stack .fat, .macro-row.fat .macro-dot { background: var(--viz-2); }
-.macro-stack .carbs, .macro-row.carbs .macro-dot { background: var(--viz-3); }
+.macro-stack .protein { background: var(--viz-1); }
+.macro-stack .fat { background: var(--viz-2); }
+.macro-stack .carbs { background: var(--viz-3); }
 
-.macro-table td:first-child { color: var(--ink); white-space: nowrap; }
 .macro-dot { display: inline-block; width: 0.55rem; height: 0.55rem; margin-right: 0.5rem; border-radius: 0.15rem; vertical-align: 0.05rem; }
-.macro-table .macro-grams { font-family: var(--serif), serif; font-size: var(--text-md); color: var(--dark-text); }
+
+/* ── Answer details ── */
+
+/* "Maintenance 2,380 − 440 deficit · −0.4 kg a week": how the target is built, one quiet line. */
+.tool-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 0.1rem 0.3rem; margin: 0; font-size: var(--text-sm); color: var(--ink); font-variant-numeric: tabular-nums; }
+.tool-sum .tool-label-hint { font-size: inherit; font-weight: 400; color: inherit; }
+.tool-sum-rate { color: var(--ink-muted); }
+
+.tool-new-best { margin: 0; font-size: var(--text-sm); font-weight: 550; color: var(--viz-1); }
+
+.tool-suggest {
+    align-self: flex-start;
+    margin-top: 0.15rem;
+    padding: 0.45rem 0.7rem;
+    border: 0.0625rem dashed var(--border);
+    border-radius: var(--radius-md);
+    background: none;
+    color: var(--ink-muted);
+    font-family: inherit;
+    font-size: var(--text-sm);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--transition), color var(--transition), background var(--transition);
+}
+.tool-suggest b { color: var(--ink); font-weight: 550; }
+.tool-suggest:hover { border-style: solid; border-color: var(--primary-light); color: var(--ink); background: color-mix(in srgb, var(--primary-faded) 35%, transparent); }
+
+/* How the real trend compares with the plan. */
+.tool-check { margin: 0; padding: 0.55rem 0.8rem; border-radius: var(--radius-md); font-size: var(--text-sm); line-height: 1.45; }
+.tool-check.ok { background: color-mix(in srgb, var(--primary-faded) 45%, transparent); color: var(--primary-transparent); }
+.tool-check.off { background: color-mix(in srgb, var(--marker-warmup) 12%, transparent); color: var(--ink); }
+
+/* "You": one row per value, icon and label on the left, value on the right. */
+.tool-you-rows { display: flex; flex-direction: column; margin: 0; }
+.tool-you-rows > div {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 1.85rem;
+    border-bottom: 0.0625rem solid var(--border-light);
+    font-size: var(--text-sm);
+}
+.tool-you-rows > div:last-child { border-bottom: none; }
+.tool-you-rows dt { display: flex; align-items: center; gap: 0.5rem; color: var(--ink-muted); }
+.tool-you-icon { flex-shrink: 0; color: var(--ink-muted); opacity: 0.8; }
+.tool-you-rows dd { margin: 0 0 0 auto; display: flex; align-items: baseline; gap: 0.4rem; color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+.tool-you-rows small { font-size: var(--text-2xs); font-weight: 400; color: var(--marker-warmup); }
+/* Weight too old to trust: the warm colour, and a small way to fix it in the same row. */
+.tool-you-rows > .stale .tool-you-icon, .tool-you-rows > .stale dt { color: var(--marker-warmup); }
+.tool-you-log { margin-left: 0.15rem; }
+.tool-you-log .log-weight-trigger { padding: 0.15rem 0.45rem; font-size: var(--text-2xs); gap: 0.25rem; }
+.tool-you-log .log-weight-trigger svg { width: 0.75rem; height: 0.75rem; }
+
+/* Rate buttons: kg a week, with the % under it. */
+.tool-segmented.two-line .segmented-item { display: flex; flex-direction: column; align-items: center; gap: 0.05rem; padding-block: 0.3rem; line-height: 1.15; }
+.tool-segmented.two-line small { font-size: var(--text-2xs); color: var(--ink-muted); }
+
+.tool-dot-key { display: inline-block; width: 0.35rem; height: 0.35rem; margin: 0 0.1rem 0.1rem; border-radius: 50%; background: var(--viz-1); vertical-align: middle; }
+
+/* Activity: the current level, opening into the others. */
+.tool-choice-summary { border-color: var(--border); }
+.tool-choice-summary .tool-choice-title { width: 100%; }
+.tool-choice-chevron { margin-left: auto; color: var(--ink-muted); transition: transform var(--transition); }
+.tool-choice-summary[aria-expanded="true"] .tool-choice-chevron { transform: rotate(180deg); }
+
+/* ── Charts ── */
+
+.e1rm-chart, .plan-chart { height: 13.5rem; }
+.e1rm-empty { padding: 2rem 0; text-align: center; }
+.e1rm-key-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: color-mix(in srgb, var(--viz-1) 35%, transparent); }
+.trend-key-record.e1rm-key-record { background: repeating-linear-gradient(90deg, var(--viz-axis) 0 5px, transparent 5px 9px) center / 100% 2px no-repeat; opacity: 1; }
+
+/* ── Table emphasis ── */
+
+.tool-table tr.low td { color: var(--ink-muted); opacity: 0.6; }
+.tool-table tr.low td.current, .tool-table tr.low.cross td { opacity: 1; }
+.tool-table td.current {
+    background: color-mix(in srgb, var(--primary-faded) 80%, transparent);
+    color: var(--primary-transparent);
+    font-weight: 600;
+    box-shadow: inset 0 0 0 0.0625rem var(--primary-light);
+}
+
+/* ── Macro figures ── */
+
+.macro-figures { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.macro-figure { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; font-variant-numeric: tabular-nums; }
+.macro-figure-name { display: flex; align-items: center; font-size: var(--text-sm); color: var(--ink); }
+.macro-figure b { font-family: var(--serif), serif; font-size: var(--text-2xl); font-weight: 400; line-height: 1.15; color: var(--dark-text); }
+.macro-figure span:not(.macro-figure-name):not(.macro-dot) { font-size: var(--text-xs); color: var(--ink-muted); }
+.macro-figure.protein .macro-dot { background: var(--viz-1); }
+.macro-figure.fat .macro-dot { background: var(--viz-2); }
+.macro-figure.carbs .macro-dot { background: var(--viz-3); }
+
+.macro-stack { height: 1.35rem; border-radius: var(--radius-sm); }
+.macro-stack span { display: flex; align-items: center; padding-left: 0.4rem; font-size: var(--text-2xs); font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; }
 
 /* ── Narrow ── */
 
@@ -377,7 +469,6 @@
         font-variant-numeric: tabular-nums;
     }
 
-    .tool-hero-stats { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem 1.25rem; width: 100%; }
     .tool-hero-stats dd { font-size: var(--text-lg); }
     /* Insights hides a history table's 4th column on phones; every column matters here. */
     .tool-table th:nth-child(4), .tool-table td:nth-child(4) { display: table-cell; }

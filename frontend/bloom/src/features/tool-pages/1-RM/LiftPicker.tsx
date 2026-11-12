@@ -7,6 +7,8 @@ export interface LiftOption {
     /** Latest estimate, shown on the right so you can tell lifts apart at a glance. */
     e1rm: number;
     lastDate: string;
+    /** Only trained past 10 reps: its estimate is rough. */
+    rough?: boolean;
 }
 
 interface Props {
@@ -113,7 +115,7 @@ function LiftPicker({ options, value, onChange }: Props) {
                         >
                             <span className="lift-picker-name">{o.name}</span>
                             <span className="lift-picker-meta">
-                                <b>{Math.round(o.e1rm * 10) / 10} kg</b> · {fmtAgo(o.lastDate)}
+                                <b>{o.rough ? "~" : ""}{Math.round(o.e1rm * 10) / 10} kg</b>{o.rough ? " rough" : ""} · {fmtAgo(o.lastDate)}
                             </span>
                         </li>
                     ))}
