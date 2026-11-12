@@ -159,6 +159,11 @@ export function getLogs(): Promise<LoggedWorkout[]> {
     return _logsCache;
 }
 
+/** Drops the cached logs, e.g. after gear was renamed across them on the server. */
+export function forgetLogs(): void {
+    _logsCache = null;
+}
+
 /** Logs already in memory, if any — lets a page skip its loading state. */
 export function peekLogs(): LoggedWorkout[] | undefined {
     return peek(_logsCache);

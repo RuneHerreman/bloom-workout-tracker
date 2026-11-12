@@ -17,6 +17,14 @@ public class TemplateExercise : Entity<TemplateExerciseId>
 
     private TemplateExercise() { }
 
+    /// <summary>Renames a gear item planned for this exercise. Returns whether anything changed.</summary>
+    internal bool RenameGear(string from, string to)
+    {
+        if (!Gear.Contains(from)) return false;
+        Gear = Gear.Select(g => g == from ? to : g).Distinct().ToList();
+        return true;
+    }
+
     private TemplateExercise(
         TemplateExerciseId id,
         ExerciseId exerciseId,

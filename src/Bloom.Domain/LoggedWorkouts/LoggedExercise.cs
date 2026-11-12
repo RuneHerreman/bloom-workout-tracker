@@ -28,6 +28,14 @@ public class LoggedExercise : Entity<LoggedExerciseId>
 
     private LoggedExercise() { }
 
+    /// <summary>Renames a gear item used on this exercise. Returns whether anything changed.</summary>
+    internal bool RenameGear(string from, string to)
+    {
+        if (!Gear.Contains(from)) return false;
+        Gear = Gear.Select(g => g == from ? to : g).Distinct().ToList();
+        return true;
+    }
+
     private LoggedExercise(
         LoggedExerciseId id,
         ExerciseId exerciseId,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { LoggedWorkout, User } from "../../assets/js/data/apiTypes.ts";
 import { getLogs, peekLogs } from "../logbook/api.ts";
@@ -18,17 +18,74 @@ import Explorer, { type ExplorerItem } from "./components/Explorer.tsx";
 import StrengthDetail from "./components/StrengthDetail.tsx";
 import CardioDetail from "./components/CardioDetail.tsx";
 import BodyView from "./components/BodyView.tsx";
+import GearDetail from "./components/GearDetail.tsx";
+import { gearUsage, gearByBucket, type GearUse } from "./gearAnalysis.ts";
+import { SHOE_LIFE_KM, resolveKind } from "../profile/gearKinds.ts";
 import ConsistencyChart from "./components/ConsistencyChart.tsx";
 import MuscleBalance from "./components/MuscleBalance.tsx";
 import { AXIS_TICK, VizTooltip } from "./components/ChartParts.tsx";
+import type { Highlight } from "./analysis.ts";
 import PageLoader from "../../components/general/PageLoader.tsx";
 import "../../assets/css/insights.css";
 
 const InsightsHeatmap = lazy(() => import("./InsightsHeatmap.tsx"));
 
-type Tab = "strength" | "cardio" | "body";
+type Tab = "strength" | "cardio" | "body" | "gear";
 
-const TAB_LABELS: Record<Tab, string> = { strength: "Strength", cardio: "Cardio", body: "Body" };
+const TAB_LABELS: Record<Tab, string> = { strength: "Strength", cardio: "Cardio", body: "Body", gear: "Gear" };
+
+const gearKm = (v: number) => `${v >= 100 ? Math.round(v) : Math.round(v * 10) / 10} km`;
+const gearKg = (v: number) => (v >= 10_000 ? `${(v / 1000).toFixed(1)} t` : `${Math.round(v)} kg`);
+
+/** One line per item: its main numbers this period. */
+function gearSummary(g: GearUse): string {
+    const p = g.period;
+    if (!p.sessions) return g.lastUsed ? "Not used this period" : "Not used yet";
+    return [
+        p.km > 0 && gearKm(p.km),
+        p.minutes > 0 && !p.km && formatDuration(p.minutes),
+        p.sets > 0 && `${p.sets} sets`,
+        p.volumeKg > 0 && gearKg(p.volumeKg),
+    ].filter(Boolean).join(" · ") || `${p.sessions} session${p.sessions === 1 ? "" : "s"}`;
+}
+
+/** The figure an item is mostly about: distance for shoes and bikes, volume for a belt, else sessions. */
+function primary(g: GearUse): "km" | "volumeKg" | "sets" | "sessions" {
+    return g.total.km > 0 ? "km" : g.total.volumeKg > 0 ? "volumeKg" : g.total.sets > 0 ? "sets" : "sessions";
+}
+
+function gearHighlights(items: GearUse[], icons: Record<string, string> | undefined, hasPrevious: boolean): Highlight[] {
+    const out: Highlight[] = [];
+    for (const g of items) {
+        if (!g.listed || resolveKind(g.name, icons) !== "shoe" || g.total.km < SHOE_LIFE_KM * 0.8) continue;
+        const past = g.total.km >= SHOE_LIFE_KM;
+        out.push({
+            id: `wear-${g.name}`, tone: "attention", kind: "distance", exerciseId: g.name,
+            title: past ? `${g.name} are past a usual shoe life` : `${g.name} are nearly due`,
+            detail: `${gearKm(g.total.km)} so far; running shoes usually last about ${SHOE_LIFE_KM} km.`,
+        });
+    }
+    const used = items.filter(g => g.period.sessions > 0);
+    const top = used[0];
+    if (top) {
+        const p = top.period;
+        const before = top.previous.sessions;
+        out.push({
+            id: "top", tone: "neutral", kind: p.km > 0 ? "distance" : "prs", exerciseId: top.name,
+            title: `Most used: ${top.name}`,
+            detail: `${p.sessions} session${p.sessions === 1 ? "" : "s"}${p.km > 0 ? `, ${gearKm(p.km)}` : p.volumeKg > 0 ? `, ${gearKg(p.volumeKg)} lifted` : ""}${hasPrevious && before ? ` (${before} the period before)` : ""}.`,
+        });
+    }
+    const idle = items.filter(g => g.listed && g.period.sessions === 0);
+    if (idle.length && used.length) {
+        out.push({
+            id: "idle", tone: "neutral", kind: "consistency",
+            title: `${idle.length} item${idle.length === 1 ? "" : "s"} not used this period`,
+            detail: idle.slice(0, 3).map(g => g.name).join(", ") + (idle.length > 3 ? ` and ${idle.length - 3} more` : "") + ".",
+        });
+    }
+    return out.slice(0, 4);
+}
 
 const fmtRange = (start: Date, end: Date) => {
     const sameYear = start.getFullYear() === end.getFullYear();
@@ -57,6 +114,7 @@ function InsightsPage() {
     const periodTouched = useRef(linkedExercise !== null);
     const [selectedStrength, setSelectedStrength] = useState<string | null>(linkedExercise);
     const [selectedCardio, setSelectedCardio] = useState<string | null>(null);
+    const [selectedGear, setSelectedGear] = useState<string | null>(null);
     const explorerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -134,6 +192,25 @@ function InsightsPage() {
     const hr = useMemo(() => buildHrZoneData(periodLogs, maxHr, gpxCache), [periodLogs, maxHr, gpxCache]);
     const zoneTotal = hr.overall.reduce((n, z) => n + z.seconds, 0);
 
+    // ── Gear ──────────────────────────────────────────────────────────────────
+    const gear = useMemo(() => gearUsage(logs, exercises, range, user?.gear ?? []), [logs, exercises, range, user?.gear]);
+    const gHighlights = useMemo(() => gearHighlights(gear, user?.gearIcons, period !== "all"), [gear, user?.gearIcons, period]);
+    const gearItems: ExplorerItem[] = useMemo(() => gear.map(g => {
+        const key = primary(g);
+        const now = g.period[key], before = g.previous[key];
+        const pct = before ? Math.round(((now - before) / before) * 100) : null;
+        return {
+            id: g.name,
+            name: g.name,
+            sub: gearSummary(g),
+            spark: gearByBucket(g.sessions, range).points.map(b => b[key]),
+            change: changeOf(period === "all" ? null : pct),
+            meta: `${g.period.sessions} session${g.period.sessions !== 1 ? "s" : ""}`,
+        };
+    }), [gear, range, period]);
+    const gearId = selectedGear && gear.some(g => g.name === selectedGear) ? selectedGear : gear[0]?.name ?? null;
+    const gearDetail = gear.find(g => g.name === gearId) ?? null;
+
     const hasStrength = progress.length > 0;
     const hasCardio = cardioNow.length > 0;
 
@@ -155,7 +232,7 @@ function InsightsPage() {
                         ))}
                     </div>
                     <div className="segmented" role="tablist" aria-label="Insights view">
-                        {(["strength", "cardio", "body"] as Tab[]).map(t => (
+                        {(["strength", "cardio", "body", "gear"] as Tab[]).map(t => (
                             <button key={t} role="tab" aria-selected={tab === t}
                                 className={`segmented-item${tab === t ? " active" : ""}`} onClick={() => setTab(t)}>
                                 {TAB_LABELS[t]}
@@ -211,6 +288,29 @@ function InsightsPage() {
                 )}
 
                 {!loading && !error && tab === "body" && <BodyView range={range} period={period} />}
+
+                {!loading && !error && tab === "gear" && (
+                    gear.length === 0 ? (
+                        <p className="viz-empty viz-empty-page">
+                            No gear yet. Add shoes, a bike or a belt in your <Link to="/profile#gear">profile</Link>, then pick it on exercises in your logbook.
+                        </p>
+                    ) : (
+                        <>
+                            <Highlights items={gHighlights} onSelectExercise={setSelectedGear} />
+                            <Explorer
+                                title="Gear"
+                                items={gearItems}
+                                selectedId={gearId}
+                                onSelect={setSelectedGear}
+                                searchPlaceholder="Search gear"
+                            >
+                                {gearDetail && (
+                                    <GearDetail key={gearDetail.name} gear={gearDetail} kind={resolveKind(gearDetail.name, user?.gearIcons)} range={range} />
+                                )}
+                            </Explorer>
+                        </>
+                    )
+                )}
 
                 {!loading && !error && tab === "cardio" && (
                     !hasCardio ? (

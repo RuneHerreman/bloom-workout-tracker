@@ -13,6 +13,8 @@ public sealed record UserData
     public DateOnly BirthDate { get; init; }
     public string? TechnicalPoints { get; init; }
     public List<string> Gear { get; init; } = [];
+    /// <summary>Picked gear icons by item name.</summary>
+    public Dictionary<string, string> GearIcons { get; init; } = [];
     public bool ShowOnLeaderboard { get; init; } = true;
     /// <summary>"Male", "Female" or null.</summary>
     public string? Sex { get; init; }

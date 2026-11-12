@@ -181,6 +181,8 @@ export interface User {
     birthDate: string;
     technicalPoints: string | null;
     gear?: string[];
+    /** Icons picked for gear items, by name; items without one get an icon guessed from the name. */
+    gearIcons?: Record<string, string>;
     /** Whether other users can see you on the monthly leaderboard. */
     showOnLeaderboard: boolean;
     /** Only used for resting-energy estimates. */

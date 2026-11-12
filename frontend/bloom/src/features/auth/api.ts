@@ -64,6 +64,23 @@ export async function updateGear(gear: string[]): Promise<void> {
     _meCache = null;
 }
 
+/** Picks the icon for one gear item; null goes back to the icon guessed from its name. */
+export async function setGearIcon(name: string, kind: string | null): Promise<void> {
+    await fetchFromServer<unknown>("users/me/gear/icon", "PUT", { name, kind });
+    _meCache = null;
+}
+
+/**
+ * Renames one gear item everywhere: the gear list, and every logged workout and
+ * template that uses it (they refer to gear by name). Callers should drop their
+ * cached logs and templates afterwards.
+ */
+export async function renameGear(from: string, to: string): Promise<{ workouts: number; templates: number }> {
+    const result = await fetchFromServer<{ workouts: number; templates: number }>("users/me/gear/rename", "POST", { from, to });
+    _meCache = null;
+    return result;
+}
+
 export async function updateSex(sex: Sex | null): Promise<void> {
     await fetchFromServer<unknown>("users/me/sex", "PUT", { sex });
     _meCache = null;

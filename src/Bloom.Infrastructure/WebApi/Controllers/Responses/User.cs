@@ -15,7 +15,8 @@ public record User(
     string? TechnicalPoints,
     IReadOnlyList<string> Gear,
     bool ShowOnLeaderboard,
-    string? Sex
+    string? Sex,
+    IReadOnlyDictionary<string, string> GearIcons
 );
 
 public static class UserExtensions
@@ -35,7 +36,8 @@ public static class UserExtensions
             data.TechnicalPoints,
             data.Gear,
             data.ShowOnLeaderboard,
-            data.Sex
+            data.Sex,
+            data.GearIcons
         );
     }
 }

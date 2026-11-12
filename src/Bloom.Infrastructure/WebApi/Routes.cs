@@ -81,6 +81,16 @@ public static class Routes
             .WithDescription("Update the authenticated user's gear list (full overwrite).")
             .RequireAuthorization();
 
+        userGroup.MapPut("/me/gear/icon", UpdateGearIconController.Invoke)
+            .WithName(nameof(UpdateGearIconController))
+            .WithDescription("Pick the icon for one gear item, or clear it to use the one guessed from its name.")
+            .RequireAuthorization();
+
+        userGroup.MapPost("/me/gear/rename", RenameUserGearController.Invoke)
+            .WithName(nameof(RenameUserGearController))
+            .WithDescription("Rename one gear item in the gear list and on every logged workout and template that uses it.")
+            .RequireAuthorization();
+
         userGroup.MapPut("/me/sex", UpdateUserSexController.Invoke)
             .WithName(nameof(UpdateUserSexController))
             .WithDescription("Set or clear the authenticated user's sex (Male/Female), used for resting-energy estimates.")

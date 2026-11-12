@@ -683,3 +683,49 @@ button.highlight:hover .highlight-link, button.highlight:focus-visible .highligh
 }
 .body-cell-input:focus { border-color: var(--primary-light); }
 .body-more { align-self: flex-start; margin-top: 0.25rem; }
+
+/* ── Gear ──────────────────────────────────────────────────────────────────── */
+
+.gear-detail-title { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+.gear-detail-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-md);
+    color: var(--primary-light);
+    background: color-mix(in srgb, var(--primary-faded) 70%, transparent);
+}
+.dark .gear-detail-icon { color: var(--primary); }
+
+/* Running shoes: distance against a usual life. */
+.gear-detail-wear { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.75rem 0.9rem; border-radius: var(--radius-md); background: var(--surface-less-light); }
+.gear-detail-wear-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; font-size: var(--text-sm); color: var(--ink-muted); }
+.gear-detail-wear-head b { font-family: var(--serif), serif; font-size: var(--text-lg); font-weight: 400; color: var(--dark-text); font-variant-numeric: tabular-nums; }
+.gear-detail-wear-head small { font-family: var(--sans), sans-serif; font-size: var(--text-xs); color: var(--ink-muted); }
+.gear-detail-wear .gear-wear-track { display: block; height: 0.45rem; border-radius: 1rem; background: var(--grey-light); overflow: hidden; }
+.gear-detail-wear .gear-wear-track span { display: block; height: 100%; border-radius: inherit; background: var(--viz-1); }
+.gear-detail-wear.due .gear-detail-wear-head span:first-child { color: var(--marker-warmup); }
+.gear-detail-wear.due .gear-wear-track span { background: var(--marker-warmup); }
+.gear-detail-wear.worn .gear-detail-wear-head span:first-child { color: var(--danger-text); }
+.gear-detail-wear.worn .gear-wear-track span { background: var(--danger-base); }
+
+.gear-chart { height: 12rem; }
+.gear-life-chart { height: 10rem; }
+.gear-lifetime { display: flex; flex-direction: column; gap: 0.5rem; }
+
+/* Up to eight tiles: wrap into rows of four instead of squeezing. */
+/* Tiles wrap at any width, so they're spaced by a gap rather than divider lines,
+   which would land at the start of a wrapped row. */
+.gear-records { grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: 0 1.25rem; }
+.gear-records > div,
+.gear-records > div + div { padding: 0.75rem 0; border-left: none; }
+
+.gear-detail-lists { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1.25rem; }
+.gear-used-for { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.45rem; }
+.gear-used-for li { display: grid; grid-template-columns: minmax(0, 1fr) 5rem 1.5rem; align-items: center; gap: 0.6rem; font-size: var(--text-sm); color: var(--ink); }
+.gear-used-for li > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gear-used-for b { font-weight: 550; text-align: right; font-variant-numeric: tabular-nums; }
+.gear-used-bar { height: 0.35rem; border-radius: 1rem; background: var(--grey-light); overflow: hidden; }
+.gear-used-bar span { display: block; height: 100%; border-radius: inherit; background: var(--viz-1); }

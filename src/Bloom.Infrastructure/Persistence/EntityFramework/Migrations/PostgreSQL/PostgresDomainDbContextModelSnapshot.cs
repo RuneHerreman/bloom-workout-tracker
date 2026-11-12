@@ -223,6 +223,12 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                         .IsRequired()
                         .HasColumnType("jsonb");
 
+                    b.Property<string>("GearIcons")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasDefaultValueSql("'{}'::jsonb");
+
                     b.Property<string>("HashedPassword")
                         .IsRequired()
                         .HasColumnType("text");

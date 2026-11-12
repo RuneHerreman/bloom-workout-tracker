@@ -20,9 +20,13 @@ interface ExerciseFormProps {
     onSaved: (exercise: Exercise) => void;
     onDeleted?: (exerciseId: string) => void;
     onCancel: () => void;
+    /** Text of the back link; the library is where the form usually opens from. */
+    backLabel?: string;
+    /** Button text when creating; in the library a new exercise is also added to the workout. */
+    createLabel?: string;
 }
 
-function ExerciseForm({ exercise, initialName = "", knownMuscles, onSaved, onDeleted, onCancel }: ExerciseFormProps) {
+function ExerciseForm({ exercise, initialName = "", knownMuscles, onSaved, onDeleted, onCancel, backLabel = "Back to library", createLabel = "Create & add" }: ExerciseFormProps) {
     const editing = !!exercise;
     const [name, setName] = useState(exercise?.name ?? initialName);
     const [type, setType] = useState<ExerciseType>(exercise?.type ?? "Strength");
@@ -94,7 +98,7 @@ function ExerciseForm({ exercise, initialName = "", knownMuscles, onSaved, onDel
     return (
         <form className="exercise-form" onSubmit={handleSubmit} noValidate>
             <button type="button" className="exercise-form-back" onClick={onCancel}>
-                <ArrowLeft size={14} /> Back to library
+                <ArrowLeft size={14} /> {backLabel}
             </button>
 
             <div className="exercise-form-heading">
@@ -205,7 +209,7 @@ function ExerciseForm({ exercise, initialName = "", knownMuscles, onSaved, onDel
                 {!confirmDelete && (
                     <button type="submit" className="button-component green exercise-form-submit" disabled={saving}>
                         <Check size={14} />
-                        {saving ? "Saving…" : editing ? "Save changes" : "Create & add"}
+                        {saving ? "Saving…" : editing ? "Save changes" : createLabel}
                     </button>
                 )}
             </div>

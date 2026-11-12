@@ -92,19 +92,19 @@ export function buckets(range: Range): { unit: "week" | "month"; items: Bucket[]
 export const toKg = (w: number | null, unit: string | null) =>
     w == null ? 0 : (unit ?? "kg").toLowerCase() === "lbs" ? w * 0.45359237 : w;
 
-const toKm = (d: number | null, unit: string | null) => {
+export const toKm = (d: number | null, unit: string | null) => {
     if (d == null) return 0;
     const u = (unit ?? "km").toLowerCase();
     return u === "miles" ? d * 1.609344 : u === "meters" ? d / 1000 : d;
 };
 
-const toMinutes = (dur: string | null) => {
+export const toMinutes = (dur: string | null) => {
     if (!dur) return 0;
     const [h, m, s] = dur.split(":").map(Number);
     return (h || 0) * 60 + (m || 0) + (s || 0) / 60;
 };
 
-const isWorkingStrengthSet = (s: LoggedSet) => s.type !== "Cardio" && s.marker !== "WarmUp";
+export const isWorkingStrengthSet = (s: LoggedSet) => s.type !== "Cardio" && s.marker !== "WarmUp";
 
 
 // ── Strength: per-exercise progress ───────────────────────────────────────────

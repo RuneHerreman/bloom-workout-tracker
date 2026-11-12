@@ -55,6 +55,16 @@ public class WorkoutTemplate: AggregateRoot<WorkoutTemplateId>
         RaiseDomainEvent(new WorkoutTemplateUpdated(Id));
     }
 
+    /// <summary>Renames a gear item on every exercise that plans it. Returns whether anything changed.</summary>
+    public bool RenameGear(string from, string to)
+    {
+        var changed = false;
+        foreach (var exercise in _templateExercises)
+            changed |= exercise.RenameGear(from, to);
+        if (changed) RaiseDomainEvent(new WorkoutTemplateUpdated(Id));
+        return changed;
+    }
+
     public override void ValidateState()
     {
         Asserts.EnsureNotEmpty(UserId);

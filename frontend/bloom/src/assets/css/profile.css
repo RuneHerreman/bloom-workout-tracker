@@ -417,69 +417,132 @@
 
 /* ── Gear ─────────────────────────────────────────────────────────────────────── */
 
-#gear { scroll-margin-top: 1.5rem; }
 
-.gear-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
+.gear-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
 
 .gear-item {
     display: flex;
     align-items: center;
     gap: 0.85rem;
-    padding: 0.75rem 0.85rem;
-    border: 0.0625rem solid var(--border);
-    border-radius: var(--widget-border-radius);
+    min-height: 3.4rem;
+    padding: 0.6rem 0.6rem 0.6rem 0.75rem;
+    border: 0.0625rem solid var(--border-light);
+    border-radius: var(--radius-md);
     background: var(--surface-lighter);
     transition: border-color var(--transition);
 }
+.gear-item:hover { border-color: var(--border); }
 
-.gear-item:hover { border-color: var(--primary-light); }
-
+/* The kind of item, read from its name. */
 .gear-item-icon {
-    width: 2.1rem;
-    height: 2.1rem;
+    width: 2.25rem;
+    height: 2.25rem;
     flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-md);
+    color: var(--primary-light);
+    background: color-mix(in srgb, var(--primary-faded) 70%, transparent);
+}
+.dark .gear-item-icon { color: var(--primary); }
+
+/* The icon is a button: it opens a grid to pick another. */
+.gear-icon-picker { position: relative; flex-shrink: 0; }
+.gear-item-icon-btn { border: none; padding: 0; cursor: pointer; transition: box-shadow var(--transition); }
+.gear-item-icon-btn:hover:not(:disabled), .gear-item-icon-btn[aria-expanded="true"] { box-shadow: inset 0 0 0 0.0625rem var(--primary-light); }
+.gear-item-icon-btn:disabled { cursor: default; }
+.gear-icon-menu {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    left: 0;
+    z-index: 40;
+    width: 17rem;
+    max-width: calc(100vw - 3rem);
+    padding: 0.5rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-lighter);
+    box-shadow: var(--shadow-widget);
+}
+.gear-icon-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.25rem; }
+.gear-icon-choice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.55rem 0.25rem 0.45rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--ink-muted);
+    font-family: inherit;
+    font-size: var(--text-2xs);
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+}
+.gear-icon-choice:hover { background: var(--surface-less-light); color: var(--ink); }
+.gear-icon-choice.active { background: color-mix(in srgb, var(--primary-faded) 80%, transparent); color: var(--primary-transparent); font-weight: 550; }
+.gear-icon-auto {
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    color: var(--primary-light);
-    background: color-mix(in srgb, var(--primary-light) 10%, transparent);
+    gap: 0.4rem;
+    width: 100%;
+    margin-top: 0.35rem;
+    padding: 0.45rem 0.55rem;
+    border: none;
+    border-top: 0.0625rem solid var(--border-light);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    background: none;
+    color: var(--ink-muted);
+    font-family: inherit;
+    font-size: var(--text-xs);
+    cursor: pointer;
 }
+.gear-icon-auto:hover { color: var(--ink); background: var(--surface-less-light); }
+.gear-icon-auto.active { color: var(--primary-transparent); font-weight: 550; }
 
 .gear-item-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
 .gear-item-name { font-size: var(--text-base); font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gear-item-meta { font-size: var(--text-xs); color: var(--ink-muted); }
 .gear-item-meta b { color: var(--ink); font-weight: 550; }
 
-.gear-item-remove {
-    display: flex;
-    padding: 0.35rem;
+/* Running shoes: how much of a usual life they've done. */
+.gear-wear { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.2rem; font-size: var(--text-2xs); color: var(--ink-muted); }
+.gear-wear-track { flex: 0 0 6rem; height: 0.3rem; border-radius: 1rem; background: var(--grey-light); overflow: hidden; }
+.gear-wear-track span { display: block; height: 100%; border-radius: inherit; background: var(--primary-light); }
+.gear-wear.due { color: var(--marker-warmup); }
+.gear-wear.due .gear-wear-track span { background: var(--marker-warmup); }
+.gear-wear.worn { color: var(--danger-text); }
+.gear-wear.worn .gear-wear-track span { background: var(--danger-base); }
+
+.gear-item-actions { display: flex; gap: 0.15rem; flex-shrink: 0; }
+.gear-icon-btn {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
     border: none;
     border-radius: var(--radius-sm);
     background: none;
     color: var(--ink-muted);
     cursor: pointer;
-    opacity: 0.5;
-    transition: opacity var(--transition), color var(--transition), background var(--transition);
+    transition: background var(--transition), color var(--transition);
 }
+.gear-icon-btn:hover:not(:disabled) { background: var(--surface-less-light); color: var(--ink); }
+.gear-icon-btn.danger:hover:not(:disabled) { background: var(--danger-lighter); color: var(--danger); }
+.gear-icon-btn.confirm { color: var(--primary-light); }
+.gear-icon-btn:disabled { opacity: 0.4; cursor: default; }
 
-.gear-item:hover .gear-item-remove { opacity: 0.8; }
-.gear-item-remove:hover { opacity: 1 !important; color: var(--danger); background: var(--danger-lighter); }
-
-.gear-empty { font-size: var(--text-sm); color: var(--ink-muted); font-style: italic; }
-
-.gear-add { display: flex; gap: 0.5rem; }
-
+.gear-item-edit { flex: 1; min-width: 0; display: flex; align-items: center; gap: 0.25rem; }
+.gear-item-edit input,
 .gear-add input {
     flex: 1;
-    padding: 0.55rem 0.75rem;
+    min-width: 0;
+    height: 2.25rem;
+    padding: 0 0.7rem;
     border: 0.0625rem solid var(--border);
     border-radius: var(--radius-md);
     background: var(--surface-lighter);
@@ -488,8 +551,19 @@
     outline: none;
     transition: border-color var(--transition);
 }
+.gear-item-edit input:focus, .gear-add input:focus { border-color: var(--primary-light); }
 
-.gear-add input:focus { border-color: var(--primary-light); }
+.gear-confirm { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; font-size: var(--text-xs); color: var(--ink-muted); }
+.gear-confirm .button-component { padding: 0.3rem 0.65rem; font-size: var(--text-xs); }
+
+.gear-notice { margin: 0; font-size: var(--text-sm); color: var(--primary-transparent); }
+
+.gear-empty { font-size: var(--text-sm); color: var(--ink-muted); }
+
+.gear-add { display: flex; gap: 0.5rem; }
+.gear-add-field { position: relative; flex: 1; display: flex; min-width: 0; }
+.gear-add-field input { padding-left: 2.2rem; height: 2.5rem; }
+.gear-add-icon { position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); display: grid; color: var(--ink-muted); pointer-events: none; }
 
 .gear-suggestions {
     display: flex;
@@ -499,8 +573,34 @@
     font-size: var(--text-xs);
     color: var(--ink-muted);
 }
+.gear-suggestions .exercise-library-chip { display: inline-flex; align-items: center; gap: 0.3rem; }
 
-.gear-suggestions .exercise-library-chip { display: inline-flex; align-items: center; gap: 0.25rem; }
+/* ── My exercises ────────────────────────────────────────────────────────────── */
+
+.profile-section-head-row { flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.profile-section-head-row > div { display: flex; flex-direction: column; gap: 0.35rem; }
+.profile-section-head-row .button-component { flex-shrink: 0; }
+
+.custom-ex-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.custom-ex-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0.25rem 0.55rem 0.15rem;
+    border-bottom: 0.0625rem solid var(--border-light);
+}
+.custom-ex-item:last-child { border-bottom: none; }
+.custom-ex-item .type-dot { flex-shrink: 0; }
+.custom-ex-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+.custom-ex-name { font-size: var(--text-base); font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.custom-ex-meta { font-size: var(--text-xs); color: var(--ink-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.custom-ex-form { padding-top: 0.25rem; }
+
+@media (max-width: 960px) {
+    .gear-item { flex-wrap: wrap; }
+    .gear-confirm { width: 100%; justify-content: flex-end; }
+    .profile-section-head-row { flex-direction: column; }
+}
 
 /* ── Toggle switch ───────────────────────────────────────────────────────────── */
 

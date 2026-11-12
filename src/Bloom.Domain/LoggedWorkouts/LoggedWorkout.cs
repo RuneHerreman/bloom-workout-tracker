@@ -71,6 +71,16 @@ public class LoggedWorkout : AggregateRoot<LoggedWorkoutId>
         RaiseDomainEvent(new LoggedWorkoutUpdated(Id));
     }
 
+    /// <summary>Renames a gear item on every exercise that used it. Returns whether anything changed.</summary>
+    public bool RenameGear(string from, string to)
+    {
+        var changed = false;
+        foreach (var exercise in _loggedExercises)
+            changed |= exercise.RenameGear(from, to);
+        if (changed) RaiseDomainEvent(new LoggedWorkoutUpdated(Id));
+        return changed;
+    }
+
     public override void ValidateState()
     {
         Asserts.EnsureNotEmpty(UserId);

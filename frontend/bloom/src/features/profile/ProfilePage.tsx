@@ -12,6 +12,7 @@ import Button from "../../components/general/ButtonComponent.tsx";
 import { getStravaStatus, getStravaAuthUrl, disconnectStrava, importStravaHistory } from "../strava/api.ts";
 import type { StravaStatus } from "../strava/api.ts";
 import GearSection from "./GearSection.tsx";
+import CustomExercisesSection from "./CustomExercisesSection.tsx";
 import ExportOverlay from "../export/ExportOverlay.tsx";
 import Skeleton from "../../components/general/Skeleton.tsx";
 import "../../assets/css/profile.css";
@@ -24,6 +25,7 @@ const SECTIONS = [
     { id: "apps", label: "Connected apps" },
     { id: "privacy", label: "Privacy" },
     { id: "gear", label: "Gear" },
+    { id: "exercises", label: "My exercises" },
     { id: "data", label: "Your data" },
     { id: "danger", label: "Delete account" },
 ] as const;
@@ -51,15 +53,29 @@ function useActiveSection(ready: boolean): [SectionId, (id: SectionId) => void] 
     const pinnedUntil = useRef(0);
     useEffect(() => {
         if (!ready) return;
-        const seen = new Map<string, boolean>();
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(e => seen.set(e.target.id, e.isIntersecting));
+        // The current section is the last one whose top has passed a line 30% down
+        // the screen, read from positions once a frame while anything scrolls, so
+        // the tail of the section above never wins over the one you're reading.
+        let frame = 0;
+        const pick = () => {
+            frame = 0;
             if (Date.now() < pinnedUntil.current) return;
-            const first = SECTIONS.find(s => seen.get(s.id));
-            if (first) setActive(first.id);
-        }, { rootMargin: "-15% 0px -60% 0px", threshold: 0 });
-        SECTIONS.forEach(s => { const el = document.getElementById(s.id); if (el) observer.observe(el); });
-        return () => observer.disconnect();
+            const line = window.innerHeight * 0.3;
+            let current: SectionId = SECTIONS[0].id;
+            for (const s of SECTIONS) {
+                const el = document.getElementById(s.id);
+                if (el && el.getBoundingClientRect().top <= line) current = s.id;
+            }
+            setActive(current);
+        };
+        const onScroll = () => { if (!frame) frame = requestAnimationFrame(pick); };
+        // Capture: the page scrolls inside the app's main column, not the window.
+        document.addEventListener("scroll", onScroll, { capture: true, passive: true });
+        pick();
+        return () => {
+            document.removeEventListener("scroll", onScroll, { capture: true });
+            if (frame) cancelAnimationFrame(frame);
+        };
     }, [ready]);
     function jumpTo(id: SectionId) {
         pinnedUntil.current = Date.now() + 1000;
@@ -115,7 +131,7 @@ function ProfilePage() {
         const item = nav?.querySelector<HTMLElement>(".profile-nav-item.active");
         if (!nav || !item || nav.scrollWidth <= nav.clientWidth) return;
         const left = item.offsetLeft - (nav.clientWidth - item.offsetWidth) / 2;
-        nav.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+        nav.scrollTo({ left: Math.max(0, left) });
     }, [activeSection]);
 
     function fillForm(u: User) {
@@ -551,7 +567,8 @@ function ProfilePage() {
                         </div>
                     </section>
 
-                    <GearSection initialGear={user?.gear ?? []} />
+                    <GearSection initialGear={user?.gear ?? []} initialIcons={user?.gearIcons ?? {}} />
+                    <CustomExercisesSection />
 
                     <section className="profile-section" id="data">
                         <div className="profile-section-head">

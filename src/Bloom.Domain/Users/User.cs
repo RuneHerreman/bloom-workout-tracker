@@ -19,6 +19,11 @@ public class User : AggregateRoot<UserId>
     public DateOnly BirthDate { get; private set; }
     public string? TechnicalPoints { get; private set; }
     public List<string> Gear { get; private set; } = [];
+    /// <summary>
+    /// Icons the user picked for gear items, by item name (see <see cref="GearKinds"/>).
+    /// Items without an entry get an icon guessed from their name.
+    /// </summary>
+    public Dictionary<string, string> GearIcons { get; private set; } = [];
     /// <summary>Whether other users can see this user on the monthly leaderboard. Opt-out: visible by default.</summary>
     public bool ShowOnLeaderboard { get; private set; } = true;
     /// <summary>Optional; only asked for by the macro calculator.</summary>
@@ -88,7 +93,42 @@ public class User : AggregateRoot<UserId>
     {
         Asserts.EnsureTrue(gear.All(g => !string.IsNullOrWhiteSpace(g)));
         Gear = gear;
+        // A removed item takes its icon with it.
+        if (GearIcons.Keys.Any(k => !gear.Contains(k)))
+            GearIcons = GearIcons.Where(kv => gear.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
         RaiseDomainEvent(new UserUpdated(Id));
+    }
+
+    /// <summary>
+    /// Picks the icon for one gear item, or clears it (null) to go back to the
+    /// guess from its name. Returns false when the user has no such item.
+    /// </summary>
+    public bool SetGearIcon(string name, string? kind)
+    {
+        if (kind is not null) Asserts.EnsureTrue(GearKinds.All.Contains(kind));
+        if (!Gear.Contains(name)) return false;
+        var next = new Dictionary<string, string>(GearIcons);
+        if (kind is null) next.Remove(name); else next[name] = kind;
+        GearIcons = next;
+        RaiseDomainEvent(new UserUpdated(Id));
+        return true;
+    }
+
+    /// <summary>Renames one gear item in place, keeping its position. Returns false when the user has no such item.</summary>
+    public bool RenameGear(string from, string to)
+    {
+        Asserts.EnsureTrue(!string.IsNullOrWhiteSpace(to));
+        if (!Gear.Contains(from)) return false;
+        Gear = Gear.Select(g => g == from ? to : g).Distinct().ToList();
+        if (GearIcons.TryGetValue(from, out var kind))
+        {
+            var icons = new Dictionary<string, string>(GearIcons);
+            icons.Remove(from);
+            icons[to] = kind;
+            GearIcons = icons;
+        }
+        RaiseDomainEvent(new UserUpdated(Id));
+        return true;
     }
 
     public void SetLeaderboardVisibility(bool showOnLeaderboard)
