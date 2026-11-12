@@ -40,11 +40,19 @@ export function formatDate(isoString: string): string {
 // Compares calendar days in the user's local time zone rather than elapsed
 // milliseconds: a log stamped "now" by the server can sit slightly in the future
 // relative to the client clock, which used to floor to "-1d ago".
-export function relativeDate(isoString: string): string {
+/**
+ * Calendar days between a moment and now, in local time: last night's workout is
+ * 1 day ago this morning, even if it was under 24 hours ago. Negative in the future.
+ * Rounded, so a daylight-saving change (a 23- or 25-hour day) doesn't shift it.
+ */
+export function daysAgo(isoString: string, now = new Date()): number {
     const then = new Date(isoString);
-    const now = new Date();
     const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-    const diffDays = Math.round((startOfDay(now) - startOfDay(then)) / 86_400_000);
+    return Math.round((startOfDay(now) - startOfDay(then)) / 86_400_000);
+}
+
+export function relativeDate(isoString: string): string {
+    const diffDays = daysAgo(isoString);
     if (diffDays < 0) return formatDate(isoString);
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";

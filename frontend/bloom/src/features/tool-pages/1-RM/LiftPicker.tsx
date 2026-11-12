@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
+import { daysAgo } from "../../../utils/workoutUtils.ts";
 
 export interface LiftOption {
     id: string;
@@ -17,8 +18,9 @@ interface Props {
     onChange: (id: string) => void;
 }
 
+/** When a lift was last trained, by calendar day: last night's session is "yesterday". */
 const fmtAgo = (iso: string) => {
-    const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+    const days = daysAgo(iso);
     if (days <= 0) return "today";
     if (days === 1) return "yesterday";
     if (days < 14) return `${days} days ago`;
