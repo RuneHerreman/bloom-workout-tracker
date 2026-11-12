@@ -13,6 +13,12 @@ function navClass({ isActive }: { isActive: boolean }) {
     return `sidebar-item${isActive ? " active" : ""}`;
 }
 
+function initials(user: User | null) {
+    if (!user) return "";
+    const s = `${user.firstName?.trim()[0] ?? ""}${user.lastName?.trim()[0] ?? ""}`;
+    return (s || user.username.slice(0, 2)).toUpperCase();
+}
+
 function SidebarComponent() {
     const [user, setUser] = useState<User | null>(null);
     const { dark, toggle } = useDarkModeContext();
@@ -39,13 +45,18 @@ function SidebarComponent() {
             <NavLink to="/tools/one-rep-max" className={navClass} onPointerEnter={() => prefetchRoute("/tools/one-rep-max")} onFocus={() => prefetchRoute("/tools/one-rep-max")}><Dumbbell size={14}/> 1RM Calculator</NavLink>
 
             <div className="sidebar-user">
-                <NavLink to="/profile" className="sidebar-username">{user?.username ?? "—"}</NavLink>
-                <button className="sidebar-theme-toggle" onClick={toggle} aria-label="Toggle dark mode">
-                    {dark ? <Sun size={14} /> : <Moon size={14} />}
-                </button>
-                <button className="sidebar-logout" onClick={logout} aria-label="Log out">
-                    <LogOut size={14} />
-                </button>
+                <NavLink to="/profile" className={navClass} title="Profile and settings" onPointerEnter={() => prefetchRoute("/profile")} onFocus={() => prefetchRoute("/profile")}>
+                    <span className="sidebar-avatar" aria-hidden>{initials(user)}</span>
+                    <span className="sidebar-username">{user?.username ?? "—"}</span>
+                </NavLink>
+                <div className="sidebar-user-actions">
+                    <button type="button" className="sidebar-theme-toggle" onClick={toggle} aria-label={dark ? "Switch to light mode" : "Switch to dark mode"} title={dark ? "Light mode" : "Dark mode"}>
+                        {dark ? <Sun size={18} /> : <Moon size={18} />}
+                    </button>
+                    <button type="button" className="sidebar-logout" onClick={logout} aria-label="Log out" title="Log out">
+                        <LogOut size={18} />
+                    </button>
+                </div>
             </div>
         </aside>
     );

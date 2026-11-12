@@ -155,16 +155,34 @@
 
 
 
-/* ── User profile (bottom) ──────────────────────────────────────────────────── */
+/* ── User (bottom): profile link, then theme and log out ────────────────────── */
 
 .sidebar-user {
     margin-top: auto;
     display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.6rem 0.5rem;
-    font-size: var(--text-base);
-    color: var(--ink);
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 0.0625rem solid var(--border);
+}
+
+/* The profile link is the one item whose label is user-chosen and long: trim its padding so a
+   typical username fits without an ellipsis. */
+.sidebar-user .sidebar-item { gap: 0.45rem; padding-inline: 0.6rem; }
+
+.sidebar-avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-left: -0.125rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--primary-light) 14%, transparent);
+    color: var(--primary);
+    font-family: var(--serif), serif;
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
 }
 
 .sidebar-username {
@@ -173,53 +191,33 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: inherit;
-    border-radius: var(--radius-sm);
-    transition: color var(--transition);
 }
 
-.sidebar-username:hover {
-    color: var(--primary-light);
-    text-decoration: underline;
+.sidebar-user-actions {
+    display: flex;
+    gap: 0.5rem;
 }
 
-/* ── Theme toggle ────────────────────────────────────────────────────────────── */
-
+/* Same look as the other icon buttons in the app (.header-icon-btn). */
 .sidebar-theme-toggle,
 .sidebar-logout {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: none;
-    border: none;
+    height: var(--btn-height);
+    background: var(--surface-lighter);
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--btn-radius);
     cursor: pointer;
-    padding: 0.25rem;
-    border-radius: var(--radius-sm);
-    transition: color var(--transition), background var(--transition);
-    flex-shrink: 0;
+    transition: color var(--transition), border-color var(--transition), background var(--transition);
 }
 
-.sidebar-theme-toggle svg,
-.sidebar-logout svg { width: 1.125rem; height: 1.125rem; }
+.sidebar-theme-toggle { color: var(--ink-muted); }
+.sidebar-theme-toggle:hover { color: var(--primary-light); border-color: var(--primary-light); }
 
-.sidebar-theme-toggle {
-    color: var(--ink-muted);
-}
-
-.sidebar-theme-toggle:hover {
-    color: var(--ink);
-    background: var(--grey-light);
-}
-
-.sidebar-logout {
-    color: var(--danger);
-    opacity: 0.7;
-}
-
-.sidebar-logout:hover {
-    opacity: 1;
-    background: color-mix(in srgb, var(--danger) 10%, transparent);
-}
+.sidebar-logout { color: var(--danger); }
+.sidebar-logout:hover { border-color: var(--danger); background: var(--danger-lighter); }
 
 /* ── Sidebar close button (mobile only) ─────────────────────────────────────── */
 
