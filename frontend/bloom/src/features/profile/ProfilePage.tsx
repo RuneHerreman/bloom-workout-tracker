@@ -16,6 +16,58 @@ import ExportOverlay from "../export/ExportOverlay.tsx";
 import Skeleton from "../../components/general/Skeleton.tsx";
 import "../../assets/css/profile.css";
 
+/** The page's sections, in order: the rail's nav and the scroll-spy both read this. */
+const SECTIONS = [
+    { id: "account", label: "Account" },
+    { id: "body", label: "Body" },
+    { id: "password", label: "Password" },
+    { id: "apps", label: "Connected apps" },
+    { id: "privacy", label: "Privacy" },
+    { id: "gear", label: "Gear" },
+    { id: "data", label: "Your data" },
+    { id: "danger", label: "Delete account" },
+] as const;
+type SectionId = (typeof SECTIONS)[number]["id"];
+
+const SEXES: { value: Sex | ""; label: string }[] = [
+    { value: "Male", label: "Male" },
+    { value: "Female", label: "Female" },
+    { value: "", label: "Not set" },
+];
+const ACTIVE_DAYS = [0, 1, 2, 3, 4, 5, 6, 7];
+
+function initials(first: string, last: string, username: string) {
+    const s = `${first.trim()[0] ?? ""}${last.trim()[0] ?? ""}`;
+    return (s || username.slice(0, 2)).toUpperCase();
+}
+
+/**
+ * The section nearest the top of the screen, for the rail's nav. A section you
+ * jump to wins while the page scrolls there, and keeps winning if it sits too
+ * low to reach the top (the last few cards on a tall screen).
+ */
+function useActiveSection(ready: boolean): [SectionId, (id: SectionId) => void] {
+    const [active, setActive] = useState<SectionId>("account");
+    const pinnedUntil = useRef(0);
+    useEffect(() => {
+        if (!ready) return;
+        const seen = new Map<string, boolean>();
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(e => seen.set(e.target.id, e.isIntersecting));
+            if (Date.now() < pinnedUntil.current) return;
+            const first = SECTIONS.find(s => seen.get(s.id));
+            if (first) setActive(first.id);
+        }, { rootMargin: "-15% 0px -60% 0px", threshold: 0 });
+        SECTIONS.forEach(s => { const el = document.getElementById(s.id); if (el) observer.observe(el); });
+        return () => observer.disconnect();
+    }, [ready]);
+    function jumpTo(id: SectionId) {
+        pinnedUntil.current = Date.now() + 1000;
+        setActive(id);
+    }
+    return [active, jumpTo];
+}
+
 function ProfilePage() {
     const { logout } = useAuth();
     const [user, setUser] = useState<User | null>(null);
@@ -43,7 +95,6 @@ function ProfilePage() {
     const [error, setError] = useState<string | null>(null);
     const [pwError, setPwError] = useState<string | null>(null);
     const [pwSuccess, setPwSuccess] = useState(false);
-    const [showSticky, setShowSticky] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
@@ -55,8 +106,29 @@ function ProfilePage() {
     const [savingVisibility, setSavingVisibility] = useState(false);
     const [visibilityError, setVisibilityError] = useState<string | null>(null);
 
-    const actionsRef = useRef<HTMLDivElement>(null);
-    const panelTopRef = useRef(0);
+    const [activeSection, markActive] = useActiveSection(!loading);
+    const navRef = useRef<HTMLElement>(null);
+
+    // On phones the nav is a sideways row of chips: keep the current one in view.
+    useEffect(() => {
+        const nav = navRef.current;
+        const item = nav?.querySelector<HTMLElement>(".profile-nav-item.active");
+        if (!nav || !item || nav.scrollWidth <= nav.clientWidth) return;
+        const left = item.offsetLeft - (nav.clientWidth - item.offsetWidth) / 2;
+        nav.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+    }, [activeSection]);
+
+    function fillForm(u: User) {
+        setFirstName(u.firstName);
+        setLastName(u.lastName);
+        setUsername(u.username);
+        setEmail(u.email);
+        setBirthDate(u.birthDate ?? "");
+        setWeight(u.weight);
+        setHeight(u.height);
+        setActiveDays(u.activeDays);
+        setSex(u.sex ?? "");
+    }
 
     useEffect(() => {
         Promise.all([
@@ -65,39 +137,16 @@ function ProfilePage() {
             getBody().catch(() => [] as BodyEntry[]),
         ]).then(([u, s, body]) => {
             setUser(u);
-            setFirstName(u.firstName);
-            setLastName(u.lastName);
-            setUsername(u.username);
-            setEmail(u.email);
-            setBirthDate(u.birthDate ?? "");
-            setWeight(u.weight);
-            setHeight(u.height);
-            setActiveDays(u.activeDays);
-            setSex(u.sex ?? "");
+            fillForm(u);
             setLastWeighIn(body.at(-1) ?? null);
             if (s) setStrava(s);
-            // Show success message if redirected back from Strava OAuth
+            // Drop the ?strava=connected the OAuth redirect leaves behind
             const params = new URLSearchParams(window.location.search);
             if (params.get("strava") === "connected") {
                 window.history.replaceState({}, "", window.location.pathname);
             }
         }).finally(() => setLoading(false));
     }, []);
-
-    useEffect(() => {
-        const el = actionsRef.current;
-        if (!el || loading) return;
-        const panel = el.closest(".profile-page") as HTMLElement | null;
-        const header = panel?.querySelector(".page-header") as HTMLElement | null;
-        const top = Math.round((header?.getBoundingClientRect().bottom ?? 0)) - 1;
-        panelTopRef.current = top;
-        const observer = new IntersectionObserver(
-            ([entry]) => setShowSticky(!entry.isIntersecting),
-            { rootMargin: `-${top}px 0px 0px 0px`, threshold: 0 }
-        );
-        observer.observe(el);
-        return () => observer.disconnect();
-    }, [loading]);
 
     const isDirty = user != null && (
         firstName !== user.firstName ||
@@ -133,6 +182,11 @@ function ProfilePage() {
         } finally {
             setSaving(false);
         }
+    }
+
+    function handleDiscard() {
+        if (user) fillForm(user);
+        setError(null);
     }
 
     async function handleSavePassword(e: React.FormEvent) {
@@ -219,6 +273,11 @@ function ProfilePage() {
         }
     }
 
+    function goTo(id: SectionId) {
+        markActive(id);
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
     useShortcut("s", handleSave, true);
 
     if (loading) {
@@ -227,109 +286,101 @@ function ProfilePage() {
                 <header className="page-header">
                     <div className="page-header-titles"><h1>Profile</h1></div>
                 </header>
-                <div className="profile-detail" role="status" aria-label="Loading profile">
-                    {[0, 1, 2].map(i => (
-                        <div key={i} className="profile-section profile-skeleton">
-                            <Skeleton width="11rem" height="1.35rem" />
-                            <div className="profile-row-2">
-                                <Skeleton height="2.4rem" radius="var(--radius-md)" />
-                                <Skeleton height="2.4rem" radius="var(--radius-md)" />
-                            </div>
-                            <Skeleton height="2.4rem" radius="var(--radius-md)" />
+                <div className="profile-body" role="status" aria-label="Loading profile">
+                    <div className="profile-rail">
+                        <div className="profile-card profile-skeleton">
+                            <Skeleton width="3rem" height="3rem" radius="50%" />
+                            <Skeleton width="9rem" height="1.1rem" />
+                            <Skeleton width="12rem" height="0.9rem" />
                         </div>
-                    ))}
+                    </div>
+                    <div className="profile-main">
+                        {[0, 1].map(i => (
+                            <div key={i} className="profile-section profile-skeleton">
+                                <Skeleton width="11rem" height="1.35rem" />
+                                <div className="profile-grid">
+                                    <Skeleton height="2.5rem" radius="var(--radius-md)" />
+                                    <Skeleton height="2.5rem" radius="var(--radius-md)" />
+                                </div>
+                                <Skeleton height="2.5rem" radius="var(--radius-md)" />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         );
     }
+
+    const fullName = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim();
 
     return (
         <div className="profile-page">
             <header className="page-header">
                 <div className="page-header-titles">
                     <h1>Profile</h1>
+                    <p className="header-subtitle">Your account, body numbers, connections and data</p>
                 </div>
             </header>
 
-            <div className="profile-detail">
-                {showSticky && isDirty && (
-                    <div className="sticky-save-bar" style={{ top: panelTopRef.current }}>
-                        <Button text="Save Changes" style="white" icon={<Save size={14} />} disabled={saving} onClick={handleSave} />
+            <div className="profile-body">
+                <aside className="profile-rail">
+                    <div className="profile-card profile-id">
+                        <span className="profile-avatar" aria-hidden>{initials(user?.firstName ?? "", user?.lastName ?? "", user?.username ?? "")}</span>
+                        <div className="profile-id-text">
+                            <strong>{fullName || user?.username}</strong>
+                            <span>@{user?.username}</span>
+                            <span>{user?.email}</span>
+                        </div>
                     </div>
-                )}
+                    <nav className="profile-nav" aria-label="Profile sections" ref={navRef}>
+                        {SECTIONS.map(s => (
+                            <a
+                                key={s.id}
+                                href={`#${s.id}`}
+                                className={`profile-nav-item${activeSection === s.id ? " active" : ""}${s.id === "danger" ? " danger" : ""}`}
+                                aria-current={activeSection === s.id ? "location" : undefined}
+                                onClick={e => { e.preventDefault(); goTo(s.id); }}
+                            >
+                                {s.label}
+                            </a>
+                        ))}
+                    </nav>
+                </aside>
 
-                {error && <div className="error-banner">{error}</div>}
+                <div className="profile-main">
+                    {error && <div className="error-banner">{error}</div>}
 
-                <section className="profile-section">
-                    <h2 className="profile-section-title">Personal Information</h2>
-
-                    <div className="profile-fields">
-                        <div className="profile-row-2">
+                    <section className="profile-section" id="account">
+                        <div className="profile-section-head">
+                            <h2 className="profile-section-title">Account</h2>
+                            <p className="profile-section-desc">Your username is what others see on the leaderboard. Email is for signing in.</p>
+                        </div>
+                        <div className="profile-grid">
                             <div className="profile-field">
                                 <label htmlFor="firstName">First name</label>
-                                <input
-                                    type="text"
-                                    id="firstName"
-                                    value={firstName}
-                                    maxLength={100}
-                                    onChange={e => setFirstName(e.target.value)}
-                                />
+                                <input type="text" id="firstName" value={firstName} maxLength={100} onChange={e => setFirstName(e.target.value)} />
                             </div>
                             <div className="profile-field">
                                 <label htmlFor="lastName">Last name</label>
-                                <input
-                                    type="text"
-                                    id="lastName"
-                                    value={lastName}
-                                    maxLength={100}
-                                    onChange={e => setLastName(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="profile-field">
-                            <label htmlFor="username">Username</label>
-                            <input
-                                type="text"
-                                id="username"
-                                value={username}
-                                maxLength={128}
-                                onChange={e => setUsername(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="profile-field">
-                            <label htmlFor="email">Email</label>
-                            <input
-                                type="email"
-                                id="email"
-                                value={email}
-                                onChange={e => setEmail(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="profile-row-2">
-                            <div className="profile-field">
-                                <label htmlFor="birthDate">Date of birth</label>
-                                <input
-                                    type="date"
-                                    id="birthDate"
-                                    value={birthDate}
-                                    max={new Date().toISOString().split("T")[0]}
-                                    onChange={e => setBirthDate(e.target.value)}
-                                />
+                                <input type="text" id="lastName" value={lastName} maxLength={100} onChange={e => setLastName(e.target.value)} />
                             </div>
                             <div className="profile-field">
-                                <label htmlFor="sex">Sex <span className="profile-label-hint">for calorie estimates</span></label>
-                                <select id="sex" value={sex} onChange={e => setSex(e.target.value as Sex | "")}>
-                                    <option value="">Not set</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                </select>
+                                <label htmlFor="username">Username</label>
+                                <input type="text" id="username" value={username} maxLength={128} onChange={e => setUsername(e.target.value)} />
+                            </div>
+                            <div className="profile-field">
+                                <label htmlFor="email">Email</label>
+                                <input type="email" id="email" value={email} onChange={e => setEmail(e.target.value)} />
                             </div>
                         </div>
+                    </section>
 
-                        <div className="profile-row-2">
+                    <section className="profile-section" id="body">
+                        <div className="profile-section-head">
+                            <h2 className="profile-section-title">Body</h2>
+                            <p className="profile-section-desc">Used for calorie and macro targets. Weight comes from your body log.</p>
+                        </div>
+                        <div className="profile-grid">
                             <div className="profile-field">
                                 <span className="profile-field-label">Weight</span>
                                 <div className="profile-weight">
@@ -343,234 +394,201 @@ function ProfilePage() {
                                 </div>
                             </div>
                             <div className="profile-field">
-                                <label htmlFor="height">Height (cm)</label>
-                                <input
-                                    type="number"
-                                    id="height"
-                                    value={height}
-                                    min={1}
-                                    max={300}
-                                    onChange={e => setHeight(Number(e.target.value))}
-                                />
+                                <label htmlFor="height">Height</label>
+                                <span className="profile-unit">
+                                    <input type="number" id="height" value={height} min={1} max={300} onChange={e => setHeight(Number(e.target.value))} />
+                                    <span aria-hidden>cm</span>
+                                </span>
+                            </div>
+                            <div className="profile-field">
+                                <label htmlFor="birthDate">Date of birth</label>
+                                <input type="date" id="birthDate" value={birthDate} max={new Date().toISOString().split("T")[0]} onChange={e => setBirthDate(e.target.value)} />
+                            </div>
+                            <div className="profile-field">
+                                <span className="profile-field-label" id="sexLabel">Sex</span>
+                                <div className="profile-segmented" role="radiogroup" aria-labelledby="sexLabel">
+                                    {SEXES.map(s => (
+                                        <button key={s.label} type="button" role="radio" aria-checked={sex === s.value}
+                                            className={sex === s.value ? "active" : undefined} onClick={() => setSex(s.value)}>
+                                            {s.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="profile-field profile-field-wide">
+                                <span className="profile-field-label" id="activeDaysLabel">Active days per week <span className="profile-label-hint">your training goal</span></span>
+                                <div className="profile-segmented" role="radiogroup" aria-labelledby="activeDaysLabel">
+                                    {ACTIVE_DAYS.map(d => (
+                                        <button key={d} type="button" role="radio" aria-checked={activeDays === d}
+                                            className={activeDays === d ? "active" : undefined} onClick={() => setActiveDays(d)}>
+                                            {d}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
+                    </section>
 
-                        <div className="profile-field">
-                            <label htmlFor="activeDays">Active days per week</label>
-                            <input
-                                type="number"
-                                id="activeDays"
-                                value={activeDays}
-                                min={0}
-                                max={7}
-                                onChange={e => setActiveDays(Number(e.target.value))}
-                            />
+                    <section className="profile-section" id="password">
+                        <div className="profile-section-head">
+                            <h2 className="profile-section-title">Password</h2>
+                            <p className="profile-section-desc">At least 8 characters.</p>
                         </div>
-                    </div>
 
-                    <div className="profile-section-actions" ref={actionsRef}>
-                        <Button
-                            text="Save Changes"
-                            style="white"
-                            icon={<Save size={14} />}
-                            disabled={!isDirty || saving}
-                            onClick={handleSave}
-                        />
-                    </div>
-                </section>
+                        <form onSubmit={handleSavePassword} className="profile-fields">
+                            {pwError && <div className="error-banner">{pwError}</div>}
+                            {pwSuccess && <div className="profile-success-banner">Password changed successfully.</div>}
 
-                <section className="profile-section">
-                    <h2 className="profile-section-title">Change Password</h2>
+                            <div className="profile-grid profile-grid-3">
+                                <div className="profile-field">
+                                    <label htmlFor="oldPassword">Current password</label>
+                                    <div className="profile-pw-wrap">
+                                        <input type={showOldPw ? "text" : "password"} id="oldPassword" value={oldPassword} required autoComplete="current-password" onChange={e => setOldPassword(e.target.value)} />
+                                        <button type="button" className="profile-pw-toggle" aria-label={showOldPw ? "Hide password" : "Show password"} onClick={() => setShowOldPw(v => !v)}>
+                                            {showOldPw ? <EyeOff size={14} /> : <Eye size={14} />}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="profile-field">
+                                    <label htmlFor="newPassword">New password</label>
+                                    <div className="profile-pw-wrap">
+                                        <input type={showNewPw ? "text" : "password"} id="newPassword" value={newPassword} minLength={8} required autoComplete="new-password" onChange={e => setNewPassword(e.target.value)} />
+                                        <button type="button" className="profile-pw-toggle" aria-label={showNewPw ? "Hide password" : "Show password"} onClick={() => setShowNewPw(v => !v)}>
+                                            {showNewPw ? <EyeOff size={14} /> : <Eye size={14} />}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="profile-field">
+                                    <label htmlFor="confirmPassword">Confirm new password</label>
+                                    <div className="profile-pw-wrap">
+                                        <input type={showNewPw ? "text" : "password"} id="confirmPassword" value={confirmPassword} required autoComplete="new-password" onChange={e => setConfirmPassword(e.target.value)} />
+                                    </div>
+                                </div>
+                            </div>
 
-                    <form onSubmit={handleSavePassword} className="profile-fields">
-                        {pwError && <div className="error-banner">{pwError}</div>}
-                        {pwSuccess && <div className="profile-success-banner">Password changed successfully.</div>}
-
-                        <div className="profile-field">
-                            <label htmlFor="oldPassword">Current password</label>
-                            <div className="profile-pw-wrap">
-                                <input
-                                    type={showOldPw ? "text" : "password"}
-                                    id="oldPassword"
-                                    value={oldPassword}
-                                    required
-                                    onChange={e => setOldPassword(e.target.value)}
-                                />
-                                <button type="button" className="profile-pw-toggle" onClick={() => setShowOldPw(v => !v)}>
-                                    {showOldPw ? <EyeOff size={14} /> : <Eye size={14} />}
+                            <div className="profile-section-actions">
+                                <button type="submit" className="button-component white" disabled={savingPw || !oldPassword || !newPassword || !confirmPassword}>
+                                    <KeyRound size={14} />
+                                    Change password
                                 </button>
                             </div>
+                        </form>
+                    </section>
+
+                    <section className="profile-section" id="apps">
+                        <div className="profile-section-head">
+                            <h2 className="profile-section-title">Connected apps</h2>
+                            <p className="profile-section-desc">Bring runs and rides in from Strava as logged workouts.</p>
                         </div>
 
-                        <div className="profile-row-2">
-                            <div className="profile-field">
-                                <label htmlFor="newPassword">New password</label>
-                                <div className="profile-pw-wrap">
-                                    <input
-                                        type={showNewPw ? "text" : "password"}
-                                        id="newPassword"
-                                        value={newPassword}
-                                        minLength={8}
-                                        required
-                                        onChange={e => setNewPassword(e.target.value)}
-                                    />
-                                    <button type="button" className="profile-pw-toggle" onClick={() => setShowNewPw(v => !v)}>
-                                        {showNewPw ? <EyeOff size={14} /> : <Eye size={14} />}
-                                    </button>
+                        {stravaError && <div className="error-banner">{stravaError}</div>}
+
+                        <div className="strava-connection">
+                            <div className="strava-connection-info">
+                                <div className="strava-logo">STR</div>
+                                <div className="strava-connection-text">
+                                    {strava?.connected ? (
+                                        <>
+                                            <span className="strava-connection-name">{strava.athleteName ?? "Strava"}</span>
+                                            <span className="strava-connection-date">
+                                                Connected {strava.connectedAt ? new Date(strava.connectedAt).toLocaleDateString() : ""}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="strava-connection-name">Strava</span>
+                                            <span className="strava-connection-date">Not connected</span>
+                                        </>
+                                    )}
                                 </div>
                             </div>
-                            <div className="profile-field">
-                                <label htmlFor="confirmPassword">Confirm new password</label>
-                                <div className="profile-pw-wrap">
-                                    <input
-                                        type={showNewPw ? "text" : "password"}
-                                        id="confirmPassword"
-                                        value={confirmPassword}
-                                        required
-                                        onChange={e => setConfirmPassword(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
 
-                        <div className="profile-section-actions">
-                            <button
-                                type="submit"
-                                className="button-component white"
-                                disabled={savingPw || !oldPassword || !newPassword || !confirmPassword}
-                            >
-                                <KeyRound size={14} />
-                                Change Password
-                            </button>
-                        </div>
-                    </form>
-                </section>
-
-                <section className="profile-section">
-                    <h2 className="profile-section-title">Connected Apps</h2>
-
-                    {stravaError && <div className="error-banner">{stravaError}</div>}
-
-                    <div className="strava-connection">
-                        <div className="strava-connection-info">
-                            <div className="strava-logo">STR</div>
-                            <div className="strava-connection-text">
+                            <div className="strava-connection-actions">
                                 {strava?.connected ? (
                                     <>
-                                        <span className="strava-connection-name">{strava.athleteName ?? "Strava"}</span>
-                                        <span className="strava-connection-date">
-                                            Connected {strava.connectedAt ? new Date(strava.connectedAt).toLocaleDateString() : ""}
-                                        </span>
+                                        <Button text={stravaImporting ? "Importing…" : "Import history"} style="white" icon={<Download size={14} />} disabled={stravaImporting} onClick={handleStravaImport} />
+                                        <button type="button" className="button-component red" onClick={handleStravaDisconnect}>Disconnect</button>
                                     </>
                                 ) : (
-                                    <>
-                                        <span className="strava-connection-name">Strava</span>
-                                        <span className="strava-connection-date">Not connected</span>
-                                    </>
+                                    <Button text="Connect Strava" style="white" onClick={handleStravaConnect} />
                                 )}
                             </div>
                         </div>
 
-                        <div className="strava-connection-actions">
-                            {strava?.connected ? (
-                                <>
-                                    <Button
-                                        text={stravaImporting ? "Importing…" : "Import history"}
-                                        style="white"
-                                        icon={<Download size={14} />}
-                                        disabled={stravaImporting}
-                                        onClick={handleStravaImport}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="button-component red"
-                                        onClick={handleStravaDisconnect}
-                                    >
-                                        Disconnect
-                                    </button>
-                                </>
-                            ) : (
-                                <Button
-                                    text="Connect Strava"
-                                    style="white"
-                                    onClick={handleStravaConnect}
-                                />
-                            )}
-                        </div>
-                    </div>
+                        {stravaImportResult !== null && (
+                            <p className="strava-import-success">
+                                {stravaImportResult === 0
+                                    ? "No new activities to import."
+                                    : `Imported ${stravaImportResult} activit${stravaImportResult === 1 ? "y" : "ies"} from Strava.`}
+                            </p>
+                        )}
+                    </section>
 
-                    {stravaImportResult !== null && (
-                        <p className="strava-import-success">
-                            {stravaImportResult === 0
-                                ? "No new activities to import."
-                                : `Imported ${stravaImportResult} activit${stravaImportResult === 1 ? "y" : "ies"} from Strava.`}
-                        </p>
+                    <section className="profile-section" id="privacy">
+                        <div className="profile-section-head">
+                            <h2 className="profile-section-title">Privacy</h2>
+                            <p className="profile-section-desc">
+                                The monthly leaderboard shows your username and monthly totals to other Bloom users.
+                                Workouts, names and email are never shared.
+                            </p>
+                        </div>
+
+                        {visibilityError && <div className="error-banner">{visibilityError}</div>}
+
+                        <div className="profile-toggle-row">
+                            <div className="profile-toggle-text">
+                                <span id="leaderboardToggleLabel" className="profile-toggle-label">Show me on the leaderboard</span>
+                                <span className="profile-toggle-hint">
+                                    {user?.showOnLeaderboard
+                                        ? "Other users can see your standing."
+                                        : "You're hidden. You still see your own standing, but nobody else does."}
+                                </span>
+                            </div>
+                            <button type="button" role="switch" className="profile-switch" aria-checked={user?.showOnLeaderboard ?? true}
+                                aria-labelledby="leaderboardToggleLabel" disabled={!user || savingVisibility} onClick={handleToggleLeaderboard}>
+                                <span className="profile-switch-thumb" aria-hidden />
+                            </button>
+                        </div>
+                    </section>
+
+                    <GearSection initialGear={user?.gear ?? []} />
+
+                    <section className="profile-section" id="data">
+                        <div className="profile-section-head">
+                            <h2 className="profile-section-title">Your data</h2>
+                            <p className="profile-section-desc">
+                                Download your workouts as an Excel workbook, CSV, or a full JSON backup, or import a file you exported before.
+                            </p>
+                        </div>
+                        <div className="profile-section-actions">
+                            <Button text="Export data" style="white" icon={<Download size={14} />} onClick={() => setExportOpen(true)} />
+                            <Button text="Import data" style="white" icon={<Upload size={14} />} target="/import" />
+                        </div>
+                    </section>
+
+                    <section className="profile-section profile-danger-section" id="danger">
+                        <div className="profile-danger-row">
+                            <div className="profile-section-head">
+                                <h2 className="profile-section-title profile-danger-title">Delete account</h2>
+                                <p className="profile-danger-desc">Permanently delete your account and all its data. This cannot be undone.</p>
+                            </div>
+                            <button type="button" className="button-component red" onClick={() => { setShowDeleteConfirm(true); setDeleteConfirmText(""); }}>
+                                <Trash2 size={14} />
+                                Delete account
+                            </button>
+                        </div>
+                    </section>
+
+                    {isDirty && (
+                        <div className="profile-save-bar" role="region" aria-label="Unsaved changes">
+                            <span>You have unsaved changes</span>
+                            <div>
+                                <button type="button" className="button-component grey" onClick={handleDiscard} disabled={saving}>Discard</button>
+                                <Button text={saving ? "Saving…" : "Save changes"} style="green" icon={<Save size={14} />} disabled={saving} onClick={handleSave} />
+                            </div>
+                        </div>
                     )}
-                </section>
-
-                <section className="profile-section">
-                    <div className="profile-section-head">
-                        <h2 className="profile-section-title">Privacy</h2>
-                        <p className="profile-section-desc">
-                            The monthly leaderboard shows your username and monthly totals to other Bloom users.
-                            Workouts, names and email are never shared.
-                        </p>
-                    </div>
-
-                    {visibilityError && <div className="error-banner">{visibilityError}</div>}
-
-                    <div className="profile-toggle-row">
-                        <div className="profile-toggle-text">
-                            <span id="leaderboardToggleLabel" className="profile-toggle-label">Show me on the leaderboard</span>
-                            <span className="profile-toggle-hint">
-                                {user?.showOnLeaderboard
-                                    ? "Other users can see your standing."
-                                    : "You're hidden. You still see your own standing, but nobody else does."}
-                            </span>
-                        </div>
-                        <button
-                            type="button"
-                            role="switch"
-                            className="profile-switch"
-                            aria-checked={user?.showOnLeaderboard ?? true}
-                            aria-labelledby="leaderboardToggleLabel"
-                            disabled={!user || savingVisibility}
-                            onClick={handleToggleLeaderboard}
-                        >
-                            <span className="profile-switch-thumb" aria-hidden />
-                        </button>
-                    </div>
-                </section>
-
-                <GearSection initialGear={user?.gear ?? []} />
-
-                <section className="profile-section">
-                    <div className="profile-section-head">
-                        <h2 className="profile-section-title">Your Data</h2>
-                        <p className="profile-section-desc">
-                            Download your workouts as an Excel workbook, CSV, or a full JSON backup, or import a file you exported before.
-                        </p>
-                    </div>
-                    <div className="profile-section-actions">
-                        <Button text="Export data" style="white" icon={<Download size={14} />} onClick={() => setExportOpen(true)} />
-                        <Button text="Import data" style="white" icon={<Upload size={14} />} target="/import" />
-                    </div>
-                </section>
-
-                <section className="profile-section profile-danger-section">
-                    <h2 className="profile-section-title profile-danger-title">Danger Zone</h2>
-                    <p className="profile-danger-desc">
-                        Permanently delete your account and all associated data. This cannot be undone.
-                    </p>
-                    <button
-                        type="button"
-                        className="button-component red"
-                        onClick={() => { setShowDeleteConfirm(true); setDeleteConfirmText(""); }}
-                    >
-                        <Trash2 size={14} />
-                        Delete Account
-                    </button>
-                </section>
+                </div>
             </div>
 
             {exportOpen && <ExportOverlay onClose={() => setExportOpen(false)} />}

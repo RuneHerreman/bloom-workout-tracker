@@ -6,28 +6,156 @@
     min-height: 100%;
 }
 
-.profile-detail {
-    padding: 3rem 4rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    max-width: 42rem;
+/* Same shape as the tool pages: a rail on the left (who you are, and a nav
+   that follows your scroll), the settings as cards on the right. */
+.profile-body {
+    display: grid;
+    grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 3rem;
+    box-sizing: border-box;
 }
 
-.profile-loading {
-    color: var(--ink-muted);
-    font-size: var(--text-base);
+.profile-rail { position: sticky; top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.profile-main { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+
+.profile-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.15rem 1.25rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--widget-border-radius);
+    background: var(--surface-lighter);
 }
+
+.profile-id { flex-direction: row; align-items: center; gap: 0.85rem; }
+.profile-avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--primary-light) 14%, transparent);
+    color: var(--primary);
+    font-family: var(--serif), serif;
+    font-size: var(--text-lg);
+}
+.profile-id-text { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.profile-id-text strong { font-size: var(--text-md); font-weight: 550; color: var(--dark-text); }
+.profile-id-text span { font-size: var(--text-xs); color: var(--ink-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.profile-nav { display: flex; flex-direction: column; gap: 0.1rem; }
+/* Same look as the app sidebar: faded green fill and a short bar on the left. */
+.profile-nav-item {
+    position: relative;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-md);
+    color: var(--ink-muted);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    transition: background var(--transition), color var(--transition);
+}
+.profile-nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 0.2rem;
+    height: 55%;
+    background: var(--primary-light);
+    border-radius: 0 0.5rem 0.5rem 0;
+    transform: scaleY(0) translateY(-50%);
+    transition: transform var(--transition-spring);
+}
+.dark .profile-nav-item::before { background: var(--primary-glow); }
+.profile-nav-item:hover { background: var(--grey-light); color: var(--ink); }
+.profile-nav-item.active {
+    background: color-mix(in srgb, var(--primary-faded) 80%, transparent);
+    color: var(--primary-transparent);
+    font-weight: 550;
+}
+.profile-nav-item.active::before { transform: scaleY(1) translateY(-50%); }
+.profile-nav-item.danger { color: var(--danger-text); }
 
 /* ── Section ─────────────────────────────────────────────────────────────────── */
 
 .profile-section {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-    padding-bottom: 2rem;
-    border-bottom: 0.0625rem solid var(--border);
+    gap: 1.1rem;
+    padding: 1.25rem 1.4rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--widget-border-radius);
+    background: var(--surface-lighter);
+    scroll-margin-top: 1.25rem;
 }
+
+.profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 0.9rem; }
+.profile-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.profile-field-wide { grid-column: 1 / -1; }
+
+.profile-unit { position: relative; display: block; }
+.profile-unit input { padding-right: 2.5rem; }
+.profile-unit > span {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--text-sm);
+    color: var(--ink-muted);
+    pointer-events: none;
+}
+
+/* Choice buttons in a tray, the picked one lifted: same look as the insights segmented control. */
+.profile-segmented {
+    display: flex;
+    gap: 0.15rem;
+    height: 2.5rem;
+    padding: 0.2rem;
+    border-radius: var(--radius-md);
+    background: var(--surface-less-light);
+    box-sizing: border-box;
+}
+.profile-segmented button {
+    flex: 1 1 0;
+    min-width: 0;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--ink-muted);
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+}
+.profile-segmented button:hover { color: var(--ink); }
+.profile-segmented button.active { background: var(--surface-lighter); color: var(--ink); box-shadow: var(--shadow-sm); }
+
+/* Unsaved account/body edits: one bar at the bottom of the column, wherever you are. */
+.profile-save-bar {
+    position: sticky;
+    bottom: 1rem;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0.6rem 0.6rem 1.1rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--widget-border-radius);
+    background: var(--surface-lighter);
+    box-shadow: var(--shadow-widget);
+    font-size: var(--text-sm);
+    color: var(--ink);
+}
+.profile-save-bar > div { display: flex; gap: 0.5rem; }
 
 .profile-section-title {
     text-transform: none;
@@ -43,12 +171,6 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-}
-
-.profile-row-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
 }
 
 .profile-field {
@@ -155,6 +277,8 @@
     background: color-mix(in srgb, var(--danger-base) 3%, transparent);
 }
 
+.profile-danger-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem 1.5rem; flex-wrap: wrap; }
+
 .profile-danger-title {
     color: var(--danger-text);
 }
@@ -255,14 +379,32 @@
 
 /* ── Responsive ──────────────────────────────────────────────────────────────── */
 
-@media (max-width: 768px) {
-    .profile-detail {
-        padding: 1.75rem;
+@media (max-width: 960px) {
+    .profile-body { grid-template-columns: minmax(0, 1fr); padding: 0 1rem 2rem; gap: 1rem; }
+    .profile-rail { position: static; display: contents; }
+    .profile-id { order: -2; margin-top: 1rem; }
+    /* The nav turns into a row of chips pinned under the header. */
+    .profile-nav {
+        order: -1;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        flex-direction: row;
+        gap: 0.35rem;
+        margin: 0 -1rem;
+        padding: 0.6rem 1rem;
+        overflow-x: auto;
+        background: color-mix(in srgb, var(--surface-light) 92%, transparent);
+        backdrop-filter: blur(8px);
+        border-bottom: 0.0625rem solid var(--border-light);
     }
-
-    .profile-row-2 {
-        grid-template-columns: 1fr;
-    }
+    .profile-nav-item { flex-shrink: 0; padding: 0.4rem 0.7rem; white-space: nowrap; }
+    .profile-nav-item::before { display: none; }
+    .profile-section { scroll-margin-top: 3.75rem; padding: 1.1rem; }
+    .profile-grid, .profile-grid-3 { grid-template-columns: minmax(0, 1fr); }
+    .profile-save-bar { bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px)); }
+    .profile-save-bar span { display: none; }
+    .profile-save-bar > div { width: 100%; justify-content: flex-end; }
 }
 
 /* ── Section header with description ─────────────────────────────────────────── */
