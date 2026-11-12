@@ -3,6 +3,7 @@
 **/*.env
 copilot*xml
 appsettings.*.json
+.claude/**
 backups/
 
 ## A streamlined .gitignore for modern .NET projects

@@ -395,6 +395,8 @@
 .sidebar-card.active.cardio     { box-shadow: 0 3px 5px color-mix(in srgb, var(--accent)        14%, transparent); }
 .sidebar-card.active.plyometric { box-shadow: 0 3px 5px color-mix(in srgb, var(--primary-light) 14%, transparent); }
 .sidebar-card.active.mix        { box-shadow: 0 3px 5px color-mix(in srgb, var(--primary) 9%, transparent), 0 3px 5px color-mix(in srgb, var(--accent) 9%, transparent); }
+/* On dark surfaces a coloured shadow reads as a glow: the border alone marks the active card. */
+.dark .sidebar-card.active { box-shadow: none; }
 
 .sidebar-card.active.strength::before   { border-color: color-mix(in srgb, var(--primary)       65%, transparent); }
 .sidebar-card.active.cardio::before     { border-color: color-mix(in srgb, var(--accent)        65%, transparent); }
@@ -451,15 +453,10 @@
     position: relative;
 }
 
-.type-dot.strength   { background: color-mix(in srgb, var(--primary)       80%, transparent); }
-.type-dot.cardio     { background: color-mix(in srgb, var(--accent)        80%, transparent); }
-.type-dot.plyometric { background: color-mix(in srgb, var(--primary-light) 80%, transparent); }
-.type-dot.mix        { background:
-    linear-gradient(
-            135deg,
-            color-mix(in srgb, var(--primary) 75%, transparent),
-            var(--accent));
-}
+.type-dot.strength   { background: var(--primary); }
+.type-dot.cardio     { background: var(--accent); }
+.type-dot.plyometric { background: var(--primary-light); }
+.type-dot.mix        { background: linear-gradient(135deg, var(--primary), var(--accent)); }
 
 .type-dot::after {
     content: attr(data-label);

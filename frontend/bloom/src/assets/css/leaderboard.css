@@ -239,6 +239,7 @@
     border-color: var(--primary-light);
     box-shadow: 0 3px 10px color-mix(in srgb, var(--primary) 10%, transparent);
 }
+.dark .lb-row.me { box-shadow: none; }
 
 .lb-rank { font-family: var(--serif), serif; font-size: var(--text-lg); text-align: center; color: var(--ink-muted); }
 .lb-rank.top-1 { color: var(--primary-light); }
