@@ -393,7 +393,8 @@
 /* Weight too old to trust: the warm colour, and a small way to fix it in the same row. */
 .tool-you-rows > .stale .tool-you-icon, .tool-you-rows > .stale dt { color: var(--marker-warmup); }
 .tool-you-log { margin-left: 0.15rem; }
-.tool-you-log .log-weight-trigger { padding: 0.15rem 0.45rem; font-size: var(--text-2xs); gap: 0.25rem; }
+/* The one deliberately small button: an inline "fix it" chip inside a stat row. */
+.tool-you-log .log-weight-trigger { min-height: 0; padding: 0.15rem 0.45rem; font-size: var(--text-2xs); gap: 0.25rem; }
 .tool-you-log .log-weight-trigger svg { width: 0.75rem; height: 0.75rem; }
 
 /* Rate buttons: kg a week, with the % under it. */

@@ -94,8 +94,7 @@ function LogSortableSetRow({ item, number, type, exerciseName, onSetChange, onDe
                             min={0}
                             aria-label={label("weight in kg")}
                             value={item.set.weight ?? ""}
-                            placeholder={hint?.weight != null ? String(hint.weight) : "0"}
-                            onFocus={e => e.target.select()}
+                            placeholder={hint?.weight != null ? String(hint.weight) : "0"}                            onFocus={e => e.target.select()}
                             onChange={e => onSetChange(item.id, { ...item.set, weight: toNumber(e.target.value) })}
                         />
                         <span className="unit-label" aria-hidden>kg</span>

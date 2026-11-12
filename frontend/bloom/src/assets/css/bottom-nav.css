@@ -118,7 +118,6 @@
     .toast { bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
 }
 
-.button-component { white-space: nowrap; }
 
 @media (max-width: 768px) {
     /* The tab bar's central + already covers "Log workout" on phones */

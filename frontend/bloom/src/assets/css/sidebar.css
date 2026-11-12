@@ -4,6 +4,7 @@
     display: flex;
     width: 100%;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
@@ -18,6 +19,10 @@
     overflow-y: auto;
     height: 100%;
 }
+
+/* A page is as tall as its content (or the screen, if shorter): never squeezed to the screen
+   height with its content spilling out of the box, which also put padding in the wrong place. */
+.app-main > * { flex-shrink: 0; }
 
 .app-main .page-header {
     padding: 1.4rem 2rem;
@@ -194,6 +199,9 @@
     flex-shrink: 0;
 }
 
+.sidebar-theme-toggle svg,
+.sidebar-logout svg { width: 1.125rem; height: 1.125rem; }
+
 .sidebar-theme-toggle {
     color: var(--ink-muted);
 }
@@ -239,5 +247,10 @@
 @media (max-width: 768px) {
     .sidebar {
         display: none;
+    }
+
+    /* The fixed tab bar sits over the bottom of the page: keep the last content clear of it. */
+    .app-main {
+        padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
     }
 }

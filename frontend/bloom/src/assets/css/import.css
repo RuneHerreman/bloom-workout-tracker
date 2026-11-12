@@ -31,18 +31,13 @@
 .imp kbd { font: 600 0.625rem/1 var(--sans), sans-serif; padding: 0.15rem 0.3rem; border-radius: 0.25rem; border: 0.0625rem solid currentColor; opacity: 0.7; }
 
 /* Buttons */
-.imp-btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
-    padding: 0.5rem 0.95rem; border-radius: var(--radius-md); border: 0.0625rem solid transparent;
-    font: inherit; font-size: var(--text-sm); font-weight: 500; cursor: pointer; white-space: nowrap; text-decoration: none;
-}
 .imp-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .imp-btn.primary { background: var(--primary-light); color: #fff; }
 .imp-btn.primary:hover:not(:disabled) { background: var(--primary-muted); }
 .dark .imp-btn.primary { background: #2b9363; }
 .imp-btn.secondary { background: var(--surface-lighter); border-color: var(--border); color: var(--ink); }
 .imp-btn.secondary:hover { border-color: var(--primary-light); }
-.imp-btn.ghost { background: none; color: var(--ink-muted); padding-inline: 0.5rem; }
+.imp-btn.ghost { background: none; color: var(--ink-muted); }
 .imp-btn.ghost:hover { color: var(--ink); }
 .imp-btn.chosen { background: var(--imp-ok-bg); color: var(--imp-ok); border-color: color-mix(in srgb, var(--imp-ok) 35%, transparent); }
 .imp-btn.danger { background: var(--danger); color: #fff; }

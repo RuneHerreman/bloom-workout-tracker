@@ -5,11 +5,9 @@
 .log-weight { position: relative; display: inline-flex; }
 
 /* Secondary to "Log workout": same size, outline only. */
-.log-weight-trigger {
-    padding: 0.45rem 0.9rem;
-    border-width: 0.0625rem;
+.button-component.log-weight-trigger {
+    --btn-border: 0.0625rem;
     color: var(--ink);
-    font-size: var(--text-base);
 }
 .dark .log-weight-trigger { color: var(--ink); }
 .log-weight-trigger[aria-expanded="true"] { border-color: var(--primary-light); }
@@ -45,7 +43,6 @@
 .log-weight-error { color: var(--danger-text); }
 
 .log-weight-actions { display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; }
-.log-weight-actions .button-component { padding: 0.45rem 1rem; font-size: var(--text-sm); }
 .log-weight-cancel {
     padding: 0.45rem 0.6rem;
     border: none;

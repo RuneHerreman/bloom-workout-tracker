@@ -20,7 +20,8 @@ img, picture, video, canvas, svg {
     max-width: 100%;
 }
 
-input, button, textarea, select {
+/* Zero specificity: component rules (the shared button rule included) always win. */
+:where(input, button, textarea, select) {
     font: inherit;
 }
 

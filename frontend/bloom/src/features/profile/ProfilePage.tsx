@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Save, Trash2, Eye, EyeOff, KeyRound, X, Download, Upload } from "lucide-react";
+import { Save, Trash2, Eye, EyeOff, KeyRound, X, Download, Upload, UserRound, Scale, Link2, ShieldCheck, Footprints, Dumbbell, Database } from "lucide-react";
 import { getMe, updateMe, updateSex, changePassword, deleteMe, updateLeaderboardVisibility } from "../auth/api.ts";
 import type { Sex } from "../../assets/js/data/apiTypes.ts";
 import { getBody, formatEntryDate, localToday, type BodyEntry } from "../body/api.ts";
@@ -19,15 +19,15 @@ import "../../assets/css/profile.css";
 
 /** The page's sections, in order: the rail's nav and the scroll-spy both read this. */
 const SECTIONS = [
-    { id: "account", label: "Account" },
-    { id: "body", label: "Body" },
-    { id: "password", label: "Password" },
-    { id: "apps", label: "Connected apps" },
-    { id: "privacy", label: "Privacy" },
-    { id: "gear", label: "Gear" },
-    { id: "exercises", label: "My exercises" },
-    { id: "data", label: "Your data" },
-    { id: "danger", label: "Delete account" },
+    { id: "account", label: "Account", icon: UserRound },
+    { id: "body", label: "Body", icon: Scale },
+    { id: "password", label: "Password", icon: KeyRound },
+    { id: "apps", label: "Connected apps", icon: Link2 },
+    { id: "privacy", label: "Privacy", icon: ShieldCheck },
+    { id: "gear", label: "Gear", icon: Footprints },
+    { id: "exercises", label: "My exercises", icon: Dumbbell },
+    { id: "data", label: "Your data", icon: Database },
+    { id: "danger", label: "Delete account", icon: Trash2 },
 ] as const;
 type SectionId = (typeof SECTIONS)[number]["id"];
 
@@ -357,6 +357,7 @@ function ProfilePage() {
                                 aria-current={activeSection === s.id ? "location" : undefined}
                                 onClick={e => { e.preventDefault(); goTo(s.id); }}
                             >
+                                <s.icon size={18} aria-hidden />
                                 {s.label}
                             </a>
                         ))}
