@@ -6,7 +6,7 @@ import { getBody, peekBody, localToday } from "../../body/api.ts";
 import { getLogs, peekLogs } from "../../logbook/api.ts";
 import { buildSeries, dayIndex } from "../../insights/bodySeries.ts";
 import {
-    ACTIVITY_LEVELS, KCAL_PER_KG, activityFromSessions, ageInYears, weeklyRate, type ActivityKey, type Goal,
+    ACTIVITY_LEVELS, KCAL_PER_KG, activityFactor, activityFromSessions, ageInYears, weeklyRate, type ActivityKey, type Goal,
 } from "../../../utils/bodyMath.ts";
 import { DEFAULT_RATE, PROTEIN_OPTIONS, RATES, macroPlan } from "./macroPlan.ts";
 import InfoHint from "../../../components/general/InfoHint.tsx";
@@ -17,6 +17,18 @@ const DAY = 86_400_000;
 /** A body fat reading older than this isn't used for resting energy. */
 const BODY_FAT_MAX_AGE_DAYS = 60;
 const STORE = "bloom.macros";
+const MEALS = [3, 4, 5];
+/** How far ahead "at this rate" looks: far enough to mean something, short enough that 7700 kcal/kg still holds. */
+const PROJECTION_WEEKS = 12;
+
+/** What each level means in training terms; matches how the suggestion is picked from logged sessions. */
+const ACTIVITY_DESC: Record<ActivityKey, string> = {
+    sedentary: "Desk job, little exercise",
+    light: "Training 1–2 times a week",
+    moderate: "Training 3–4 times a week",
+    very: "Training 5+ times a week",
+    extra: "Hard training and a physical job",
+};
 
 const GOALS: { value: Goal; label: string }[] = [
     { value: "lose", label: "Lose" },
@@ -29,16 +41,17 @@ const kcal = (n: number) => Math.round(n).toLocaleString("en-GB");
 const signed = (n: number, d = 1) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${num(Math.abs(n), d)}`;
 const parse = (v: string) => { const n = Number(v.trim().replace(",", ".")); return v.trim() && Number.isFinite(n) ? n : null; };
 
-interface Saved { goal: Goal; rate: number; protein: number | null }
+interface Saved { goal: Goal; rate: number; protein: number | null; meals: number }
 function readSaved(): Saved {
     try {
         const s = JSON.parse(localStorage.getItem(STORE) ?? "{}") as Partial<Saved>;
         const goal = GOALS.some(g => g.value === s.goal) ? s.goal! : "maintain";
         const rate = typeof s.rate === "number" && RATES[goal].includes(s.rate) ? s.rate : DEFAULT_RATE[goal];
         const protein = typeof s.protein === "number" && PROTEIN_OPTIONS.includes(s.protein) ? s.protein : null;
-        return { goal, rate, protein };
+        const meals = typeof s.meals === "number" && MEALS.includes(s.meals) ? s.meals : 3;
+        return { goal, rate, protein, meals };
     } catch {
-        return { goal: "maintain", rate: 0, protein: null };
+        return { goal: "maintain", rate: 0, protein: null, meals: 3 };
     }
 }
 
@@ -72,6 +85,7 @@ function MacroPage() {
     const [activity, setActivity] = useState<ActivityKey | null>(null);
     const [saved, setSaved] = useState<Saved>(readSaved);
     const [sexSaving, setSexSaving] = useState(false);
+    const [editingYou, setEditingYou] = useState(false);
 
     useEffect(() => {
         getMe().then(setUser).catch(() => {});
@@ -148,6 +162,17 @@ function MacroPage() {
     ] : [];
     const shares = wholePercents(macroRows.map(r => r.grams * r.kcalPerG));
 
+    const realKgPerWeek = plan ? (plan.capped ? ((plan.kcal - plan.maintenance) * 7) / KCAL_PER_KG : plan.kgPerWeek) : 0;
+    const projection = plan && w && Math.abs(realKgPerWeek) > 0.005
+        ? { kg: w + realKgPerWeek * PROJECTION_WEEKS, date: new Date(Date.now() + PROJECTION_WEEKS * 7 * DAY) }
+        : null;
+    const youMissing = !w || !h || !sex;
+    // Opened because sex isn't set: stay open until "Done", so picking it doesn't
+    // collapse the rail under your pointer. (Weight and height are prefilled.)
+    if (user && !sex && !editingYou) setEditingYou(true);
+    const showYouFields = editingYou || youMissing;
+    const recommendedProtein = saved.goal === "lose" ? 2.2 : 1.6;
+
     return (
         <div className="insights-page tool-page">
             <header className="page-header">
@@ -158,115 +183,149 @@ function MacroPage() {
             </header>
 
             <div className="tool-body">
-                <section className="panel tool-panel" aria-label="Macro calculator">
-                    <div className="tool-inputs macro-inputs">
-                        <label className="tool-field">
-                            <span>Weight</span>
-                            <span className="tool-input-unit">
-                                <input inputMode="decimal" aria-label="Weight in kg" value={weight} placeholder="0" onChange={e => setWeight(e.target.value)} />
-                                <span aria-hidden>kg</span>
-                            </span>
-                        </label>
-                        <label className="tool-field">
-                            <span>Height</span>
-                            <span className="tool-input-unit">
-                                <input inputMode="numeric" aria-label="Height in cm" value={height} placeholder="0" onChange={e => setHeight(e.target.value)} />
-                                <span aria-hidden>cm</span>
-                            </span>
-                        </label>
-                        <label className="tool-field">
-                            <span>Body fat <em>optional</em></span>
-                            <span className="tool-input-unit">
-                                <input inputMode="decimal" aria-label="Body fat in percent" value={bodyFat} placeholder="—" onChange={e => setBodyFat(e.target.value)} />
-                                <span aria-hidden>%</span>
-                            </span>
-                        </label>
+                <div className="tool-peek" aria-hidden>
+                    <span>{plan ? `P ${plan.macros.proteinG} · F ${plan.macros.fatG} · C ${plan.macros.carbsG} g` : "Daily target"}</span>
+                    <b>{plan ? `${kcal(plan.kcal)} kcal` : "—"}</b>
+                </div>
+                <aside className="panel tool-rail" aria-label="Your numbers and goal">
+                    <div className="tool-you">
+                        <div className="tool-you-head">
+                            <span className="tool-group-label">You</span>
+                            {!youMissing && (
+                                <button type="button" className="tool-link-btn" onClick={() => setEditingYou(e => !e)} aria-expanded={showYouFields}>
+                                    {showYouFields ? "Done" : "Edit"}
+                                </button>
+                            )}
+                        </div>
+                        {!showYouFields ? (
+                            <p className="tool-you-summary">
+                                {[w && `${num(w)} kg`, h && `${num(h, 0)} cm`, bf !== null && `${num(bf)}% fat`, sex, age !== null && `${age} y`].filter(Boolean).join(" · ")}
+                            </p>
+                        ) : (
+                            <div className="tool-you-fields">
+                                <label className="tool-field">
+                                    <span>Weight</span>
+                                    <span className="tool-input-unit">
+                                        <input inputMode="decimal" aria-label="Weight in kg" value={weight} placeholder="0" onChange={e => setWeight(e.target.value)} />
+                                        <span aria-hidden>kg</span>
+                                    </span>
+                                </label>
+                                <label className="tool-field">
+                                    <span>Height</span>
+                                    <span className="tool-input-unit">
+                                        <input inputMode="numeric" aria-label="Height in cm" value={height} placeholder="0" onChange={e => setHeight(e.target.value)} />
+                                        <span aria-hidden>cm</span>
+                                    </span>
+                                </label>
+                                <label className="tool-field">
+                                    <span>Body fat <em>optional</em></span>
+                                    <span className="tool-input-unit">
+                                        <input inputMode="decimal" aria-label="Body fat in percent" value={bodyFat} placeholder="—" onChange={e => setBodyFat(e.target.value)} />
+                                        <span aria-hidden>%</span>
+                                    </span>
+                                </label>
+                                <div className="tool-field">
+                                    <span>Sex</span>
+                                    <div className="segmented tool-segmented" role="radiogroup" aria-label="Sex">
+                                        {(["Male", "Female"] as Sex[]).map(s => (
+                                            <button key={s} type="button" role="radio" aria-checked={sex === s} disabled={sexSaving}
+                                                className={`segmented-item${sex === s ? " active" : ""}`} onClick={() => sex !== s && pickSex(s)}>
+                                                {s}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <p className="tool-hint">
+                            {trendWeight ? <>Weight is your trend from the body log{weightSeries.length === 0 ? " (your profile weight)" : ""}. </> : null}
+                            {recentBodyFat && <>Body fat is your logged trend; clear it to ignore it. </>}
+                            {age !== null ? <>Age from your <Link to="/profile">profile</Link>.</> : <>Add your date of birth in your <Link to="/profile">profile</Link>.</>}
+                        </p>
+                    </div>
+
+                    <div className="tool-field">
+                        <span>Goal</span>
+                        <div className="segmented tool-segmented" role="radiogroup" aria-label="Goal">
+                            {GOALS.map(g => (
+                                <button key={g.value} type="button" role="radio" aria-checked={saved.goal === g.value}
+                                    className={`segmented-item${saved.goal === g.value ? " active" : ""}`} onClick={() => pickGoal(g.value)}>
+                                    {g.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {saved.goal !== "maintain" && (
                         <div className="tool-field">
-                            <span>Sex</span>
-                            <div className="segmented macro-sex" role="radiogroup" aria-label="Sex">
-                                {(["Male", "Female"] as Sex[]).map(s => (
-                                    <button key={s} type="button" role="radio" aria-checked={sex === s} disabled={sexSaving}
-                                        className={`segmented-item${sex === s ? " active" : ""}`} onClick={() => sex !== s && pickSex(s)}>
-                                        {s}
+                            <span>Rate <em>% of body weight a week</em></span>
+                            <div className="segmented tool-segmented" role="radiogroup" aria-label="Rate per week">
+                                {RATES[saved.goal].map(r => (
+                                    <button key={r} type="button" role="radio" aria-checked={saved.rate === r}
+                                        className={`segmented-item${saved.rate === r ? " active" : ""}`} onClick={() => save({ rate: r })}>
+                                        {num(r, 2)}%
                                     </button>
                                 ))}
                             </div>
+                            {w ? <p className="tool-hint">About <b>{signed((w * (saved.goal === "lose" ? -saved.rate : saved.rate)) / 100, 2)} kg</b> a week.</p> : null}
                         </div>
-                    </div>
-                    <p className="tool-history">
-                        {trendWeight ? <>Weight is your trend from the body log{weightSeries.length === 0 ? " (your profile weight)" : ""}. </> : null}
-                        {recentBodyFat && <>Body fat is from your log ({num(recentBodyFat.value)}% trend); clear it to ignore it. </>}
-                        {age !== null && <>Age {age} from your <Link to="/profile">profile</Link>.</>}
-                    </p>
+                    )}
 
-                    <div className="tool-inputs macro-plan-inputs">
-                        <label className="tool-field">
-                            <span>Activity</span>
-                            <select aria-label="Activity level" value={activeKey} onChange={e => setActivity(e.target.value as ActivityKey)}>
-                                {ACTIVITY_LEVELS.map(a => <option key={a.key} value={a.key}>{a.label} · × {a.factor}</option>)}
-                            </select>
-                        </label>
-                        <div className="tool-field macro-goal">
-                            <span>Goal</span>
-                            <div className="segmented" role="radiogroup" aria-label="Goal">
-                                {GOALS.map(g => (
-                                    <button key={g.value} type="button" role="radio" aria-checked={saved.goal === g.value}
-                                        className={`segmented-item${saved.goal === g.value ? " active" : ""}`} onClick={() => pickGoal(g.value)}>
-                                        {g.label}
-                                    </button>
-                                ))}
-                            </div>
+                    <div className="tool-field">
+                        <span className="tool-label-hint">
+                            Protein <em>g per kg</em>
+                            <InfoHint title="Protein" label="How much protein?">
+                                <p>1.4–2.0 g per kg covers muscle building for most people who lift (ISSN). In a deficit, around 2.2 g per kg helps keep muscle while you lose fat.</p>
+                            </InfoHint>
+                        </span>
+                        <div className="segmented tool-segmented" role="radiogroup" aria-label="Protein per kg">
+                            {PROTEIN_OPTIONS.map(p => (
+                                <button key={p} type="button" role="radio" aria-checked={proteinPerKg === p}
+                                    className={`segmented-item${proteinPerKg === p ? " active" : ""}${p === recommendedProtein ? " suggested" : ""}`}
+                                    onClick={() => save({ protein: p })}>
+                                    {num(p)}
+                                </button>
+                            ))}
                         </div>
-                        <label className="tool-field">
-                            <span>Rate</span>
-                            <select aria-label="Rate per week" value={saved.rate} disabled={saved.goal === "maintain"}
-                                onChange={e => save({ rate: Number(e.target.value) })}>
-                                {saved.goal === "maintain"
-                                    ? <option value={0}>—</option>
-                                    : RATES[saved.goal].map(r => <option key={r} value={r}>{num(r, 2)}% of body weight / week</option>)}
-                            </select>
-                        </label>
-                        <label className="tool-field">
-                            <span className="tool-label-hint">
-                                Protein
-                                <InfoHint title="Protein" label="How much protein?">
-                                    <p>1.4–2.0 g per kg covers muscle building for most people who lift (ISSN). In a deficit, around 2.2 g per kg helps keep muscle while you lose fat.</p>
-                                </InfoHint>
-                            </span>
-                            <select aria-label="Protein per kg" value={proteinPerKg} onChange={e => save({ protein: Number(e.target.value) })}>
-                                {PROTEIN_OPTIONS.map(p => <option key={p} value={p}>{num(p)} g per kg</option>)}
-                            </select>
-                        </label>
+                        <p className="tool-hint">
+                            {w ? <><b>{Math.round(w * proteinPerKg)} g</b> a day. </> : null}
+                            The dot marks the usual pick when you {saved.goal === "lose" ? "cut" : saved.goal === "gain" ? "bulk" : "maintain"}.
+                        </p>
                     </div>
-                    <p className="tool-history">
-                        {activity === null && (sessions !== null
-                            ? <>Activity picked from your training: {num(sessions)} sessions a week over the last 4 weeks.</>
-                            : <>Activity picked from your goal of {user?.activeDays ?? 0} days a week.</>)}
-                    </p>
 
-                    <div className="tool-split">
-                        <div className="tool-result" aria-live="polite">
+                    <div className="tool-field">
+                        <span>Activity</span>
+                        <div className="tool-choices" role="radiogroup" aria-label="Activity level">
+                            {ACTIVITY_LEVELS.map(a => (
+                                <button key={a.key} type="button" role="radio" aria-checked={activeKey === a.key}
+                                    className={`tool-choice${activeKey === a.key ? " active" : ""}`} onClick={() => setActivity(a.key)}>
+                                    <span className="tool-choice-title">
+                                        {a.label}
+                                        {a.key === suggestedActivity && <span className="tool-tag">Your training</span>}
+                                    </span>
+                                    <span className="tool-choice-desc">{ACTIVITY_DESC[a.key]} · × {a.factor}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <p className="tool-hint">
+                            {sessions !== null
+                                ? <>You logged {num(sessions)} sessions a week over the last 4 weeks.</>
+                                : <>Suggested from your goal of {user?.activeDays ?? 0} days a week.</>}
+                        </p>
+                    </div>
+                </aside>
+
+                <div className="tool-main">
+                    <section className="panel tool-hero" aria-live="polite" aria-label="Daily target">
+                        <div className="tool-hero-main">
                             <span className="tool-result-label">Daily target</span>
                             {plan ? (
                                 <>
                                     <p className="tool-result-value">{kcal(plan.kcal)}<span className="tool-result-range">kcal</span></p>
-                                    <p className="tool-muted">
-                                        Maintenance ≈ {kcal(plan.maintenance)} kcal
-                                        {plan.kgPerWeek !== 0 && (plan.capped
-                                            // At the floor the deficit is smaller than chosen; say what it actually gives.
-                                            ? <> · {signed(plan.kcal - plan.maintenance, 0)}, about {signed(((plan.kcal - plan.maintenance) * 7) / KCAL_PER_KG, 2)} kg a week</>
-                                            : <> · {signed(plan.kcal - plan.maintenance, 0)} for {signed(plan.kgPerWeek, 2)} kg a week</>)}
-                                    </p>
                                     {plan.capped && (
                                         <p className="tool-note">That rate would put you under 1.1 × your resting energy, so this is the lowest target Bloom gives. Pick a slower rate.</p>
                                     )}
-                                    <p className="tool-muted">
-                                        Resting energy {kcal(plan.bmr)} kcal ({plan.formula === "katch" ? "Katch-McArdle, from your lean mass" : "Mifflin-St Jeor"}).
-                                    </p>
-                                    <p className="tool-history-best macro-caveat">
-                                        An estimate, usually within 10%. After 2–3 weeks, check your weight trend and adjust by 100–200 kcal.
-                                        {trendRate && <span>Your trend over the last 4 weeks: <b>{signed(trendRate.kgPerWeek, 2)} kg a week</b>.</span>}
-                                    </p>
+                                    <p className="tool-muted">An estimate, usually within 10%. After 2–3 weeks, check your weight trend and adjust by 100–200 kcal.</p>
                                 </>
                             ) : (
                                 <>
@@ -275,35 +334,86 @@ function MacroPage() {
                                 </>
                             )}
                         </div>
+                        {plan && (
+                            <dl className="tool-hero-stats">
+                                <div>
+                                    <dt>Maintenance</dt>
+                                    <dd>{kcal(plan.maintenance)} kcal</dd>
+                                    <span>Resting energy × {activityFactor(activeKey)} for activity</span>
+                                </div>
+                                <div>
+                                    <dt>{plan.kcal < plan.maintenance ? "Deficit" : plan.kcal > plan.maintenance ? "Surplus" : "Change"}</dt>
+                                    <dd>{plan.kcal === plan.maintenance ? "None" : `${signed(plan.kcal - plan.maintenance, 0)} kcal`}</dd>
+                                    <span>{realKgPerWeek ? `${signed(realKgPerWeek, 2)} kg a week` : "Hold your weight"}</span>
+                                </div>
+                                <div>
+                                    <dt>Resting energy</dt>
+                                    <dd>{kcal(plan.bmr)} kcal</dd>
+                                    <span>{plan.formula === "katch" ? "Katch-McArdle, from your lean mass" : "Mifflin-St Jeor"}</span>
+                                </div>
+                            </dl>
+                        )}
+                        {plan && (projection || trendRate) && (
+                            <p className="tool-hero-foot">
+                                {projection && <>At this rate: <b>about {num(projection.kg)} kg</b> by {projection.date.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}, in {PROJECTION_WEEKS} weeks. </>}
+                                {trendRate && <>Your trend over the last 4 weeks: <b>{signed(trendRate.kgPerWeek, 2)} kg a week</b>.</>}
+                            </p>
+                        )}
+                    </section>
 
-                        <div className="tool-table-wrap">
-                            <div className="tool-table-head"><h2 className="history-title">Macros per day</h2></div>
-                            {plan ? (
-                                <>
-                                    <ul className="macro-bars">
-                                        {macroRows.map((r, i) => {
-                                            const share = shares[i] / 100;
-                                            return (
-                                                <li key={r.key} className={`macro-row ${r.key}`}>
-                                                    <span className="macro-name">{r.label}</span>
-                                                    <span className="macro-grams">{r.grams} g</span>
-                                                    <span className="macro-track" aria-hidden><span style={{ width: `${share * 100}%` }} /></span>
-                                                    <span className="macro-share">{shares[i]}%</span>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                    <p className="tool-muted">
-                                        Protein {num(proteinPerKg)} g per kg · fat 25% of calories (at least 0.6 g per kg) · carbs the rest.
-                                    </p>
-                                    {plan.macros.lowCarb && <p className="tool-note">Carbs end up under 2 g per kg at this target, which can make hard training feel heavy.</p>}
-                                </>
-                            ) : (
-                                <p className="tool-muted">Your protein, fat and carbs show up here.</p>
-                            )}
+                    <section className="panel" aria-label="Macros per day">
+                        <div className="tool-table-head">
+                            <div className="panel-head">
+                                <h2 className="panel-title">Macros</h2>
+                                <p className="panel-desc">Protein {num(proteinPerKg)} g per kg · fat 25% of calories (at least 0.6 g per kg) · carbs the rest.</p>
+                            </div>
+                            <div className="segmented segmented-sm" role="radiogroup" aria-label="Meals a day">
+                                {MEALS.map(m => (
+                                    <button key={m} type="button" role="radio" aria-checked={saved.meals === m}
+                                        className={`segmented-item${saved.meals === m ? " active" : ""}`} onClick={() => save({ meals: m })}>
+                                        {m} meals
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                </section>
+                        {plan ? (
+                            <>
+                                <div className="macro-stack" role="img" aria-label={macroRows.map((r, i) => `${r.label} ${shares[i]}%`).join(", ")}>
+                                    {macroRows.map((r, i) => <span key={r.key} className={r.key} style={{ flexGrow: shares[i] }} />)}
+                                </div>
+                                <div className="tool-table-scroll">
+                                    <table className="history-table tool-table macro-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Macro</th>
+                                                <th className="num">Per day</th>
+                                                <th className="num">Per meal</th>
+                                                <th className="num">g per kg</th>
+                                                <th className="num">kcal</th>
+                                                <th className="num">Share</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {macroRows.map((r, i) => (
+                                                <tr key={r.key} className={`macro-row ${r.key}`}>
+                                                    <td><span className="macro-dot" aria-hidden />{r.label}</td>
+                                                    <td className="num macro-grams">{r.grams} g</td>
+                                                    <td className="num">{Math.round(r.grams / saved.meals)} g</td>
+                                                    <td className="num">{w ? num(r.grams / w) : "—"}</td>
+                                                    <td className="num">{kcal(r.grams * r.kcalPerG)}</td>
+                                                    <td className="num">{shares[i]}%</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {plan.macros.lowCarb && <p className="tool-note">Carbs end up under 2 g per kg at this target, which can make hard training feel heavy.</p>}
+                            </>
+                        ) : (
+                            <p className="tool-muted">Your protein, fat and carbs show up here.</p>
+                        )}
+                    </section>
+                </div>
             </div>
         </div>
     );

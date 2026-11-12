@@ -126,3 +126,74 @@ select:not([multiple]) {
     padding-right: 2.25rem !important;
     cursor: pointer;
 }
+
+/* The open list. Where the browser supports customizable selects (Chromium for
+   now) the picker gets the app's surface, border and type instead of the OS menu;
+   elsewhere it stays native, which still works. Each select keeps its own
+   field styling; this only resets what base-select adds and styles the list. */
+@supports (appearance: base-select) {
+    select:not([multiple]),
+    select:not([multiple])::picker(select) {
+        appearance: base-select;
+    }
+    select:not([multiple]) {
+        align-items: center;
+        line-height: 1.2;
+    }
+    /* The chevron is the background image above, so the inset matches the text. */
+    select:not([multiple])::picker-icon { display: none; }
+
+    select:not([multiple])::picker(select) {
+        margin-block: 0.25rem;
+        padding: 0.25rem;
+        max-height: min(20rem, 60dvh);
+        border: 0.0625rem solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--surface-lighter);
+        color: var(--ink);
+        box-shadow: var(--shadow-widget);
+        font-family: var(--sans), sans-serif;
+        font-size: var(--text-sm);
+        overflow-y: auto;
+        /* A long exercise list needs some sign it scrolls; thin, in the theme. */
+        scrollbar-width: thin;
+        scrollbar-color: var(--grey) transparent;
+        opacity: 0;
+        translate: 0 -0.25rem;
+        transition: opacity 0.12s ease, translate 0.12s ease, overlay 0.12s allow-discrete, display 0.12s allow-discrete;
+    }
+    select:not([multiple]):open::picker(select) { opacity: 1; translate: 0 0; }
+    @starting-style {
+        select:not([multiple]):open::picker(select) { opacity: 0; translate: 0 -0.25rem; }
+    }
+
+    select:not([multiple]) option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 2.1rem;
+        padding: 0.35rem 0.6rem;
+        border-radius: var(--radius-sm);
+        color: var(--ink);
+        cursor: pointer;
+        font-variant-numeric: tabular-nums;
+    }
+    select:not([multiple]) option:hover,
+    select:not([multiple]) option:focus-visible {
+        background: var(--surface-less-light);
+        outline: none;
+    }
+    select:not([multiple]) option:checked {
+        color: var(--primary);
+        font-weight: 550;
+    }
+    /* A check on the right for the current choice, in place of the default tick. */
+    select:not([multiple]) option::checkmark {
+        order: 1;
+        margin-left: auto;
+        color: var(--primary);
+        content: "✓";
+    }
+    select:not([multiple]) option:not(:checked)::checkmark { visibility: hidden; }
+    select:not([multiple]) option:disabled { opacity: 0.5; cursor: not-allowed; }
+}

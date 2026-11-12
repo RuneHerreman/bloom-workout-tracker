@@ -40,7 +40,15 @@ export async function fetchFromServer<T>(
     requestBody?: unknown
 ): Promise<T> {
     const options = constructOptions(httpVerb, requestBody);
-    const response = await fetch(`${API_BASE_URL}${path}`, options);
+    let response: Response;
+    try {
+        response = await fetch(`${API_BASE_URL}${path}`, options);
+    } catch {
+        // No response at all (server down, offline, blocked): say so, rather than
+        // letting callers fall back to "Login failed", which reads as a wrong password.
+        const unreachable: ApiError = { failure: true, error: "Can't reach Bloom right now. Check your connection and try again." };
+        throw unreachable;
+    }
 
     if (response.status !== 401) {
         serverContactListeners.forEach(listener => listener());

@@ -17,6 +17,8 @@ export interface LiftHistory {
     recent: BestSet;
     /** Highest estimate ever. */
     allTime: BestSet;
+    /** Each session's best set, oldest first. */
+    sessions: BestSet[];
 }
 
 /** How far back "best recent set" looks. */
@@ -29,7 +31,7 @@ export const RECENT_DAYS = 56;
 export function liftHistories(logs: LoggedWorkout[], now = new Date()): LiftHistory[] {
     const since = now.getTime() - RECENT_DAYS * 86_400_000;
     const sorted = [...logs].sort((a, b) => new Date(a.loggedAt).getTime() - new Date(b.loggedAt).getTime());
-    const map = new Map<string, { lastDate: string; lastBest: BestSet; recent: BestSet | null; allTime: BestSet }>();
+    const map = new Map<string, { lastDate: string; lastBest: BestSet; recent: BestSet | null; allTime: BestSet; sessions: BestSet[] }>();
 
     for (const log of sorted) {
         const t = new Date(log.loggedAt).getTime();
@@ -48,10 +50,11 @@ export function liftHistories(logs: LoggedWorkout[], now = new Date()): LiftHist
             const prev = map.get(ex.exerciseId);
             const inWindow = t >= since;
             if (!prev) {
-                map.set(ex.exerciseId, { lastDate: log.loggedAt, lastBest: sessionBest, recent: inWindow ? sessionBest : null, allTime: sessionBest });
+                map.set(ex.exerciseId, { lastDate: log.loggedAt, lastBest: sessionBest, recent: inWindow ? sessionBest : null, allTime: sessionBest, sessions: [sessionBest] });
                 continue;
             }
             prev.lastDate = log.loggedAt;
+            prev.sessions.push(sessionBest);
             prev.lastBest = sessionBest;
             if (inWindow && (!prev.recent || sessionBest.e1rm > prev.recent.e1rm)) prev.recent = sessionBest;
             if (sessionBest.e1rm > prev.allTime.e1rm) prev.allTime = sessionBest;
@@ -59,6 +62,6 @@ export function liftHistories(logs: LoggedWorkout[], now = new Date()): LiftHist
     }
 
     return [...map.entries()]
-        .map(([exerciseId, h]) => ({ exerciseId, lastDate: h.lastDate, recent: h.recent ?? h.lastBest, allTime: h.allTime }))
+        .map(([exerciseId, h]) => ({ exerciseId, lastDate: h.lastDate, recent: h.recent ?? h.lastBest, allTime: h.allTime, sessions: h.sessions }))
         .sort((a, b) => b.lastDate.localeCompare(a.lastDate));
 }
