@@ -582,7 +582,22 @@ button.highlight:hover .highlight-link, button.highlight:focus-visible .highligh
     .seg-long { display: none; }
     .seg-short { display: inline; }
     .insights-body { padding: 1rem 1rem 2rem; gap: 1rem; }
-    .highlights { grid-template-columns: minmax(0, 1fr); }
+    /* One card with a row per finding instead of a stack of cards: same news, half the height. */
+    .highlights {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+        border: 0.0625rem solid var(--border);
+        border-radius: var(--widget-border-radius);
+        background: var(--surface-lighter);
+        overflow: hidden;
+    }
+    .highlights > li + li { border-top: 0.0625rem solid var(--border-light); }
+    .highlight { border: none; border-radius: 0; padding: 0.7rem 0.9rem; gap: 0.7rem; align-items: center; }
+    .highlight-icon { width: 1.9rem; height: 1.9rem; }
+    .highlight-icon svg { width: 14px; height: 14px; }
+    .highlight-text { gap: 0.05rem; }
+    .highlight-title { font-size: var(--text-base); }
+    .highlight-detail { font-size: var(--text-xs); line-height: 1.35; }
     .explorer { grid-template-columns: minmax(0, 1fr); min-height: 0; }
     .explorer-list-pane { display: none; }
     .explorer-picker { display: block; padding: 1rem 1rem 0; }

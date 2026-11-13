@@ -419,7 +419,7 @@
 .log-summary-map-caption { margin: 0; min-height: 1.3em; font-size: var(--text-xs); line-height: 1.3; color: var(--ink-muted); }
 .log-summary-map-caption strong { font-weight: 550; color: var(--ink); }
 
-.log-summary-areas, .log-summary-parts {
+.log-summary-areas {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -428,9 +428,8 @@
     gap: 0.1rem;
     min-width: 0;
 }
-.log-summary-parts { margin: 0.1rem 0 0.3rem; }
 
-/* Every row is a button: a name, a bar, a count. Parts sit under their area, indented and lighter. */
+/* Every row is a button: a name, a bar, a count. */
 .log-summary-row {
     width: calc(100% + 0.8rem);
     display: grid;
@@ -450,16 +449,21 @@
 }
 .log-summary-row.active { background: var(--surface-less-light); }
 .log-summary-areas.has-active .log-summary-row:not(.active) { opacity: 0.55; }
-/* Picking an area keeps its own parts in view. */
-.log-summary-areas.has-active li:has(> .log-summary-row.active) .log-summary-row { opacity: 1; }
+.log-summary-more {
+    margin-top: 0.2rem;
+    padding: 0.2rem 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--primary);
+    cursor: pointer;
+}
+.log-summary-more:hover { text-decoration: underline; }
+.dark .log-summary-more { color: var(--primary-muted); }
 .log-summary-row:focus-visible { outline: 2px solid var(--primary-light); outline-offset: -2px; }
 .log-summary-muscle { display: flex; align-items: center; gap: 0.25rem; min-width: 0; font-size: var(--text-sm); color: var(--ink); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.log-summary-chevron { flex-shrink: 0; width: 14px; height: 14px; color: var(--ink-muted); transition: transform var(--transition); }
-li.open > .log-summary-row .log-summary-chevron { transform: rotate(90deg); }
-.log-summary-row.is-part .log-summary-muscle { padding-left: 1.15rem; color: var(--ink-muted); font-size: var(--text-xs); }
-.log-summary-row.is-part .log-summary-track { height: 0.3rem; }
-.log-summary-row.is-part .log-summary-track > span { background: color-mix(in srgb, var(--sum-bar) 70%, var(--grey-light)); }
-.log-summary-row.is-part .log-summary-count { font-size: var(--text-xs); }
 .log-summary-track { height: 0.5rem; border-radius: 4px; background: var(--grey-light); overflow: hidden; }
 .log-summary-track > span { display: block; height: 100%; border-radius: 4px; background: var(--sum-bar); transition: width 0.3s ease; }
 .log-summary-count { font-size: var(--text-sm); color: var(--ink-muted); text-align: right; font-variant-numeric: tabular-nums; }
@@ -497,7 +501,7 @@ li.open > .log-summary-row .log-summary-chevron { transform: rotate(90deg); }
 .bm-muscle path { transform-box: fill-box; transform-origin: center; transition: transform 0.15s ease; }
 .bm-muscle.active path { transform: scale(1.08); }
 .bm-outline { fill: none; stroke: var(--border); stroke-width: 1px; vector-effect: non-scaling-stroke; pointer-events: none; }
-@media (prefers-reduced-motion: reduce) { .bm-muscle, .bm-muscle path, .log-summary-row, .log-summary-chevron { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .bm-muscle, .bm-muscle path, .log-summary-row { transition: none; } }
 
 @media (max-width: 768px) {
     /* Three across on a phone, with tighter tiles; the numbers step down a size. */

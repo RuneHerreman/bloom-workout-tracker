@@ -264,3 +264,12 @@ input[type="date"]:not(.log-date-input)::-webkit-calendar-picker-indicator {
     select:not([multiple]) option:not(:checked)::checkmark { visibility: hidden; }
     select:not([multiple]) option:disabled { opacity: 0.5; cursor: not-allowed; }
 }
+
+/* Charts are focusable for keyboard use (Recharts' accessibility layer). A tap or click
+   shouldn't leave a ring; keyboard focus still gets a quiet one. */
+.recharts-wrapper:focus, .recharts-surface:focus { outline: none; }
+.recharts-wrapper:focus-visible, .recharts-surface:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--primary-light) 60%, transparent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
