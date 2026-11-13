@@ -3,18 +3,20 @@
 
 import type { LoggedSet, LoggedWorkout } from "../../assets/js/data/apiTypes.ts";
 import type { Exercise } from "../exercises/api.ts";
+import { muscleShares } from "../exercises/muscles.ts";
 import { e1rm, round1 } from "../../utils/bodyMath.ts";
 
 // ── Periods & time buckets ────────────────────────────────────────────────────
 
 export type Period = "4w" | "12w" | "6m" | "1y" | "all";
 
-export const PERIODS: { value: Period; label: string; days: number | null }[] = [
-    { value: "4w", label: "4 weeks", days: 28 },
-    { value: "12w", label: "12 weeks", days: 84 },
-    { value: "6m", label: "6 months", days: 182 },
-    { value: "1y", label: "1 year", days: 365 },
-    { value: "all", label: "All time", days: null },
+/** `short` is the phone label, where all five have to fit on one row. */
+export const PERIODS: { value: Period; label: string; short: string; days: number | null }[] = [
+    { value: "4w", label: "4 weeks", short: "4W", days: 28 },
+    { value: "12w", label: "12 weeks", short: "12W", days: 84 },
+    { value: "6m", label: "6 months", short: "6M", days: 182 },
+    { value: "1y", label: "1 year", short: "1Y", days: 365 },
+    { value: "all", label: "All time", short: "All", days: null },
 ];
 
 const DAY = 86_400_000;
@@ -238,19 +240,27 @@ export function consistency(logs: LoggedWorkout[], range: Range) {
 
 // ── Muscle balance ────────────────────────────────────────────────────────────
 
-export interface MuscleVolume { muscle: string; setsPerWeek: number; lastTrained: string | null }
+export interface MuscleVolume {
+    muscle: string;
+    setsPerWeek: number;
+    lastTrained: string | null;
+    /** Some exercise worked it as a primary muscle, not only as a helper. */
+    direct: boolean;
+}
 
-/** Working sets per week for each muscle (an exercise counts for every muscle it targets). */
+/** Working sets per week for each muscle: a full set for each primary muscle, half a set for each secondary one. */
 export function muscleBalance(logs: LoggedWorkout[], exercises: Record<string, Exercise>, range: Range): MuscleVolume[] {
     const sets = new Map<string, number>();
     const last = new Map<string, string>();
+    const direct = new Set<string>();
     for (const l of logs) {
         if (!inRange(l.loggedAt, range)) continue;
         for (const ex of l.exercises) {
             const n = ex.sets.filter(isWorkingStrengthSet).length;
             if (!n) continue;
-            for (const m of exercises[ex.exerciseId]?.targetMuscles ?? []) {
-                sets.set(m, (sets.get(m) ?? 0) + n);
+            for (const [m, share] of muscleShares(exercises[ex.exerciseId])) {
+                sets.set(m, (sets.get(m) ?? 0) + n * share);
+                if (share === 1) direct.add(m);
                 if (!last.has(m) || l.loggedAt > last.get(m)!) last.set(m, l.loggedAt);
             }
         }
@@ -261,7 +271,7 @@ export function muscleBalance(logs: LoggedWorkout[], exercises: Record<string, E
     const spanDays = dates.length ? (Math.max(...dates) - Math.min(...dates)) / DAY + 7 : range.days;
     const weeks = Math.max(1, Math.min(range.days, spanDays) / 7);
     return [...sets.entries()]
-        .map(([muscle, n]) => ({ muscle, setsPerWeek: round1(n / weeks), lastTrained: last.get(muscle) ?? null }))
+        .map(([muscle, n]) => ({ muscle, setsPerWeek: round1(n / weeks), lastTrained: last.get(muscle) ?? null, direct: direct.has(muscle) }))
         .sort((a, b) => b.setsPerWeek - a.setsPerWeek);
 }
 
@@ -319,7 +329,8 @@ export function strengthHighlights(
         });
     }
 
-    const trained = balance.filter(m => m.setsPerWeek > 0);
+    // Only muscles you trained on purpose: one that only helps out (adductors in a squat) isn't neglected.
+    const trained = balance.filter(m => m.setsPerWeek > 0 && m.direct);
     const low = [...trained].sort((a, b) => a.setsPerWeek - b.setsPerWeek)[0];
     if (low && trained.length >= 3 && low.setsPerWeek < SET_RANGE.low / 2) {
         out.push({

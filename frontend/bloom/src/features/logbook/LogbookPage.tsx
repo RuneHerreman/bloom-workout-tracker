@@ -388,6 +388,7 @@ const LogbookPage = () => {
                             onDraftChange={handleDraftChange}
                             onDraftSaved={handleDraftSaved}
                             previousSets={previousSets}
+                            history={logs}
                         />
                     ) : selectedId && loading ? (
                         <DetailSkeleton />

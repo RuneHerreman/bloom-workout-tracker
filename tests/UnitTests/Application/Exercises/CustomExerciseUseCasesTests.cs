@@ -100,13 +100,14 @@ public sealed class CustomExerciseUseCasesTests : ApplicationTestBase
         await ExerciseRepository.Save(exercise);
 
         await UpdateUseCase(user.Id).Execute(
-            new UpdateCustomExerciseInput(exercise.Id.Value, "New Name", "New description.", "Cardio", ["Legs", "Core"]));
+            new UpdateCustomExerciseInput(exercise.Id.Value, "New Name", "New description.", "Cardio", ["Legs", "Core"], ["Calves"]));
 
         var saved = await ExerciseRepository.ById(exercise.Id);
         Assert.Equal("New Name", saved.Value.Name.Value);
         Assert.Equal("New description.", saved.Value.Description.Value);
         Assert.Equal(ExerciseType.Cardio, saved.Value.Type);
         Assert.Equal(2, saved.Value.TargetMuscles.Count);
+        Assert.Equal(["Calves"], saved.Value.SecondaryMuscles.Select(m => m.Value));
         Assert.Equal(user.Id, saved.Value.OwnerUserId);
     }
 

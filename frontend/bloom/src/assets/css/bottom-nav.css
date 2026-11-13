@@ -93,6 +93,8 @@
     }
 
     .more-row { display: grid; grid-template-columns: 1fr 1fr; border-top: 0.0625rem solid var(--border-light); margin-top: 0.25rem; padding-top: 0.25rem; }
+    /* The tools sit between the pages and the account rows, set off on both sides. */
+    .more-tools { border-bottom: 0.0625rem solid var(--border-light); margin-bottom: 0.25rem; padding-bottom: 0.25rem; }
 
     .more-item {
         display: flex;

@@ -170,21 +170,6 @@
    typical username fits without an ellipsis. */
 .sidebar-user .sidebar-item { gap: 0.45rem; padding-inline: 0.6rem; }
 
-.sidebar-avatar {
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-    width: 1.5rem;
-    height: 1.5rem;
-    margin-left: -0.125rem;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--primary-light) 14%, transparent);
-    color: var(--primary);
-    font-family: var(--serif), serif;
-    font-size: var(--text-xs);
-    letter-spacing: 0.02em;
-}
-
 .sidebar-username {
     flex: 1;
     min-width: 0;
@@ -246,6 +231,9 @@
     .sidebar {
         display: none;
     }
+
+    /* Room under the browser bar, and the same 1rem gutter as the cards below. */
+    .app-main .page-header { padding: 2rem 1rem 1.25rem; gap: 1rem; }
 
     /* The fixed tab bar sits over the bottom of the page: keep the last content clear of it. */
     .app-main {

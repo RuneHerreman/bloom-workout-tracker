@@ -300,6 +300,28 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                         .HasForeignKey("OwnerUserId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.OwnsMany("Bloom.Domain.Exercises.ValueObjects.TargetMuscle", "SecondaryMuscles", b1 =>
+                        {
+                            b1.Property<Guid>("ExerciseId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("Value")
+                                .IsRequired();
+
+                            b1.HasKey("ExerciseId", "__synthesizedOrdinal");
+
+                            b1.ToTable("Exercises");
+
+                            b1
+                                .ToJson("SecondaryMuscles")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ExerciseId");
+                        });
+
                     b.OwnsMany("Bloom.Domain.Exercises.ValueObjects.TargetMuscle", "TargetMuscles", b1 =>
                         {
                             b1.Property<Guid>("ExerciseId");
@@ -321,6 +343,8 @@ namespace Bloom.Infrastructure.Persistence.EntityFramework.Migrations.PostgreSQL
                             b1.WithOwner()
                                 .HasForeignKey("ExerciseId");
                         });
+
+                    b.Navigation("SecondaryMuscles");
 
                     b.Navigation("TargetMuscles");
                 });

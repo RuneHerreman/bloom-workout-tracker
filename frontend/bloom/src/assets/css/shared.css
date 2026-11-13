@@ -844,8 +844,11 @@
 .exercise-card header > div:first-child {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.15rem;
 }
+
+/* A real line box (the reset's line-height 1 jams the name onto its subtitle). */
+.exercise-name, .exercise-info { line-height: 1.3; }
 
 .exercise-name {
     font-size: var(--text-md);
@@ -1106,8 +1109,8 @@
     position: absolute;
     top: 50%;
     right: 0.35rem;
-    /* The extra 1.5px lifts the smaller "kg" (the g hangs low) to the middle of the digits. */
-    transform: translateY(calc(-50% - 1.5px));
+    line-height: 1;
+    transform: translateY(-50%);
     pointer-events: none;
 }
 

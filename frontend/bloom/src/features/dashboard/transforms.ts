@@ -4,6 +4,7 @@
 
 import type { LoggedWorkout, WorkoutTemplate } from "../../assets/js/data/apiTypes.ts";
 import type { Exercise } from "../exercises/api.ts";
+import { allMuscles, muscleShares } from "../exercises/muscles.ts";
 import { exerciseProgress, muscleBalance, toKg, type MuscleVolume, type Range } from "../insights/analysis.ts";
 
 const DAY = 86_400_000;
@@ -236,7 +237,7 @@ export function buildMuscleFocus(workouts: LoggedWorkout[], exercises: Record<st
     const trained = new Set(muscles.map(m => m.muscle));
     // Muscles you've trained at some point that got nothing in the last four weeks.
     const everTrained = new Set(workouts.flatMap(w => w.exercises.flatMap(e =>
-        e.sets.some(s => s.type !== "Cardio") ? exercises[e.exerciseId]?.targetMuscles ?? [] : [])));
+        e.sets.some(s => s.type !== "Cardio") ? allMuscles(exercises[e.exerciseId]) : [])));
     return {
         muscles,
         untrained: [...everTrained].filter(m => !trained.has(m)).sort(),
@@ -266,7 +267,8 @@ export function muscleRest(workouts: LoggedWorkout[], exercises: Record<string, 
         const t = startOfDay(new Date(w.loggedAt)).getTime();
         for (const ex of w.exercises) {
             if (!ex.sets.some(s => s.type !== "Cardio" && s.marker !== "WarmUp")) continue;
-            for (const m of exercises[ex.exerciseId]?.targetMuscles ?? []) {
+            // Assisting counts as work too: a bench press also tires the triceps.
+            for (const m of allMuscles(exercises[ex.exerciseId])) {
                 if (t > (last.get(m) ?? 0)) last.set(m, t);
             }
         }
@@ -295,8 +297,8 @@ export function suggestNext(
         .map(t => {
             const weight = new Map<string, number>();
             for (const ex of t.exercises) {
-                for (const m of exercises[ex.exerciseId]?.targetMuscles ?? []) {
-                    weight.set(m, (weight.get(m) ?? 0) + Math.max(1, ex.sets.length));
+                for (const [m, share] of muscleShares(exercises[ex.exerciseId])) {
+                    weight.set(m, (weight.get(m) ?? 0) + Math.max(1, ex.sets.length) * share);
                 }
             }
             let total = 0, score = 0;

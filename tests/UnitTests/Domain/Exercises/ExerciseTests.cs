@@ -78,4 +78,30 @@ public sealed class ExerciseTests
 
         Assert.Throws<ArgumentException>(act);
     }
+
+    [Fact]
+    public void Create_WithSecondaryMuscles_ShouldKeepThemApartFromPrimary()
+    {
+        Exercise exercise = Exercise.Create(
+            "Bench Press",
+            "Compound chest movement.",
+            ExerciseType.Strength,
+            ["Chest"],
+            secondaryMuscles: ["Triceps", "Front delts", "chest", "Triceps"]
+        );
+
+        Assert.Equal(["Chest"], exercise.TargetMuscles.Select(m => m.Value));
+        Assert.Equal(["Triceps", "Front delts"], exercise.SecondaryMuscles.Select(m => m.Value));
+    }
+
+    [Fact]
+    public void SetMuscles_ShouldReplaceBothLists()
+    {
+        Exercise exercise = Exercise.Create("Row", "Pull.", ExerciseType.Strength, ["Back"]);
+
+        exercise.SetMuscles(["Upper back", "Lats"], ["Biceps", "Rear delts"]);
+
+        Assert.True(exercise.HasMuscles(["Upper back", "Lats"], ["Biceps", "Rear delts"]));
+        Assert.False(exercise.HasMuscles(["Upper back", "Lats"], ["Biceps"]));
+    }
 }

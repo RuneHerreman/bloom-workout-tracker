@@ -36,7 +36,6 @@
 .log-weight-last { font-size: var(--text-xs); color: var(--ink-muted); }
 
 .log-weight-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-.log-weight-popover .tool-field input[type="date"] { padding-right: 0.5rem; }
 
 .log-weight-note, .log-weight-error { margin: 0; font-size: var(--text-xs); line-height: 1.4; }
 .log-weight-note { color: var(--ink-muted); }

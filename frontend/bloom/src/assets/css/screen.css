@@ -9,9 +9,14 @@
     box-sizing: border-box;
 }
 
+/* The root stays at the browser's 16px so every rem means the same on every screen;
+   body text takes the (phone-bumped) size. A root of var(--text-md) made 1rem 17px on
+   phones and scaled every padding, gap and font in the app up with it. */
+html { font-size: 100%; }
+body { font-size: var(--text-md); }
+
 html, body {
     font-family: var(--sans), sans-serif;
-    font-size: var(--text-md);
     scroll-behavior: smooth;
     scrollbar-width: none;
 }
@@ -166,6 +171,26 @@ select:not([multiple]) {
     background-position: right 0.75rem center;
     background-size: 1rem;
     padding-right: 2.25rem !important;
+    cursor: pointer;
+}
+
+/* Boxed date fields get the same chevron, at the same inset, as selects; the native
+   picker icon stays clickable but invisible across the whole field. */
+input[type="date"]:not(.log-date-input) {
+    position: relative;
+    background-image: var(--select-chevron);
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.25rem !important;
+    cursor: pointer;
+}
+input[type="date"]:not(.log-date-input)::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+    opacity: 0;
     cursor: pointer;
 }
 

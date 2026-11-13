@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Moon, Sun, LogOut, LayoutDashboard, LayoutTemplate, BookOpen, Calculator, Dumbbell, TrendingUp, Trophy } from "lucide-react";
+import { Moon, Sun, LogOut, LayoutDashboard, LayoutTemplate, BookOpen, Calculator, Dumbbell, TrendingUp, Trophy, UserRound } from "lucide-react";
 import "../assets/css/sidebar.css";
 import { prefetchRoute } from "../routePrefetch.ts";
 import { getMe } from "../features/auth/api.ts";
@@ -11,12 +11,6 @@ import { useAuth } from "../context/AuthContext.tsx";
 
 function navClass({ isActive }: { isActive: boolean }) {
     return `sidebar-item${isActive ? " active" : ""}`;
-}
-
-function initials(user: User | null) {
-    if (!user) return "";
-    const s = `${user.firstName?.trim()[0] ?? ""}${user.lastName?.trim()[0] ?? ""}`;
-    return (s || user.username.slice(0, 2)).toUpperCase();
 }
 
 function SidebarComponent() {
@@ -46,7 +40,7 @@ function SidebarComponent() {
 
             <div className="sidebar-user">
                 <NavLink to="/profile" className={navClass} title="Profile and settings" onPointerEnter={() => prefetchRoute("/profile")} onFocus={() => prefetchRoute("/profile")}>
-                    <span className="sidebar-avatar" aria-hidden>{initials(user)}</span>
+                    <UserRound size={14} aria-hidden />
                     <span className="sidebar-username">{user?.username ?? "—"}</span>
                 </NavLink>
                 <div className="sidebar-user-actions">

@@ -332,9 +332,24 @@
     .stat-widget, .stat-widget:nth-child(n+4) { grid-column: auto; box-shadow: inset -0.0625rem 0 0 var(--border), inset 0 -0.0625rem 0 var(--border); }
     .stat-widget:first-child { grid-column: 1 / -1; box-shadow: inset 0 -0.0625rem 0 var(--border); }
     .stat-widget:nth-child(odd):not(:first-child) { box-shadow: inset 0 -0.0625rem 0 var(--border); }
-    .stat-widget:last-child { box-shadow: none; }
+    /* Bottom row sits on the card's own border: no line of its own. */
+    .stat-widget:last-child:not(:first-child) { box-shadow: none; }
     .stat-widget:nth-last-child(2) { box-shadow: inset -0.0625rem 0 0 var(--border); }
 
     .activity-legend { display: none; }
+    /* Bigger squares on a phone; the map scrolls sideways (starting at today) and
+       the day labels stay pinned on the left. */
+    .activity-map { min-width: 50rem; gap: 4px; grid-template-columns: 2rem repeat(53, minmax(0, 1fr)); }
+    .activity-cell { border-radius: 3px; }
+    .activity-day {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        background: var(--surface-lighter);
+        font-size: var(--text-2xs);
+    }
     .technical-points-editor { min-height: 8rem; }
 }

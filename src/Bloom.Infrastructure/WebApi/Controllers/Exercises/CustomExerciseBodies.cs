@@ -17,5 +17,8 @@ public sealed record CustomExerciseBody(
 
     [Required]
     [MinLength(1, ErrorMessage = "At least one target muscle is required")]
-    List<string> TargetMuscles
+    List<string> TargetMuscles,
+
+    // Optional: muscles that assist; each set counts as half a set for them.
+    List<string>? SecondaryMuscles = null
 );

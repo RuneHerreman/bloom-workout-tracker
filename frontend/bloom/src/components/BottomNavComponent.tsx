@@ -1,6 +1,6 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, BookOpen, LayoutTemplate, TrendingUp, Trophy, Plus, Menu, Moon, Sun, LogOut, UserRound, X } from "lucide-react";
+import { LayoutDashboard, BookOpen, LayoutTemplate, TrendingUp, Trophy, Plus, Menu, Moon, Sun, LogOut, UserRound, X, Calculator, Dumbbell } from "lucide-react";
 import "../assets/css/bottom-nav.css";
 import { getMe } from "../features/auth/api.ts";
 import type { User } from "../features/auth/api.ts";
@@ -12,7 +12,7 @@ function tabClass({ isActive }: { isActive: boolean }) {
     return `tab-item${isActive ? " active" : ""}`;
 }
 
-const MORE_PATHS = ["/templates", "/leaderboard", "/profile"];
+const MORE_PATHS = ["/templates", "/leaderboard", "/tools", "/profile"];
 
 /**
  * Phone navigation: a thumb-reachable tab bar with logging in the centre,
@@ -75,6 +75,10 @@ export default function MobileNavComponent() {
             <div id="more-sheet" className={`more-sheet${moreOpen ? " open" : ""}`} aria-hidden={!moreOpen}>
                 <NavLink to="/templates" className="more-item" onClick={close}><LayoutTemplate size={18} /> Templates</NavLink>
                 <NavLink to="/leaderboard" className="more-item" onClick={close}><Trophy size={18} /> Leaderboard</NavLink>
+                <div className="more-row more-tools">
+                    <NavLink to="/tools/macro-calculator" className="more-item" onClick={close}><Calculator size={18} /> Macros</NavLink>
+                    <NavLink to="/tools/one-rep-max" className="more-item" onClick={close}><Dumbbell size={18} /> 1RM</NavLink>
+                </div>
                 <NavLink to="/profile" className="more-item" onClick={close}><UserRound size={18} /> {user?.username ?? "Profile"}</NavLink>
                 <div className="more-row">
                     <button type="button" className="more-item" onClick={toggle}>

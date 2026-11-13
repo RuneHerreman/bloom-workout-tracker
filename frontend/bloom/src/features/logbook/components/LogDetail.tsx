@@ -8,12 +8,14 @@ import { toDateInputValue, withDate, prefilledFirstSet, resolveHints, findMissin
 import { useExerciseDnd } from "../../templates/hooks/useExerciseDnd.ts";
 import { useShortcut } from "../../../hooks/useShortcut.ts";
 import LogExerciseCard from "./LogExerciseCard.tsx";
+import LogSummary from "./LogSummary.tsx";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import Overlay from "../../../components/general/OverlayComponent.tsx";
 import ExerciseLibrary from "../../templates/components/ExerciseLibrary.tsx";
 import { Save, Trash2, Plus, MoreHorizontal, BookmarkPlus } from "lucide-react";
 
 const noop = () => {};
+const NO_LOGS: LoggedWorkout[] = [];
 
 interface LogDetailProps {
     log: LoggedWorkout;
@@ -34,11 +36,13 @@ interface LogDetailProps {
     onDraftSaved?: (log: LoggedWorkout) => void;
     /** Last time's sets per exercise, used to prefill newly added exercises. */
     previousSets?: PreviousSetsLookup;
+    /** Every log, for the summary's "vs last time" and records. */
+    history?: LoggedWorkout[];
 }
 
 function LogDetail({
     log, exercises, onSave, onDelete, onCreateTemplate, onDirtyChange, onExerciseCreated,
-    userGear, autoFocusTitle, openMap, isDraft = false, onDraftChange, onDraftSaved, previousSets,
+    userGear, autoFocusTitle, openMap, isDraft = false, onDraftChange, onDraftSaved, previousSets, history = NO_LOGS,
 }: LogDetailProps) {
     const initialDate = toDateInputValue(log.loggedAt);
 
@@ -295,6 +299,8 @@ function LogDetail({
                     </div>
                 </div>
             </div>
+
+            <LogSummary name={name} loggedAt={currentLoggedAt()} exercises={logExercises} exerciseInfo={exercises} history={history} />
 
             <textarea
                 className="log-note-area"

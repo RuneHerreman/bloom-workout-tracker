@@ -38,11 +38,6 @@ const SEXES: { value: Sex | ""; label: string }[] = [
 ];
 const ACTIVE_DAYS = [0, 1, 2, 3, 4, 5, 6, 7];
 
-function initials(first: string, last: string, username: string) {
-    const s = `${first.trim()[0] ?? ""}${last.trim()[0] ?? ""}`;
-    return (s || username.slice(0, 2)).toUpperCase();
-}
-
 /**
  * The section nearest the top of the screen, for the rail's nav. A section you
  * jump to wins while the page scrolls there, and keeps winning if it sits too
@@ -341,7 +336,7 @@ function ProfilePage() {
             <div className="profile-body">
                 <aside className="profile-rail">
                     <div className="profile-card profile-id">
-                        <span className="profile-avatar" aria-hidden>{initials(user?.firstName ?? "", user?.lastName ?? "", user?.username ?? "")}</span>
+                        <span className="profile-avatar" aria-hidden><UserRound size={22} /></span>
                         <div className="profile-id-text">
                             <strong>{fullName || user?.username}</strong>
                             <span>@{user?.username}</span>

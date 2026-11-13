@@ -79,7 +79,7 @@
     transition: transform var(--transition-spring);
 }
 .dark .profile-nav-item::before { background: var(--primary-glow); }
-.profile-nav-item:hover { background: var(--grey-light); }
+@media (hover: hover) { .profile-nav-item:hover { background: var(--grey-light); } }
 .profile-nav-item.active {
     background: color-mix(in srgb, var(--primary-faded) 80%, transparent);
     color: var(--primary-transparent);

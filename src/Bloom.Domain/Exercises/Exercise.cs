@@ -10,12 +10,18 @@ public readonly record struct ExerciseId(Guid Value) : IEntityId;
 public class Exercise : AggregateRoot<ExerciseId>
 {
     private readonly List<TargetMuscle> _targetMuscles = [];
+    private readonly List<TargetMuscle> _secondaryMuscles = [];
 
     public ExerciseName Name { get; private set; }
     public ExerciseDescription Description { get; private set; }
     public ExerciseType Type { get; private set; }
     public UserId? OwnerUserId { get; private set; }
+
+    /// <summary>Primary movers: each working set counts fully for these.</summary>
     public IReadOnlyList<TargetMuscle> TargetMuscles => _targetMuscles.AsReadOnly();
+
+    /// <summary>Assisting muscles: each working set counts as half a set for these.</summary>
+    public IReadOnlyList<TargetMuscle> SecondaryMuscles => _secondaryMuscles.AsReadOnly();
 
     public bool IsCustom => OwnerUserId is not null;
 
@@ -26,14 +32,12 @@ public class Exercise : AggregateRoot<ExerciseId>
         ExerciseName name,
         ExerciseDescription description,
         ExerciseType type,
-        List<TargetMuscle> targetMuscles,
         UserId? ownerUserId
     ) : base(id)
     {
         Name = name;
         Description = description;
         Type = type;
-        _targetMuscles = targetMuscles;
         OwnerUserId = ownerUserId;
     }
 
@@ -42,7 +46,8 @@ public class Exercise : AggregateRoot<ExerciseId>
         string description,
         ExerciseType type,
         IEnumerable<string> muscleGroups,
-        ExerciseId? id = null
+        ExerciseId? id = null,
+        IEnumerable<string>? secondaryMuscles = null
     )
     {
         var exercise = new Exercise(
@@ -50,9 +55,9 @@ public class Exercise : AggregateRoot<ExerciseId>
             ExerciseName.Create(name),
             ExerciseDescription.Create(description),
             type,
-            muscleGroups.Select(TargetMuscle.Create).ToList(),
             ownerUserId: null
         );
+        exercise.SetMuscles(muscleGroups, secondaryMuscles ?? []);
 
         exercise.ValidateState();
 
@@ -65,7 +70,8 @@ public class Exercise : AggregateRoot<ExerciseId>
         string description,
         ExerciseType type,
         IEnumerable<string> muscleGroups,
-        ExerciseId? id = null
+        ExerciseId? id = null,
+        IEnumerable<string>? secondaryMuscles = null
     )
     {
         Asserts.EnsureNotEmpty(ownerUserId);
@@ -75,9 +81,9 @@ public class Exercise : AggregateRoot<ExerciseId>
             ExerciseName.Create(name),
             ExerciseDescription.Create(description),
             type,
-            muscleGroups.Select(TargetMuscle.Create).ToList(),
             ownerUserId
         );
+        exercise.SetMuscles(muscleGroups, secondaryMuscles ?? []);
 
         exercise.ValidateState();
 
@@ -88,17 +94,42 @@ public class Exercise : AggregateRoot<ExerciseId>
         string name,
         string description,
         ExerciseType type,
-        IEnumerable<string> muscleGroups
+        IEnumerable<string> muscleGroups,
+        IEnumerable<string>? secondaryMuscles = null
     )
     {
         Name = ExerciseName.Create(name);
         Description = ExerciseDescription.Create(description);
         Type = type;
-        _targetMuscles.Clear();
-        _targetMuscles.AddRange(muscleGroups.Select(TargetMuscle.Create));
+        SetMuscles(muscleGroups, secondaryMuscles ?? []);
 
         ValidateState();
     }
+
+    /// <summary>
+    /// Replaces primary and secondary muscles. Duplicates are dropped, and a muscle listed
+    /// as primary is never also secondary.
+    /// </summary>
+    public void SetMuscles(IEnumerable<string> primary, IEnumerable<string> secondary)
+    {
+        var primaryList = Clean(primary);
+        var secondaryList = Clean(secondary)
+            .Where(s => !primaryList.Contains(s, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+
+        _targetMuscles.Clear();
+        _targetMuscles.AddRange(primaryList.Select(TargetMuscle.Create));
+        _secondaryMuscles.Clear();
+        _secondaryMuscles.AddRange(secondaryList.Select(TargetMuscle.Create));
+    }
+
+    /// <summary>True when primary and secondary muscles already equal these lists, in order.</summary>
+    public bool HasMuscles(IEnumerable<string> primary, IEnumerable<string> secondary) =>
+        _targetMuscles.Select(m => m.Value).SequenceEqual(primary) &&
+        _secondaryMuscles.Select(m => m.Value).SequenceEqual(secondary);
+
+    private static List<string> Clean(IEnumerable<string> muscles) =>
+        muscles.Select(m => m.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
     public override void ValidateState() { }
 }

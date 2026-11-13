@@ -10,6 +10,7 @@ public sealed record ExerciseData
     public string Type { get; init; } = string.Empty;
     public Guid? OwnerUserId { get; init; }
     public IReadOnlyList<TargetMuscleData> TargetMuscles { get; init; } = new List<TargetMuscleData>();
+    public IReadOnlyList<TargetMuscleData> SecondaryMuscles { get; init; } = new List<TargetMuscleData>();
 }
 
 public sealed record TargetMuscleData(string Value);

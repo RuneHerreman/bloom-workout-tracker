@@ -64,6 +64,7 @@
 }
 
 .segmented::-webkit-scrollbar { display: none; }
+.seg-short { display: none; }
 
 .segmented-item {
     flex-shrink: 0;
@@ -573,8 +574,13 @@ button.highlight:hover .highlight-link, button.highlight:focus-visible .highligh
 }
 
 @media (max-width: 768px) {
-    .insights-page .page-header { flex-direction: column; align-items: stretch; gap: 0.75rem; }
-    .insights-controls { justify-content: flex-start; }
+    .insights-page .page-header { flex-direction: column; align-items: stretch; gap: 1.25rem; }
+    /* Two full-width rows that fit without scrolling: equal segments, short period labels. */
+    .insights-controls { flex-direction: column; align-items: stretch; gap: 0.6rem; }
+    .insights-controls .segmented { display: flex; width: 100%; overflow: visible; }
+    .insights-controls .segmented-item { flex: 1 1 0; min-width: 0; padding: 0.5rem 0.25rem; text-align: center; }
+    .seg-long { display: none; }
+    .seg-short { display: inline; }
     .insights-body { padding: 1rem 1rem 2rem; gap: 1rem; }
     .highlights { grid-template-columns: minmax(0, 1fr); }
     .explorer { grid-template-columns: minmax(0, 1fr); min-height: 0; }

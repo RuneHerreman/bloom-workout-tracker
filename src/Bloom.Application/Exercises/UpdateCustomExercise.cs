@@ -12,7 +12,8 @@ public sealed record UpdateCustomExerciseInput(
     string Name,
     string Description,
     string Type,
-    List<string> TargetMuscles
+    List<string> TargetMuscles,
+    List<string>? SecondaryMuscles = null
 );
 
 public sealed record UpdateCustomExerciseOutput(Guid ExerciseId);
@@ -47,7 +48,8 @@ public class UpdateCustomExercise(
             input.Name,
             input.Description,
             Enum.Parse<ExerciseType>(input.Type, ignoreCase: true),
-            input.TargetMuscles
+            input.TargetMuscles,
+            input.SecondaryMuscles
         );
 
         await exerciseRepo.Save(exercise.Value);

@@ -226,8 +226,9 @@ function InsightsPage() {
                         {PERIODS.map(p => (
                             <button key={p.value} role="radio" aria-checked={period === p.value}
                                 className={`segmented-item${period === p.value ? " active" : ""}`}
+                                aria-label={p.label}
                                 onClick={() => { periodTouched.current = true; setPeriod(p.value); }}>
-                                {p.label}
+                                <span className="seg-long">{p.label}</span><span className="seg-short" aria-hidden>{p.short}</span>
                             </button>
                         ))}
                     </div>
