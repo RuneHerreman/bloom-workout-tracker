@@ -64,6 +64,18 @@ public sealed class ExerciseDataFiltersTests
     }
 
     [Fact]
+    public void ByProperty_AreaFilter_ShouldMatchMusclesInTheArea()
+    {
+        var filter = ExerciseDataFilters.ByProperty(null, [new TargetMuscleData("arms")], null, Guid.NewGuid());
+
+        var result = Sample().AsQueryable().Where(filter).ToList();
+
+        // Triceps is in Arms.
+        Assert.Single(result);
+        Assert.Equal("Bench Press", result[0].Name);
+    }
+
+    [Fact]
     public void ByProperty_TypeFilter_ShouldFilterByType()
     {
         var filter = ExerciseDataFilters.ByProperty(null, null, [ExerciseType.Cardio], Guid.NewGuid());

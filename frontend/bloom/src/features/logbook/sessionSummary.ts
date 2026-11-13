@@ -1,32 +1,14 @@
 import type { LoggedExercise, LoggedWorkout } from "../../assets/js/data/apiTypes.ts";
 import type { Exercise } from "../exercises/api.ts";
 import { isWorkingStrengthSet, toKg, toKm, toMinutes } from "../insights/analysis.ts";
-import { muscleShares } from "../exercises/muscles.ts";
+import { areaOf, areaOrder, musclesOf } from "../exercises/muscles.ts";
+
+export { areaOf };
 
 export interface MuscleSets { muscle: string; sets: number }
 
 /** A body area and the muscles in it, as the exercise library names them. */
 export interface MuscleArea { area: string; sets: number; parts: MuscleSets[] }
-
-/**
- * Areas in the order a body reads top to bottom; each lists its muscles. The broad
- * old names at the end ("Back", "Shoulders", "Core", "Rhomboids") are only for custom
- * exercises or imports that still use them.
- */
-export const AREAS: { area: string; muscles: string[] }[] = [
-    { area: "Chest", muscles: ["Chest"] },
-    { area: "Back", muscles: ["Lats", "Upper back", "Traps", "Lower back", "Back", "Rhomboids"] },
-    { area: "Shoulders", muscles: ["Front delts", "Side delts", "Rear delts", "Shoulders"] },
-    { area: "Arms", muscles: ["Biceps", "Triceps", "Forearms"] },
-    { area: "Core", muscles: ["Abs", "Obliques", "Core"] },
-    { area: "Legs", muscles: ["Quadriceps", "Hamstrings", "Glutes", "Adductors", "Calves"] },
-    { area: "Full body", muscles: ["Full Body"] },
-];
-
-/** The area a muscle belongs to; a name we don't know (a custom exercise's) is an area of its own. */
-export function areaOf(muscle: string): string {
-    return AREAS.find(a => a.muscles.includes(muscle))?.area ?? muscle;
-}
 
 export interface SessionRecord { exerciseId: string; name: string; weightKg: number; previousKg: number }
 
@@ -37,9 +19,9 @@ export interface SessionSummary {
     strengthExercises: number;
     distanceKm: number;
     minutes: number;
-    /** Working sets per muscle, most first: a full set for each primary muscle, half for each secondary one. */
+    /** Working sets per listed muscle, most first; an area listed on its own counts under the area's name ("General"). */
     muscles: MuscleSets[];
-    /** The same, per area with its muscles inside, most first. An exercise counts once per area, at its biggest share there. */
+    /** The same, per area with its muscles inside, most first. An exercise counts once per area it touches. */
     areas: MuscleArea[];
     /** Exercises where this session's heaviest working set beats every earlier session. */
     records: SessionRecord[];
@@ -90,14 +72,9 @@ export function summarizeSession(
         if (!working) continue;
         workingSets += working;
         strengthExercises++;
-        const shares = muscleShares(exerciseInfo[ex.exerciseId]);
-        const perArea = new Map<string, number>();
-        for (const [m, share] of shares) {
-            muscles.set(m, (muscles.get(m) ?? 0) + working * share);
-            const a = areaOf(m);
-            perArea.set(a, Math.max(perArea.get(a) ?? 0, share));
-        }
-        for (const [a, share] of perArea) areaSets.set(a, (areaSets.get(a) ?? 0) + working * share);
+        const listed = musclesOf(exerciseInfo[ex.exerciseId]);
+        for (const m of listed) muscles.set(m, (muscles.get(m) ?? 0) + working);
+        for (const a of new Set(listed.map(areaOf))) areaSets.set(a, (areaSets.get(a) ?? 0) + working);
 
         const now = heaviestKg(ex);
         const before = Math.max(0, ...earlier.flatMap(l => l.exercises.filter(e => e.exerciseId === ex.exerciseId).map(heaviestKg)));
@@ -108,10 +85,9 @@ export function summarizeSession(
     }
 
     const muscleList = [...muscles.entries()].map(([muscle, sets]) => ({ muscle, sets })).sort((a, b) => b.sets - a.sets || a.muscle.localeCompare(b.muscle));
-    const order = (area: string) => { const i = AREAS.findIndex(a => a.area === area); return i < 0 ? AREAS.length : i; };
     const areas = [...areaSets.entries()]
         .map(([area, sets]) => ({ area, sets, parts: muscleList.filter(m => areaOf(m.muscle) === area) }))
-        .sort((a, b) => b.sets - a.sets || order(a.area) - order(b.area));
+        .sort((a, b) => b.sets - a.sets || areaOrder(a.area) - areaOrder(b.area));
 
     const prev = name.trim() ? earlier.find(l => sameName(l.name, name)) : undefined;
 

@@ -4,10 +4,12 @@
 
 import type { LoggedWorkout, WorkoutTemplate } from "../../assets/js/data/apiTypes.ts";
 import type { Exercise } from "../exercises/api.ts";
-import { allMuscles, muscleShares } from "../exercises/muscles.ts";
+import { areaOf, covers, isArea, musclesOf, MUSCLE_TREE } from "../exercises/muscles.ts";
 import { exerciseProgress, muscleBalance, toKg, type MuscleVolume, type Range } from "../insights/analysis.ts";
 
 const DAY = 86_400_000;
+
+const musclesInArea = (area: string) => MUSCLE_TREE.find(a => a.area === area)?.muscles ?? [];
 
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
@@ -234,13 +236,14 @@ export function buildMuscleFocus(workouts: LoggedWorkout[], exercises: Record<st
     const range: Range = { start: new Date(now.getTime() - 28 * DAY), end: now, days: 28 };
     const recent = workouts.filter(w => new Date(w.loggedAt) >= range.start);
     const muscles = muscleBalance(recent, exercises, range);
-    const trained = new Set(muscles.map(m => m.muscle));
+    const trained = muscles.map(m => m.muscle);
     // Muscles you've trained at some point that got nothing in the last four weeks.
     const everTrained = new Set(workouts.flatMap(w => w.exercises.flatMap(e =>
-        e.sets.some(s => s.type !== "Cardio") ? allMuscles(exercises[e.exerciseId]) : [])));
+        e.sets.some(s => s.type !== "Cardio") ? musclesOf(exercises[e.exerciseId]) : [])));
     return {
         muscles,
-        untrained: [...everTrained].filter(m => !trained.has(m)).sort(),
+        // "Back" counts as trained when lats were, and lats when the back was trained in general.
+        untrained: [...everTrained].filter(m => !trained.some(t => covers(t, m))).sort(),
         strengthSessions: recent.filter(w => !isCardioOnly(w)).length,
         cardioSessions: recent.filter(isCardioOnly).length,
     };
@@ -267,9 +270,11 @@ export function muscleRest(workouts: LoggedWorkout[], exercises: Record<string, 
         const t = startOfDay(new Date(w.loggedAt)).getTime();
         for (const ex of w.exercises) {
             if (!ex.sets.some(s => s.type !== "Cardio" && s.marker !== "WarmUp")) continue;
-            // Assisting counts as work too: a bench press also tires the triceps.
-            for (const m of allMuscles(exercises[ex.exerciseId])) {
-                if (t > (last.get(m) ?? 0)) last.set(m, t);
+            for (const m of musclesOf(exercises[ex.exerciseId])) {
+                // A muscle tires its area; an area trained in general tires every muscle in it.
+                for (const k of [m, areaOf(m), ...(isArea(m) ? musclesInArea(m) : [])]) {
+                    if (t > (last.get(k) ?? 0)) last.set(k, t);
+                }
             }
         }
     }
@@ -297,8 +302,8 @@ export function suggestNext(
         .map(t => {
             const weight = new Map<string, number>();
             for (const ex of t.exercises) {
-                for (const [m, share] of muscleShares(exercises[ex.exerciseId])) {
-                    weight.set(m, (weight.get(m) ?? 0) + Math.max(1, ex.sets.length) * share);
+                for (const m of musclesOf(exercises[ex.exerciseId])) {
+                    weight.set(m, (weight.get(m) ?? 0) + Math.max(1, ex.sets.length));
                 }
             }
             let total = 0, score = 0;

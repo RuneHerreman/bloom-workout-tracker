@@ -7,33 +7,34 @@ import { BODY_BACK, BODY_FRONT, BODY_OUTLINE, type BodyPart } from "./bodyMapPat
  * bodyMapPaths.ts); shading, hover and taps are ours.
  */
 
-/** Which of our muscle groups (as named on exercises) each drawn muscle stands for; the first trained one wins. */
+/**
+ * Which names on exercises (muscle-tree muscles, then their area) each drawn muscle
+ * stands for. An area tagged on its own ("Back") lights every shape in it.
+ */
 const GROUPS: Record<string, string[]> = {
     chest: ["Chest"],
     deltoids: ["Front delts", "Shoulders"],
-    biceps: ["Biceps"],
-    triceps: ["Triceps"],
-    forearm: ["Forearms"],
+    biceps: ["Biceps", "Arms"],
+    triceps: ["Triceps", "Arms"],
+    forearm: ["Forearms", "Arms"],
     abs: ["Abs", "Core"],
     obliques: ["Obliques", "Core"],
-    quadriceps: ["Quadriceps"],
-    adductors: ["Adductors"],
-    hamstring: ["Hamstrings"],
-    gluteal: ["Glutes"],
-    calves: ["Calves"],
+    quadriceps: ["Quads", "Legs"],
+    adductors: ["Adductors", "Legs"],
+    hamstring: ["Hamstrings", "Legs"],
+    gluteal: ["Glutes", "Legs"],
+    calves: ["Calves", "Legs"],
     trapezius: ["Traps", "Back"],
-    "upper-back": ["Lats", "Upper back", "Rhomboids", "Back"],
+    "upper-back": ["Lats", "Mid back", "Back"],
     "lower-back": ["Lower back", "Back"],
 };
 
 /**
- * Where the back view differs: its deltoids are the rear delts, and its trapezius
- * takes in the mid traps of the upper back. Side delts have no shape of their own
- * and show in the list only.
+ * Where the back view differs: its deltoids are the rear delts. Side delts and
+ * abductors have no shape of their own and show in the list only.
  */
 const BACK_GROUPS: Record<string, string[]> = {
     deltoids: ["Rear delts", "Shoulders"],
-    trapezius: ["Traps", "Upper back", "Back"],
 };
 
 type Side = "front" | "back";
@@ -66,10 +67,13 @@ function BodyMap({ muscles, highlighted, onPick }: BodyMapProps) {
             return <g key={p.slug} className={p.slug === "hair" ? "bm-hair" : "bm-body"}>{p.paths.map((d, i) => <path key={i} d={d} />)}</g>;
         }
         const groups = groupsOf(p, side);
-        const group = groups.find(g => sets.has(g)) ?? null;
-        const n = group ? sets.get(group)! : 0;
+        // A shape can stand for several names (Lats, Mid back): it shows their sets together,
+        // and the one with the most work is what a tap picks.
+        const trained = groups.filter(g => sets.has(g)).sort((a, b) => sets.get(b)! - sets.get(a)!);
+        const group = trained[0] ?? null;
+        const n = trained.reduce((t, g) => t + sets.get(g)!, 0);
         // One hue, light to dark, with a floor so a single set still reads as trained.
-        const strength = n ? Math.round(30 + 70 * (n / max)) : 0;
+        const strength = n ? Math.round(30 + 70 * Math.min(1, n / max)) : 0;
         const isActive = isPicked(p, side);
         return (
             <g
@@ -81,7 +85,7 @@ function BodyMap({ muscles, highlighted, onPick }: BodyMapProps) {
                 onPointerLeave={e => e.pointerType === "mouse" && group && onPick(null, "hover")}
                 onClick={e => group && onPick(group, "click", e.nativeEvent)}
             >
-                <title>{group ? `${group}: ${n} working set${n !== 1 ? "s" : ""}` : groups[0] ?? p.slug}</title>
+                <title>{group ? `${trained.join(" + ")}: ${n} working set${n !== 1 ? "s" : ""}` : groups[0] ?? p.slug}</title>
                 {p.paths.map((d, i) => <path key={i} d={d} />)}
             </g>
         );

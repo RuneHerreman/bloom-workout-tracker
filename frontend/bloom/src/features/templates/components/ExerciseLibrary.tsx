@@ -7,6 +7,35 @@ import ExerciseForm from "../../exercises/components/ExerciseForm.tsx";
 import { useRecentExercises } from "../hooks/useRecentExercises.ts";
 import { useLoggedExerciseUsage } from "../hooks/useLoggedExerciseUsage.ts";
 import { matchScore } from "../exerciseSearch.ts";
+import { MUSCLE_TREE, areaOf, canonicalMuscle, inTree, isArea, musclesOf } from "../../exercises/muscles.ts";
+
+/**
+ * Picked areas and muscles: with only an area picked, any exercise using it matches;
+ * once muscles in it are picked, those narrow it down.
+ */
+function matchesMuscles(e: Exercise, active: Set<string>): boolean {
+    const listed = musclesOf(e);
+    const muscles = [...active].filter(a => !isArea(a));
+    const areas = [...active].filter(a => isArea(a) && !muscles.some(m => areaOf(m) === a));
+    return listed.some(m => muscles.includes(m) || areas.includes(areaOf(m)) || (!inTree(m) && active.has(m)));
+}
+
+/** An area chip; once it's on, its muscles follow as smaller chips to narrow it down. */
+function MuscleChips({ area, muscles, active, onToggle }: { area: string; muscles: string[]; active: Set<string>; onToggle: (m: string) => void }) {
+    const on = active.has(area);
+    return (
+        <>
+            <button className={`exercise-library-chip${on ? " active" : ""}`} aria-pressed={on} onClick={() => onToggle(area)}>
+                {area}
+            </button>
+            {on && muscles.map(m => (
+                <button key={m} className={`exercise-library-chip sub${active.has(m) ? " active" : ""}`} aria-pressed={active.has(m)} onClick={() => onToggle(m)}>
+                    {m}
+                </button>
+            ))}
+        </>
+    );
+}
 
 /** How many exercises the "Recently used" list shows. */
 const RECENT_COUNT = 8;
@@ -136,11 +165,17 @@ function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: Exercis
         [...new Set(exercises.flatMap(e => e.targetMuscles))].sort(),
         [exercises]
     );
+    // Filter chips follow the muscle tree: areas first, then names custom exercises added.
+    const customAreas = useMemo(() => allMuscles.filter(m => !inTree(m)).map(canonicalMuscle), [allMuscles]);
 
+    // Turning an area off also drops the muscles picked inside it.
     const toggleMuscle = (m: string) =>
         setActiveMuscles(prev => {
             const next = new Set(prev);
-            if (next.has(m)) next.delete(m); else next.add(m);
+            if (next.has(m)) {
+                next.delete(m);
+                if (isArea(m)) for (const x of prev) if (areaOf(x) === m) next.delete(x);
+            } else next.add(m);
             return next;
         });
 
@@ -150,7 +185,7 @@ function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: Exercis
         const q = deferredSearch.trim();
         const matches: { e: Exercise; score: number; i: number }[] = [];
         exercises.forEach((e, i) => {
-            if (activeMuscles.size > 0 && !e.targetMuscles.some(m => activeMuscles.has(m))) return;
+            if (activeMuscles.size > 0 && !matchesMuscles(e, activeMuscles)) return;
             if (onlyCustom && !e.isCustom) return;
             const score = q ? matchScore(e.name, q) : 0;
             if (score !== null) matches.push({ e, score, i });
@@ -301,14 +336,11 @@ function ExerciseLibrary({ exercises: allExercises, onSelect, onSaved }: Exercis
                         <Sparkles size={10} /> My exercises
                     </button>
                 )}
-                {allMuscles.map(m => (
-                    <button
-                        key={m}
-                        className={`exercise-library-chip${activeMuscles.has(m) ? " active" : ""}`}
-                        onClick={() => toggleMuscle(m)}
-                    >
-                        {m}
-                    </button>
+                {MUSCLE_TREE.map(({ area, muscles }) => (
+                    <MuscleChips key={area} area={area} muscles={muscles} active={activeMuscles} onToggle={toggleMuscle} />
+                ))}
+                {customAreas.map(m => (
+                    <MuscleChips key={m} area={m} muscles={[]} active={activeMuscles} onToggle={toggleMuscle} />
                 ))}
             </div>
             {!isFiltering && recents.length > 0 && (

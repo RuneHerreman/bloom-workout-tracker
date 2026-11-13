@@ -22,10 +22,5 @@ public class ExerciseDataConfiguration: IEntityTypeConfiguration<ExerciseData>
             tmBuilder.ToJson();
             tmBuilder.Property(tm => tm.Value);
         });
-        builder.OwnsMany(e => e.SecondaryMuscles, smBuilder =>
-        {
-            smBuilder.ToJson();
-            smBuilder.Property(sm => sm.Value);
-        });
     }
 }

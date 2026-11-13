@@ -3,7 +3,7 @@
 
 import type { LoggedSet, LoggedWorkout } from "../../assets/js/data/apiTypes.ts";
 import type { Exercise } from "../exercises/api.ts";
-import { muscleShares } from "../exercises/muscles.ts";
+import { areaOf, musclesOf } from "../exercises/muscles.ts";
 import { e1rm, round1 } from "../../utils/bodyMath.ts";
 
 // ── Periods & time buckets ────────────────────────────────────────────────────
@@ -241,26 +241,24 @@ export function consistency(logs: LoggedWorkout[], range: Range) {
 // ── Muscle balance ────────────────────────────────────────────────────────────
 
 export interface MuscleVolume {
+    /** A muscle, or an area tagged on its own ("Back": the area in general). */
     muscle: string;
+    area: string;
     setsPerWeek: number;
     lastTrained: string | null;
-    /** Some exercise worked it as a primary muscle, not only as a helper. */
-    direct: boolean;
 }
 
-/** Working sets per week for each muscle: a full set for each primary muscle, half a set for each secondary one. */
+/** Working sets per week for each listed muscle (an exercise counts fully for every muscle it lists). */
 export function muscleBalance(logs: LoggedWorkout[], exercises: Record<string, Exercise>, range: Range): MuscleVolume[] {
     const sets = new Map<string, number>();
     const last = new Map<string, string>();
-    const direct = new Set<string>();
     for (const l of logs) {
         if (!inRange(l.loggedAt, range)) continue;
         for (const ex of l.exercises) {
             const n = ex.sets.filter(isWorkingStrengthSet).length;
             if (!n) continue;
-            for (const [m, share] of muscleShares(exercises[ex.exerciseId])) {
-                sets.set(m, (sets.get(m) ?? 0) + n * share);
-                if (share === 1) direct.add(m);
+            for (const m of musclesOf(exercises[ex.exerciseId])) {
+                sets.set(m, (sets.get(m) ?? 0) + n);
                 if (!last.has(m) || l.loggedAt > last.get(m)!) last.set(m, l.loggedAt);
             }
         }
@@ -271,7 +269,7 @@ export function muscleBalance(logs: LoggedWorkout[], exercises: Record<string, E
     const spanDays = dates.length ? (Math.max(...dates) - Math.min(...dates)) / DAY + 7 : range.days;
     const weeks = Math.max(1, Math.min(range.days, spanDays) / 7);
     return [...sets.entries()]
-        .map(([muscle, n]) => ({ muscle, setsPerWeek: round1(n / weeks), lastTrained: last.get(muscle) ?? null, direct: direct.has(muscle) }))
+        .map(([muscle, n]) => ({ muscle, setsPerWeek: round1(n / weeks), area: areaOf(muscle), lastTrained: last.get(muscle) ?? null }))
         .sort((a, b) => b.setsPerWeek - a.setsPerWeek);
 }
 
@@ -329,8 +327,7 @@ export function strengthHighlights(
         });
     }
 
-    // Only muscles you trained on purpose: one that only helps out (adductors in a squat) isn't neglected.
-    const trained = balance.filter(m => m.setsPerWeek > 0 && m.direct);
+    const trained = balance.filter(m => m.setsPerWeek > 0);
     const low = [...trained].sort((a, b) => a.setsPerWeek - b.setsPerWeek)[0];
     if (low && trained.length >= 3 && low.setsPerWeek < SET_RANGE.low / 2) {
         out.push({

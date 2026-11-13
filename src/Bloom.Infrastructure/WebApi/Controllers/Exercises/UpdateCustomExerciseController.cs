@@ -26,8 +26,7 @@ public static class UpdateCustomExerciseController
             request.Body.Name,
             request.Body.Description,
             request.Body.Type,
-            request.Body.TargetMuscles,
-            request.Body.SecondaryMuscles
+            request.Body.TargetMuscles
         ), ct);
 
         return TypedResults.Ok(new UpdateCustomExerciseResponse(output.ExerciseId));

@@ -11,20 +11,21 @@ const ex = (exerciseId: string, sets: LoggedSet[]): LoggedExercise => ({ exercis
 const log = (id: string, name: string, loggedAt: string, exercises: LoggedExercise[]): LoggedWorkout =>
     ({ id, userId: "u", name, loggedAt, note: null, exercises });
 
-const exercise = (id: string, name: string, targetMuscles: string[], secondaryMuscles: string[] = []): Exercise =>
-    ({ id, name, description: "", type: "Strength", targetMuscles, secondaryMuscles });
+const exercise = (id: string, name: string, targetMuscles: string[]): Exercise =>
+    ({ id, name, description: "", type: "Strength", targetMuscles });
 
 const info: Record<string, Exercise> = {
-    row: exercise("row", "Barbell Row", ["Upper back"]),
+    row: exercise("row", "Barbell Row", ["Mid back"]),
     curl: exercise("curl", "Barbell Curl", ["Biceps"]),
     pulldown: exercise("pulldown", "Lat Pulldown", ["Lats"]),
     pullover: exercise("pullover", "Pullover", ["Lats", "Chest"]),
     shrug: exercise("shrug", "Shrug", ["Traps"]),
     custom: exercise("custom", "Neck Curl", ["Neck"]),
     twoArm: exercise("twoArm", "Curl to Press", ["Biceps", "Triceps"]),
-    legacy: exercise("legacy", "Old Custom Row", ["Back"]),
-    bench: exercise("bench", "Bench Press", ["Chest"], ["Triceps", "Front delts"]),
-    tRow: exercise("tRow", "T-bar Row", ["Upper back", "Lats"], ["Biceps", "Rear delts", "Lower back"]),
+    general: exercise("general", "Back Day Thing", ["Back"]),
+    old: exercise("old", "Old Import", ["Upper back", "Quadriceps"]),
+    bench: exercise("bench", "Bench Press", ["Chest", "Triceps", "Front delts"]),
+    tRow: exercise("tRow", "T-bar Row", ["Mid back", "Lats", "Biceps", "Rear delts", "Lower back"]),
 };
 
 describe("summarizeSession", () => {
@@ -43,12 +44,12 @@ describe("summarizeSession", () => {
             ex("curl", [set(10, 20)]),
             ex("row", [set(8, 60), set(8, 60)]),
             ex("pulldown", [set(10, 50)]),
-            ex("legacy", [set(10, 50)]),
+            ex("general", [set(10, 50)]),
         ], info, []);
         expect(s.muscles).toEqual([
-            { muscle: "Upper back", sets: 2 }, { muscle: "Back", sets: 1 }, { muscle: "Biceps", sets: 1 }, { muscle: "Lats", sets: 1 },
+            { muscle: "Mid back", sets: 2 }, { muscle: "Back", sets: 1 }, { muscle: "Biceps", sets: 1 }, { muscle: "Lats", sets: 1 },
         ]);
-        // An old broad name still lands in its area.
+        // The area tagged on its own counts for the area, as its "general" part.
         expect(s.areas[0]).toMatchObject({ area: "Back", sets: 4 });
     });
 
@@ -89,24 +90,29 @@ describe("summarizeSession", () => {
             ex("custom", [set(15, 5)]),
         ], info, []);
         expect(s.areas.map(a => [a.area, a.sets])).toEqual([["Back", 5], ["Arms", 2], ["Chest", 1], ["Neck", 1]]);
-        expect(s.areas[0].parts).toEqual([{ muscle: "Traps", sets: 2 }, { muscle: "Upper back", sets: 2 }, { muscle: "Lats", sets: 1 }]);
+        expect(s.areas[0].parts).toEqual([{ muscle: "Mid back", sets: 2 }, { muscle: "Traps", sets: 2 }, { muscle: "Lats", sets: 1 }]);
         // Biceps and triceps from one exercise: 2 sets for Arms, not 4.
         expect(s.areas[1].parts.map(p => p.sets)).toEqual([2, 2]);
     });
 
-    it("counts a secondary muscle as half a set", () => {
+    it("counts every listed muscle fully, and each area once", () => {
         const s = summarizeSession("Push", "2026-11-10T18:00:00Z", [
             ex("bench", [set(5, 100), set(5, 100), set(5, 100)]),
         ], info, []);
-        expect(s.muscles).toEqual([{ muscle: "Chest", sets: 3 }, { muscle: "Front delts", sets: 1.5 }, { muscle: "Triceps", sets: 1.5 }]);
-        expect(s.areas.map(a => [a.area, a.sets])).toEqual([["Chest", 3], ["Shoulders", 1.5], ["Arms", 1.5]]);
+        expect(s.muscles).toEqual([{ muscle: "Chest", sets: 3 }, { muscle: "Front delts", sets: 3 }, { muscle: "Triceps", sets: 3 }]);
+        expect(s.areas.map(a => [a.area, a.sets])).toEqual([["Chest", 3], ["Shoulders", 3], ["Arms", 3]]);
         expect(s.workingSets).toBe(3);
     });
 
-    it("counts an area at an exercise's biggest share there", () => {
+    it("counts an area once even when the exercise lists several muscles in it", () => {
         const s = summarizeSession("Pull", "2026-11-10T18:00:00Z", [ex("tRow", [set(8, 60), set(8, 60)])], info, []);
-        // Upper back and lats are primary, lower back secondary: Back gets 2 sets, not 2 + 2 + 1.
-        expect(s.areas.map(a => [a.area, a.sets])).toEqual([["Back", 2], ["Shoulders", 1], ["Arms", 1]]);
-        expect(s.areas[0].parts).toEqual([{ muscle: "Lats", sets: 2 }, { muscle: "Upper back", sets: 2 }, { muscle: "Lower back", sets: 1 }]);
+        expect(s.areas.map(a => [a.area, a.sets])).toEqual([["Back", 2], ["Shoulders", 2], ["Arms", 2]]);
+        expect(s.areas[0].parts).toEqual([{ muscle: "Lats", sets: 2 }, { muscle: "Lower back", sets: 2 }, { muscle: "Mid back", sets: 2 }]);
+    });
+
+    it("reads older names through the tree", () => {
+        const s = summarizeSession("Mixed", "2026-11-10T18:00:00Z", [ex("old", [set(8, 60)])], info, []);
+        expect(s.muscles).toEqual([{ muscle: "Mid back", sets: 1 }, { muscle: "Quads", sets: 1 }]);
+        expect(s.areas.map(a => a.area)).toEqual(["Back", "Legs"]);
     });
 });

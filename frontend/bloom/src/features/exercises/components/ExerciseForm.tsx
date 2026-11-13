@@ -1,8 +1,10 @@
-import { useMemo, useRef, useState, useEffect } from "react";
-import { ArrowLeft, Plus, Trash2, X, Check } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { ArrowLeft, Trash2, Check } from "lucide-react";
 import type { ExerciseType } from "../../../types.ts";
 import type { Exercise } from "../api.ts";
 import { createCustomExercise, updateCustomExercise, deleteCustomExercise } from "../api.ts";
+import { normalizeMuscles } from "../muscles.ts";
+import MuscleTreePicker from "./MuscleTreePicker.tsx";
 
 const TYPES: { value: ExerciseType; label: string; hint: string }[] = [
     { value: "Strength",   label: "Strength",   hint: "Reps × weight" },
@@ -15,7 +17,7 @@ interface ExerciseFormProps {
     exercise?: Exercise;
     /** Pre-filled name, e.g. from the library search box. */
     initialName?: string;
-    /** All muscles known in the catalog, offered as quick picks. */
+    /** All muscles used in the catalog; names outside the muscle tree are offered under "Other". */
     knownMuscles: string[];
     onSaved: (exercise: Exercise) => void;
     onDeleted?: (exerciseId: string) => void;
@@ -30,8 +32,7 @@ function ExerciseForm({ exercise, initialName = "", knownMuscles, onSaved, onDel
     const editing = !!exercise;
     const [name, setName] = useState(exercise?.name ?? initialName);
     const [type, setType] = useState<ExerciseType>(exercise?.type ?? "Strength");
-    const [muscles, setMuscles] = useState<string[]>(exercise?.targetMuscles ?? []);
-    const [secondary, setSecondary] = useState<string[]>(exercise?.secondaryMuscles ?? []);
+    const [muscles, setMuscles] = useState<string[]>(() => normalizeMuscles(exercise?.targetMuscles ?? []));
     const [description, setDescription] = useState(exercise?.description ?? "");
     const [saving, setSaving] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
@@ -43,7 +44,7 @@ function ExerciseForm({ exercise, initialName = "", knownMuscles, onSaved, onDel
 
     const errors = {
         name: name.trim() === "" ? "Give your exercise a name" : null,
-        muscles: muscles.length === 0 ? "Pick at least one target muscle" : null,
+        muscles: muscles.length === 0 ? "Pick at least one area or muscle" : null,
         description: description.trim() === "" ? "Add a short description or cue" : null,
     };
     const valid = !errors.name && !errors.muscles && !errors.description;
@@ -54,8 +55,7 @@ function ExerciseForm({ exercise, initialName = "", knownMuscles, onSaved, onDel
         if (!valid || saving) return;
         setSaving(true);
         setError(null);
-        // A muscle is either a primary mover or a helper, never both.
-        const body = { name: name.trim(), type, targetMuscles: muscles, secondaryMuscles: secondary.filter(m => !muscles.includes(m)), description: description.trim() };
+        const body = { name: name.trim(), type, targetMuscles: muscles, description: description.trim() };
         try {
             const saved = editing
                 ? await updateCustomExercise(exercise.id, body)
@@ -128,23 +128,11 @@ function ExerciseForm({ exercise, initialName = "", knownMuscles, onSaved, onDel
                 </div>
             </fieldset>
 
-            <MusclePicker
-                id="muscles-label"
-                label="Target muscles"
+            <MuscleTreePicker
                 value={muscles}
-                onChange={next => { setMuscles(next); setSecondary(prev => prev.filter(m => !next.includes(m))); }}
-                knownMuscles={knownMuscles}
+                onChange={setMuscles}
+                otherSuggestions={knownMuscles}
                 error={touched ? errors.muscles : null}
-            />
-
-            <MusclePicker
-                id="secondary-muscles-label"
-                label="Secondary muscles"
-                hint="Optional: muscles that help. Each set counts as half a set for them."
-                value={secondary}
-                onChange={setSecondary}
-                knownMuscles={knownMuscles.filter(m => !muscles.includes(m))}
-                maxPicks={8}
             />
 
             <label className="exercise-form-field">
@@ -184,76 +172,6 @@ function ExerciseForm({ exercise, initialName = "", knownMuscles, onSaved, onDel
                 )}
             </div>
         </form>
-    );
-}
-
-interface MusclePickerProps {
-    id: string;
-    label: string;
-    hint?: string;
-    value: string[];
-    onChange: (muscles: string[]) => void;
-    knownMuscles: string[];
-    error?: string | null;
-    /** Quick picks shown before you type. */
-    maxPicks?: number;
-}
-
-/** Chips you can remove, a free-text box, and the catalog's muscles as quick picks. */
-function MusclePicker({ id, label, hint, value, onChange, knownMuscles, error, maxPicks = 14 }: MusclePickerProps) {
-    const [input, setInput] = useState("");
-
-    const suggestions = useMemo(() => {
-        const q = input.trim().toLowerCase();
-        return knownMuscles
-            .filter(m => !value.includes(m))
-            .filter(m => !q || m.toLowerCase().includes(q))
-            .slice(0, q ? 8 : maxPicks);
-    }, [knownMuscles, value, input, maxPicks]);
-
-    function add(raw: string) {
-        const m = raw.trim().replace(/\s+/g, " ");
-        if (!m) return;
-        const canonical = knownMuscles.find(k => k.toLowerCase() === m.toLowerCase()) ?? m.charAt(0).toUpperCase() + m.slice(1);
-        if (!value.includes(canonical)) onChange([...value, canonical]);
-        setInput("");
-    }
-
-    return (
-        <div className="exercise-form-field">
-            <span id={id}>{label}</span>
-            {hint && <small className="exercise-form-hint">{hint}</small>}
-            <div className="exercise-form-muscles" aria-labelledby={id}>
-                {value.map(m => (
-                    <span key={m} className="exercise-form-muscle selected">
-                        {m}
-                        <button type="button" aria-label={`Remove ${m}`} onClick={() => onChange(value.filter(x => x !== m))}>
-                            <X size={10} />
-                        </button>
-                    </span>
-                ))}
-                <input
-                    className="exercise-form-muscle-input"
-                    value={input}
-                    placeholder={value.length ? "Add another…" : "Type or pick below…"}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => {
-                        if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(input); }
-                        if (e.key === "Backspace" && input === "" && value.length) onChange(value.slice(0, -1));
-                    }}
-                />
-            </div>
-            {suggestions.length > 0 && (
-                <div className="exercise-form-suggestions">
-                    {suggestions.map(m => (
-                        <button key={m} type="button" className="exercise-library-chip" onClick={() => add(m)}>
-                            <Plus size={10} /> {m}
-                        </button>
-                    ))}
-                </div>
-            )}
-            {error && <small className="exercise-form-error">{error}</small>}
-        </div>
     );
 }
 

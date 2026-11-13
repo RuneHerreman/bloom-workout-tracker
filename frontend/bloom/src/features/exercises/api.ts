@@ -1,6 +1,7 @@
 import { fetchFromServer, remember, peek } from "../../assets/js/data/apiClient.ts";
 import type { ExerciseType } from "../../types.ts";
 import type { CustomExerciseBody } from "../../assets/js/data/apiTypes.ts";
+import { normalizeMuscles } from "./muscles.ts";
 
 export type { CustomExerciseBody };
 
@@ -11,10 +12,8 @@ export interface Exercise {
     type: ExerciseType;
     /** True for exercises the current user created themselves. */
     isCustom?: boolean;
-    /** Primary movers: a working set counts fully for each. */
+    /** Areas ("Back") or muscles in them ("Lats"), from the muscle tree; each gets a full working set. */
     targetMuscles: string[];
-    /** Assisting muscles: a working set counts as half a set for each. */
-    secondaryMuscles: string[];
 }
 
 export interface ExerciseFilters {
@@ -65,13 +64,13 @@ export async function getExercise(exerciseId: string): Promise<Exercise> {
 export async function createCustomExercise(body: CustomExerciseBody): Promise<Exercise> {
     const { exerciseId } = await fetchFromServer<{ exerciseId: string }>("exercises", "POST", body);
     _allExercises = null;
-    return { id: exerciseId, ...body, secondaryMuscles: body.secondaryMuscles ?? [], isCustom: true };
+    return { id: exerciseId, ...body, targetMuscles: normalizeMuscles(body.targetMuscles), isCustom: true };
 }
 
 export async function updateCustomExercise(exerciseId: string, body: CustomExerciseBody): Promise<Exercise> {
     await fetchFromServer<unknown>(`exercises/${exerciseId}`, "PUT", body);
     _allExercises = null;
-    return { id: exerciseId, ...body, secondaryMuscles: body.secondaryMuscles ?? [], isCustom: true };
+    return { id: exerciseId, ...body, targetMuscles: normalizeMuscles(body.targetMuscles), isCustom: true };
 }
 
 export async function deleteCustomExercise(exerciseId: string): Promise<void> {

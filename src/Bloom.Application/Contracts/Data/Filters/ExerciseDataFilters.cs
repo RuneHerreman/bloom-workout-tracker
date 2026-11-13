@@ -14,7 +14,16 @@ public static class ExerciseDataFilters
     {
         var cleanName = string.IsNullOrWhiteSpace(name) ? null : name.ToLower();
         var cleanMuscleGroups = muscleGroups is { Count: > 0 }
-            ? muscleGroups.Select(mg => mg.Value.ToLower()).ToList()
+            // An area matches exercises tagged with it or with any muscle in it.
+            ? muscleGroups
+                .SelectMany(mg => MuscleTree.Areas
+                    .Where(a => a.Area.Equals(mg.Value.Trim(), StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(a => a.Muscles)
+                    .Append(MuscleTree.Canonical(mg.Value) ?? mg.Value)
+                    .Append(mg.Value.Trim()))
+                .Select(m => m.ToLower())
+                .Distinct()
+                .ToList()
             : null;
         var cleanTypeStrings = types is { Count: > 0 }
             ? types.Select(t => t.ToString()).ToList()

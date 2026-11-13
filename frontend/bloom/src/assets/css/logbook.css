@@ -457,10 +457,10 @@
 .log-summary-chevron { flex-shrink: 0; width: 14px; height: 14px; color: var(--ink-muted); transition: transform var(--transition); }
 li.open > .log-summary-row .log-summary-chevron { transform: rotate(90deg); }
 .log-summary-row.is-part .log-summary-muscle { padding-left: 1.15rem; color: var(--ink-muted); font-size: var(--text-xs); }
-.log-summary-row.is-part .log-summary-track { height: 0.4rem; }
+.log-summary-row.is-part .log-summary-track { height: 0.3rem; }
 .log-summary-row.is-part .log-summary-track > span { background: color-mix(in srgb, var(--sum-bar) 70%, var(--grey-light)); }
 .log-summary-row.is-part .log-summary-count { font-size: var(--text-xs); }
-.log-summary-track { height: 0.6rem; border-radius: 4px; background: var(--grey-light); overflow: hidden; }
+.log-summary-track { height: 0.5rem; border-radius: 4px; background: var(--grey-light); overflow: hidden; }
 .log-summary-track > span { display: block; height: 100%; border-radius: 4px; background: var(--sum-bar); transition: width 0.3s ease; }
 .log-summary-count { font-size: var(--text-sm); color: var(--ink-muted); text-align: right; font-variant-numeric: tabular-nums; }
 
@@ -470,7 +470,8 @@ li.open > .log-summary-row .log-summary-chevron { transform: rotate(90deg); }
     .log-summary-muscles-body { flex-direction: row; align-items: center; gap: 2rem; }
     .log-summary-muscles.show-body .log-summary-areas,
     .log-summary-muscles.show-list .log-summary-map { display: flex; }
-    .log-summary-areas { flex: 1; align-self: center; }
+    /* Bars read as a comparison, not a ruler: the list stops growing past a phone's width. */
+    .log-summary-areas { flex: 1 1 auto; max-width: 26rem; align-self: center; }
 }
 
 /* ── Body map ── */

@@ -553,6 +553,7 @@
 .exercise-library-search-wrap:has(.exercise-library-new) .exercise-library-clear { right: 6.2rem; }
 
 .exercise-library-chip.custom { display: inline-flex; align-items: center; gap: 0.3rem; }
+.exercise-library-chip.sub { font-size: 0.7rem; padding-inline: 0.55rem; border-style: dashed; }
 
 .exercise-library-row { grid-template-columns: 1.25rem 1fr auto; }
 
@@ -1106,3 +1107,105 @@
 .import-sheet tr td:last-child { border-right: none; }
 .import-sheet tr:last-child td, .import-sheet tr:last-child th { border-bottom: none; }
 
+
+/* ── Muscle tree picker (custom exercise form) ── */
+.muscle-tree-areas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 0.0625rem solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-lighter);
+    overflow: hidden;
+}
+.muscle-tree-area + .muscle-tree-area { border-top: 0.0625rem solid var(--border-light); }
+.muscle-tree-row { display: flex; align-items: stretch; }
+.muscle-tree-check {
+    flex: 1;
+    min-width: 0;
+    min-height: 2.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--text-sm);
+    text-align: left;
+    cursor: pointer;
+}
+.muscle-tree-box {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: 0.3rem;
+    background: var(--surface-lighter);
+    color: #fff;
+    transition: background var(--transition), border-color var(--transition);
+}
+.muscle-tree-area:is(.general, .all) .muscle-tree-box { background: var(--primary-light); border-color: var(--primary-light); }
+.muscle-tree-area.some .muscle-tree-box { background: color-mix(in srgb, var(--primary-light) 55%, var(--surface-lighter)); border-color: var(--primary-light); }
+.muscle-tree-name { font-weight: 500; }
+.muscle-tree-summary {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-xs);
+    color: var(--ink-muted);
+}
+.muscle-tree-expand {
+    flex-shrink: 0;
+    width: 2.75rem;
+    display: grid;
+    place-items: center;
+    border: none;
+    background: none;
+    color: var(--ink-muted);
+    cursor: pointer;
+}
+.muscle-tree-expand svg { transition: transform var(--transition); }
+.muscle-tree-area.open .muscle-tree-expand svg { transform: rotate(180deg); }
+.muscle-tree-check:focus-visible,
+.muscle-tree-expand:focus-visible,
+.muscle-tree-muscle:focus-visible { outline: 2px solid var(--primary-light); outline-offset: -2px; }
+.muscle-tree-muscles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0 0.75rem 0.7rem 2.45rem;
+}
+.muscle-tree-muscle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 2.1rem;
+    padding: 0.3rem 0.7rem;
+    border: 0.0625rem solid var(--border);
+    border-radius: 100rem;
+    background: var(--surface-lighter);
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--text-xs);
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition);
+}
+.muscle-tree-muscle small { color: var(--ink-muted); font-size: 0.7rem; }
+.muscle-tree-muscle.selected {
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 8%, transparent);
+    border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+}
+.dark .muscle-tree-muscle.selected { color: var(--primary-muted); }
+.muscle-tree-other { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.6rem 0.75rem 0.7rem; }
+.muscle-tree-other .muscle-tree-name { font-size: var(--text-sm); }
+
+@media (max-width: 480px) {
+    .muscle-tree-muscles { padding-left: 0.75rem; }
+    .muscle-tree-muscle small { display: none; }
+}

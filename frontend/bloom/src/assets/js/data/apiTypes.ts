@@ -19,10 +19,8 @@ export interface Exercise {
     description: string;
     type: string;
     isCustom?: boolean;
-    /** Primary movers: a working set counts fully for each. */
+    /** Areas ("Back") or muscles in them ("Lats"), from the muscle tree; each gets a full working set. */
     targetMuscles: string[];
-    /** Assisting muscles: a working set counts as half a set for each. */
-    secondaryMuscles: string[];
 }
 
 export interface CustomExerciseBody {
@@ -30,7 +28,6 @@ export interface CustomExerciseBody {
     description: string;
     type: ExerciseType;
     targetMuscles: string[];
-    secondaryMuscles?: string[];
 }
 
 export interface ExercisePrResponse {

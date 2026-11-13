@@ -11,8 +11,7 @@ public sealed record CreateCustomExerciseInput(
     string Name,
     string Description,
     string Type,
-    List<string> TargetMuscles,
-    List<string>? SecondaryMuscles = null
+    List<string> TargetMuscles
 );
 
 public sealed record CreateCustomExerciseOutput(Guid ExerciseId);
@@ -45,8 +44,7 @@ public class CreateCustomExercise(
             input.Name,
             input.Description,
             Enum.Parse<ExerciseType>(input.Type, ignoreCase: true),
-            input.TargetMuscles,
-            secondaryMuscles: input.SecondaryMuscles
+            input.TargetMuscles
         );
 
         await exerciseRepo.Save(exercise);

@@ -24,8 +24,7 @@ public static class CreateCustomExerciseController
             request.Body.Name,
             request.Body.Description,
             request.Body.Type,
-            request.Body.TargetMuscles,
-            request.Body.SecondaryMuscles
+            request.Body.TargetMuscles
         ), ct);
 
         return TypedResults.Ok(new CreateCustomExerciseResponse(output.ExerciseId));

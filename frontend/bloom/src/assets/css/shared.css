@@ -187,6 +187,8 @@
    so the search field doesn't jump down under the user's thumb. */
 .overlay-panel-fixed {
     height: 85vh;
+    /* And its width: unfolding a muscle area or a long search result mustn't resize the dialog. */
+    width: 40vw;
 }
 
 .overlay-panel-wide {
