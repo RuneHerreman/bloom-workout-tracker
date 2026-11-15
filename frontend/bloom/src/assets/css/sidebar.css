@@ -110,6 +110,9 @@
     transition: background var(--transition);
     cursor: pointer;
     position: relative;
+    /* The active item turns bolder; a label that only just fits ("Macro Calculator") must not
+       wrap to a second line when it does. */
+    white-space: nowrap;
 }
 
 .sidebar-item:hover {
