@@ -4,10 +4,12 @@ import type { DragStartEvent, DragEndEvent } from "@dnd-kit/core";
 
 export function useExerciseDnd<T extends { exerciseId: string }>(
     exercises: T[],
-    onReorder: (reordered: T[]) => void
+    onReorder: (reordered: T[]) => void,
+    // Must match the ids handed to SortableContext / useSortable.
+    getId: (ex: T) => string = ex => ex.exerciseId
 ) {
     const [activeId, setActiveId] = useState<string | null>(null);
-    const activeExercise = exercises.find(ex => ex.exerciseId === activeId) ?? null;
+    const activeExercise = exercises.find(ex => getId(ex) === activeId) ?? null;
 
     function onDragStart(e: DragStartEvent) {
         setActiveId(e.active.id as string);
@@ -17,8 +19,9 @@ export function useExerciseDnd<T extends { exerciseId: string }>(
         setActiveId(null);
         const { active, over } = event;
         if (!over || active.id === over.id) return;
-        const oldIndex = exercises.findIndex(ex => ex.exerciseId === active.id);
-        const newIndex = exercises.findIndex(ex => ex.exerciseId === over.id);
+        const oldIndex = exercises.findIndex(ex => getId(ex) === active.id);
+        const newIndex = exercises.findIndex(ex => getId(ex) === over.id);
+        if (oldIndex < 0 || newIndex < 0) return;
         onReorder(arrayMove(exercises, oldIndex, newIndex).map((ex, i) => ({ ...ex, order: i + 1 })));
     }
 

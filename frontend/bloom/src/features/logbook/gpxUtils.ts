@@ -291,3 +291,18 @@ export function computeKmSplits(points: GpxTrackPoint[]): KmSplit[] {
     }
     return splits;
 }
+
+/** Fills a cardio set's empty distance and duration from a GPX track; fields already filled in are kept. */
+export function prefillSetFromGpx<T extends { distance: number | null; distanceUnit: string | null; duration: string | null }>(set: T, stats: GpxStats): T {
+    const next = { ...set };
+    if (set.distance == null && stats.distanceKm > 0) {
+        next.distance = Math.round(stats.distanceKm * 1000) / 1000;
+        next.distanceUnit = "km";
+    }
+    if (!set.duration && stats.durationMs > 0) {
+        const total = Math.round(stats.durationMs / 1000);
+        const pad = (n: number) => String(n).padStart(2, "0");
+        next.duration = `${pad(Math.floor(total / 3600))}:${pad(Math.floor(total / 60) % 60)}:${pad(total % 60)}`;
+    }
+    return next;
+}

@@ -72,7 +72,12 @@ export function toDateInputValue(isoString: string): string {
 export function withDate(isoString: string, dateInput: string): string {
     const [y, m, d] = dateInput.split("-").map(Number);
     const result = new Date(isoString);
-    if (!y || !m || !d || Number.isNaN(result.getTime())) return new Date(dateInput).toISOString();
+    if (Number.isNaN(result.getTime())) {
+        const parsed = new Date(dateInput);
+        return Number.isNaN(parsed.getTime()) ? isoString : parsed.toISOString();
+    }
+    // Empty or half-typed input (a date input reports "" for e.g. 31 November): keep the original.
+    if (!y || !m || !d) return isoString;
     result.setFullYear(y, m - 1, d);
     return result.toISOString();
 }

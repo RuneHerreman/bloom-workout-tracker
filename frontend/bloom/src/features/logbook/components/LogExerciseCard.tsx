@@ -8,7 +8,7 @@ import type { LoggedExercise, LoggedSet } from "../api.ts";
 import type { Exercise } from "../../exercises/api.ts";
 import Button from "../../../components/general/ButtonComponent.tsx";
 import LogSortableSetRow, { type LogRowItem } from "./LogSortableSetRow.tsx";
-import { parseGpx, parseGpxTrackPoints, formatDuration, type GpxStats } from "../gpxUtils.ts";
+import { parseGpx, parseGpxTrackPoints, formatDuration, prefillSetFromGpx, type GpxStats } from "../gpxUtils.ts";
 import GpxMapOverlay from "./GpxMapOverlay.tsx";
 import { workingSetNumbers, duplicateSet, defaultSet } from "../logbookUtils.ts";
 import InfoHint from "../../../components/general/InfoHint.tsx";
@@ -133,6 +133,14 @@ function LogExerciseCard({ id, exercise, exerciseInfo, onSetsChange, onDelete, o
             const stats = parseGpx(xml);
             setGpxStats(stats);
             onGpxChange?.(exercise.order, xml);
+            // A track is one session: fill the first set's empty distance/duration from it.
+            const first = items[0];
+            if (isCardio && stats && first) {
+                const filled = prefillSetFromGpx(first.set, stats);
+                if (filled.distance !== first.set.distance || filled.duration !== first.set.duration) {
+                    handleSetChange(first.id, filled);
+                }
+            }
         };
         reader.readAsText(file);
         e.target.value = "";

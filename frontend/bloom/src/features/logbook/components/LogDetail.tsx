@@ -73,7 +73,9 @@ function LogDetail({
 
     const { activeExercise, onDragStart, onDragEnd, onDragCancel } = useExerciseDnd(
         logExercises,
-        reordered => setLogExercises(reordered)
+        reordered => { setLogExercises(reordered); setLastAddedOrder(null); },
+        // Order, not exerciseId: the same exercise can be logged twice.
+        ex => String(ex.order)
     );
 
     // Canonical shape so optional fields (note/gear/marker) missing on freshly
@@ -98,7 +100,8 @@ function LogDetail({
         || note !== (log.note ?? "")
         || JSON.stringify(normalize(logExercises)) !== JSON.stringify(normalize(log.exercises));
     // A draft is always saveable, but never "unsaved": it is kept locally on every edit.
-    const canSave = isDraft ? logExercises.length > 0 || name.trim() !== "" : hasChanges;
+    // The date input reports "" while a day/month combination is impossible (31 November mid-typing).
+    const canSave = date !== "" && (isDraft ? logExercises.length > 0 || name.trim() !== "" : hasChanges);
     const currentLoggedAt = () => (date === initialDate ? log.loggedAt : withDate(log.loggedAt, date));
 
     const handleSaveRef = useRef(handleSave);
@@ -313,7 +316,8 @@ function LogDetail({
                 <SortableContext items={logExercises.map(ex => String(ex.order))} strategy={verticalListSortingStrategy}>
                     {logExercises.map((ex, i) => (
                         <LogExerciseCard
-                            key={ex.order}
+                            // Cards keep sets/UI in local state, so remount when a slot gets a different exercise.
+                            key={`${ex.order}-${ex.exerciseId}`}
                             id={String(ex.order)}
                             exercise={ex}
                             exerciseInfo={exercises[ex.exerciseId]}
