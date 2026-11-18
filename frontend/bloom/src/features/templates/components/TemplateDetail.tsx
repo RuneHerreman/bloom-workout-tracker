@@ -5,11 +5,12 @@ import type { WorkoutTemplate } from "../api.ts";
 import { updateTemplate } from "../api.ts";
 import type { TemplateExercise, PlannedSet } from "../../../assets/js/data/apiTypes.ts";
 import type { Exercise } from "../../exercises/api.ts";
+import ExerciseDragChip from "./ExerciseDragChip.tsx";
 import { useExerciseDnd } from "../hooks/useExerciseDnd.ts";
 import { useShortcut } from "../../../hooks/useShortcut.ts";
 import TemplateExerciseCard from "./TemplateExerciseCard.tsx";
 import Button from "../../../components/general/ButtonComponent.tsx";
-import { Save, Trash2, Play } from "lucide-react";
+import { Save, Trash2, Play, Download } from "lucide-react";
 
 interface TemplateDetailProps {
     template: WorkoutTemplate;
@@ -21,11 +22,12 @@ interface TemplateDetailProps {
     onDirtyChange?: (isDirty: boolean, save: () => Promise<void>) => void;
     /** Start a logbook draft from this template. */
     onLogWorkout?: (templateId: string) => void;
+    onExport?: (template: WorkoutTemplate) => void;
     userGear?: string[];
     autoFocusTitle?: boolean;
 }
 
-function TemplateDetail({ template, exercises, onDelete, onSave, pendingExerciseId, onExerciseAdded, onDirtyChange, onLogWorkout, userGear, autoFocusTitle }: TemplateDetailProps) {
+function TemplateDetail({ template, exercises, onDelete, onSave, pendingExerciseId, onExerciseAdded, onDirtyChange, onLogWorkout, onExport, userGear, autoFocusTitle }: TemplateDetailProps) {
     const [templateExercises, setTemplateExercises] = useState<TemplateExercise[]>(() =>
         [...template.exercises].sort((a, b) => a.order - b.order)
     );
@@ -44,7 +46,7 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
         titleInputRef.current?.select();
     }, []);
 
-    const { activeExercise, onDragStart, onDragEnd, onDragCancel } = useExerciseDnd(
+    const { activeExercise, isDragging, onDragStart, onDragEnd, onDragCancel, dndProps, overlayModifiers } = useExerciseDnd(
         templateExercises,
         reordered => setTemplateExercises(reordered)
     );
@@ -175,6 +177,17 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
                         />
                     )}
                     <Button text="Save changes" style="white" icon={<Save size={14} />} disabled={!hasChanges || saving} onClick={handleSave} />
+                    {onExport && (
+                        <button
+                            type="button"
+                            className="icon-btn"
+                            aria-label="Export this template"
+                            title={hasChanges ? "Export this template (as last saved)" : "Export this template"}
+                            onClick={() => onExport(template)}
+                        >
+                            <Download size={15} />
+                        </button>
+                    )}
                     <button
                         type="button"
                         className="icon-btn danger"
@@ -187,7 +200,8 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
                 </div>
             </div>
 
-            <DndContext collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={onDragCancel}>
+            <DndContext collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={onDragCancel} {...dndProps}>
+                <div className={`exercise-list${isDragging ? " is-dragging" : ""}`}>
                 <SortableContext items={templateExercises.map(ex => ex.exerciseId)} strategy={verticalListSortingStrategy}>
                     {templateExercises.map((exercise) => (
                         <TemplateExerciseCard
@@ -204,13 +218,10 @@ function TemplateDetail({ template, exercises, onDelete, onSave, pendingExercise
                         />
                     ))}
                 </SortableContext>
-                <DragOverlay>
+                </div>
+                <DragOverlay modifiers={overlayModifiers}>
                     {activeExercise && (
-                        <TemplateExerciseCard
-                            id={activeExercise.exerciseId}
-                            exercise={activeExercise}
-                            exerciseInfo={exercises[activeExercise.exerciseId] ?? null}
-                        />
+                        <ExerciseDragChip name={exercises[activeExercise.exerciseId]?.name ?? "Exercise"} sets={activeExercise.sets.length} />
                     )}
                 </DragOverlay>
             </DndContext>

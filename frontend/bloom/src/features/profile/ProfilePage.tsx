@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Save, Trash2, Eye, EyeOff, KeyRound, X, Download, Upload, UserRound, Scale, Link2, ShieldCheck, Footprints, Dumbbell, Database } from "lucide-react";
+import { Save, Trash2, Eye, EyeOff, KeyRound, X, Download, Upload, UserRound, Scale, Link2, ShieldCheck, Footprints, Dumbbell, Database, Rows3 } from "lucide-react";
+import { readOpenReadOnly, writeOpenReadOnly } from "../logbook/logViewPref.ts";
 import { getMe, updateMe, updateSex, changePassword, deleteMe, updateLeaderboardVisibility } from "../auth/api.ts";
 import type { Sex } from "../../assets/js/data/apiTypes.ts";
 import { getBody, formatEntryDate, localToday, type BodyEntry } from "../body/api.ts";
@@ -24,6 +25,7 @@ const SECTIONS = [
     { id: "password", label: "Password", icon: KeyRound },
     { id: "apps", label: "Connected apps", icon: Link2 },
     { id: "privacy", label: "Privacy", icon: ShieldCheck },
+    { id: "logbook", label: "Logbook", icon: Rows3 },
     { id: "gear", label: "Gear", icon: Footprints },
     { id: "exercises", label: "My exercises", icon: Dumbbell },
     { id: "data", label: "Your data", icon: Database },
@@ -115,6 +117,7 @@ function ProfilePage() {
     const [stravaError, setStravaError] = useState<string | null>(null);
     const [exportOpen, setExportOpen] = useState(false);
     const [savingVisibility, setSavingVisibility] = useState(false);
+    const [openReadOnly, setOpenReadOnly] = useState(readOpenReadOnly);
     const [visibilityError, setVisibilityError] = useState<string | null>(null);
 
     const [activeSection, markActive] = useActiveSection(!loading);
@@ -558,6 +561,28 @@ function ProfilePage() {
                             </div>
                             <button type="button" role="switch" className="profile-switch" aria-checked={user?.showOnLeaderboard ?? true}
                                 aria-labelledby="leaderboardToggleLabel" disabled={!user || savingVisibility} onClick={handleToggleLeaderboard}>
+                                <span className="profile-switch-thumb" aria-hidden />
+                            </button>
+                        </div>
+                    </section>
+
+                    <section className="profile-section" id="logbook">
+                        <div className="profile-section-head">
+                            <h2 className="profile-section-title">Logbook</h2>
+                            <p className="profile-section-desc">How saved workouts open. Saved on this device.</p>
+                        </div>
+                        <div className="profile-toggle-row">
+                            <div className="profile-toggle-text">
+                                <span id="openReadOnlyLabel" className="profile-toggle-label">Open logs in compact view</span>
+                                <span className="profile-toggle-hint">
+                                    {openReadOnly
+                                        ? "Logs open read-only and dense; press Edit to change one."
+                                        : "Logs open in the editor. Switch a log to compact view from its header."}
+                                </span>
+                            </div>
+                            <button type="button" role="switch" className="profile-switch" aria-checked={openReadOnly}
+                                aria-labelledby="openReadOnlyLabel"
+                                onClick={() => { setOpenReadOnly(!openReadOnly); writeOpenReadOnly(!openReadOnly); }}>
                                 <span className="profile-switch-thumb" aria-hidden />
                             </button>
                         </div>

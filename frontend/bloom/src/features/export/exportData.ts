@@ -195,23 +195,50 @@ export function buildJson(
                 ...(options.includeGps && e.gpxData ? { gpx: e.gpxData } : {}),
             })),
         })),
-        templates: templates.map(t => ({
-            id: t.id,
-            name: t.name,
-            exercises: [...t.exercises].sort((a, b) => a.order - b.order).map(e => ({
-                exerciseId: e.exerciseId,
-                exerciseName: exerciseName(e.exerciseId),
-                note: e.note ?? null,
-                gear: e.gear ?? [],
-                sets: e.sets,
-            })),
-        })),
+        templates: templatesPayload(templates, exercises),
         customExercises: Object.values(exercises).filter(e => e.isCustom),
         body: [...(options.body ?? [])]
             .sort((a, b) => a.date.localeCompare(b.date))
             .map(e => ({ date: e.date, weightKg: e.weightKg, bodyFatPct: e.bodyFatPct })),
     };
     return new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+}
+
+function templatesPayload(templates: WorkoutTemplate[], exercises: Record<string, Exercise>) {
+    return templates.map(t => ({
+        id: t.id,
+        name: t.name,
+        exercises: [...t.exercises].sort((a, b) => a.order - b.order).map(e => ({
+            exerciseId: e.exerciseId,
+            exerciseName: exercises[e.exerciseId]?.name ?? null,
+            note: e.note ?? null,
+            gear: e.gear ?? [],
+            sets: e.sets,
+        })),
+    }));
+}
+
+/**
+ * Templates only, in the backup's JSON shape so the Import page reads it back.
+ * Carries the custom exercises they use, so another account can recreate them.
+ */
+export function buildTemplatesJson(templates: WorkoutTemplate[], exercises: Record<string, Exercise>): Blob {
+    const used = new Set(templates.flatMap(t => t.exercises.map(e => e.exerciseId)));
+    const payload = {
+        app: "Bloom",
+        schemaVersion: 1,
+        exportedAt: new Date().toISOString(),
+        templates: templatesPayload(templates, exercises),
+        customExercises: Object.values(exercises).filter(e => e.isCustom && used.has(e.id)),
+    };
+    return new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+}
+
+export function templatesFilename(templates: WorkoutTemplate[], now = new Date()): string {
+    const slug = templates.length === 1
+        ? templates[0]!.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "template"
+        : "templates";
+    return `bloom-${slug}-${localDate(now)}.json`;
 }
 
 // ── Download ──────────────────────────────────────────────────────────────────

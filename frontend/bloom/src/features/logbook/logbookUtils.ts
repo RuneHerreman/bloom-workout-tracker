@@ -161,3 +161,26 @@ export function findMissingReps(exercises: LoggedExercise[]): { exercise: Logged
     }
     return null;
 }
+
+// ── Compact text ─────────────────────────────────────────────────────────────
+
+function fmtNum(n: number): string {
+    return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+}
+
+/** One set in parts for the compact view: "80" "kg" "× 4 @2", "5.56" "km" "50m 0s", "12" "reps" "". */
+export function setParts(s: LoggedSet): { value: string; unit: string; detail: string } {
+    if (s.type === "Cardio") {
+        const time = s.duration ? displayDuration(s.duration) : "";
+        if (s.distance == null) return { value: time || "—", unit: "", detail: "" };
+        const [value, unit] = s.distanceUnit === "meters" ? [String(Math.round(s.distance)), "m"]
+            : s.distanceUnit === "miles" ? [fmtNum(s.distance), "mi"]
+            : [fmtNum(s.distance), "km"];
+        return { value, unit, detail: time };
+    }
+    const rir = s.rir != null ? ` @${s.rir}` : "";
+    if (s.weight != null && s.weight > 0) {
+        return { value: fmtNum(s.weight), unit: (s.weightUnit ?? "kg").toLowerCase(), detail: `× ${s.reps ?? "—"}${rir}` };
+    }
+    return { value: String(s.reps ?? "—"), unit: "reps", detail: rir.trim() };
+}

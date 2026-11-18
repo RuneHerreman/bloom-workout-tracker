@@ -12,7 +12,8 @@ import HeaderComponent from "../../components/general/HeaderComponent.tsx";
 import Button from "../../components/general/ButtonComponent.tsx";
 import Overlay from "../../components/general/OverlayComponent.tsx";
 import UnsavedChangesDialog from "../../components/general/UnsavedChangesDialog.tsx";
-import { PlusIcon, ChevronLeft } from "lucide-react";
+import { PlusIcon, ChevronLeft, Download, Upload } from "lucide-react";
+import { buildTemplatesJson, templatesFilename, downloadBlob } from "../export/exportData.ts";
 import AddExerciseButton from "./components/AddExerciseButton.tsx";
 import ExerciseLibrary from "./components/ExerciseLibrary.tsx";
 import { useShortcut } from "../../hooks/useShortcut.ts";
@@ -52,6 +53,11 @@ const TemplatePage = () => {
         });
         getMe().then(u => setUserGear(u.gear ?? [])).catch(() => null);
     }, []);
+
+    function exportTemplates(list: WorkoutTemplate[]) {
+        downloadBlob(buildTemplatesJson(list, exercises), templatesFilename(list));
+        showToast({ message: list.length === 1 ? `Exported “${list[0]!.name}”` : `Exported ${list.length} templates` });
+    }
 
     const exerciseList = useMemo(() => Object.values(exercises), [exercises]);
     const selectedTemplate = useMemo(() => templates.find(t => t.id === selectedId) ?? null, [templates, selectedId]);
@@ -174,7 +180,30 @@ const TemplatePage = () => {
             )}
             <HeaderComponent
                 title="Templates"
-                action={<Button text={"New template"} icon={<PlusIcon size={15} />} style={"green"} onClick={handleNewTemplate} disabled={creating} />}
+                action={
+                    <div className="header-action-group">
+                        <button
+                            type="button"
+                            className="header-icon-btn"
+                            aria-label="Export all templates"
+                            title="Export all templates"
+                            disabled={templates.length === 0}
+                            onClick={() => exportTemplates(templates)}
+                        >
+                            <Download size={15} />
+                        </button>
+                        <button
+                            type="button"
+                            className="header-icon-btn"
+                            aria-label="Import templates"
+                            title="Import templates"
+                            onClick={() => navigate("/import")}
+                        >
+                            <Upload size={15} />
+                        </button>
+                        <Button text={"New template"} icon={<PlusIcon size={15} />} style={"green"} onClick={handleNewTemplate} disabled={creating} />
+                    </div>
+                }
                 shortcuts={[
                     { keys: "Ctrl+K", label: "New template" },
                     { keys: "Ctrl+E", label: "Add exercise" },
@@ -205,7 +234,7 @@ const TemplatePage = () => {
                     <button className="panel-back-btn" onClick={handleBack}>
                         <ChevronLeft size={16} /> Templates
                     </button>
-                    {selectedTemplate ? (<> <TemplateDetail key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} pendingExerciseId={pendingExerciseId} onExerciseAdded={() => setPendingExerciseId(null)} onDirtyChange={handleDirtyChange} onLogWorkout={handleLogWorkout} userGear={userGear} autoFocusTitle={selectedTemplate.id === newlyCreatedId} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)
+                    {selectedTemplate ? (<> <TemplateDetail key={selectedTemplate.id} template={selectedTemplate} exercises={exercises} onDelete={handleDelete} onSave={handleSave} pendingExerciseId={pendingExerciseId} onExerciseAdded={() => setPendingExerciseId(null)} onDirtyChange={handleDirtyChange} onLogWorkout={handleLogWorkout} onExport={t => exportTemplates([t])} userGear={userGear} autoFocusTitle={selectedTemplate.id === newlyCreatedId} /> <AddExerciseButton onClick={() => setAddExerciseOpen(true)} /> </>)
                         : (
                             <div className="panel-empty">
                                 <p>Select a template to see details</p>
