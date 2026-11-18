@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { useId, useRef, type ReactNode } from "react";
+import { useFocusTrap, focusables } from "../../hooks/useFocusTrap.ts";
 import { X } from "lucide-react";
 
 interface OverlayProps {
@@ -11,12 +12,27 @@ interface OverlayProps {
 }
 
 function Overlay({ title, subtitle, children, onClose, noPadding, panelClassName }: OverlayProps) {
+    const panelRef = useRef<HTMLDivElement>(null);
+    const titleId = useId();
+    // Start on the first control in the body, not the close button in the header.
+    useFocusTrap(panelRef, onClose, root => {
+        const content = root.querySelector<HTMLElement>(".overlay-content");
+        return content ? focusables(content)[0] : null;
+    });
     return (
         <div className="overlay-backdrop" onClick={onClose}>
-            <div className={`overlay-panel${panelClassName ? ` ${panelClassName}` : ""}`} onClick={e => e.stopPropagation()}>
+            <div
+                ref={panelRef}
+                className={`overlay-panel${panelClassName ? ` ${panelClassName}` : ""}`}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={titleId}
+                tabIndex={-1}
+                onClick={e => e.stopPropagation()}
+            >
                 <header className="overlay-header">
                     <div>
-                        <h2 className="overlay-title">{title}</h2>
+                        <h2 id={titleId} className="overlay-title">{title}</h2>
                         {subtitle && <p className="overlay-subtitle">{subtitle}</p>}
                     </div>
                     <button className="overlay-close" onClick={onClose} aria-label="Close">

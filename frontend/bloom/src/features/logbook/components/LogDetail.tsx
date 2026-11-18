@@ -53,6 +53,8 @@ function LogDetail({
     );
     const [name, setName] = useState(log.name);
     const [date, setDate] = useState(initialDate);
+    // True while the date input holds an impossible day/month (31 November mid-typing).
+    const [dateIncomplete, setDateIncomplete] = useState(false);
     const [note, setNote] = useState(log.note ?? "");
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -100,8 +102,7 @@ function LogDetail({
         || note !== (log.note ?? "")
         || JSON.stringify(normalize(logExercises)) !== JSON.stringify(normalize(log.exercises));
     // A draft is always saveable, but never "unsaved": it is kept locally on every edit.
-    // The date input reports "" while a day/month combination is impossible (31 November mid-typing).
-    const canSave = date !== "" && (isDraft ? logExercises.length > 0 || name.trim() !== "" : hasChanges);
+    const canSave = !dateIncomplete && (isDraft ? logExercises.length > 0 || name.trim() !== "" : hasChanges);
     const currentLoggedAt = () => (date === initialDate ? log.loggedAt : withDate(log.loggedAt, date));
 
     const handleSaveRef = useRef(handleSave);
@@ -261,8 +262,14 @@ function LogDetail({
                             type="date"
                             className="log-date-input"
                             aria-label="Workout date"
-                            value={date}
-                            onChange={e => setDate(e.target.value)}
+                            // Uncontrolled: the input reports "" while half-typed, and writing that back
+                            // clears every segment (Firefox). Only complete dates reach state.
+                            defaultValue={initialDate}
+                            onChange={e => {
+                                const v = e.target.value;
+                                setDateIncomplete(!v);
+                                if (v) setDate(v);
+                            }}
                         />
                         {isDraft && (
                             <span className="draft-badge" title="Kept on this device until you save">
