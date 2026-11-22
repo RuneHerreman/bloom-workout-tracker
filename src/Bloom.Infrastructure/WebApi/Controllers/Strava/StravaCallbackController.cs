@@ -13,6 +13,7 @@ public sealed record StravaCallbackRequest(
     [FromQuery] string Code,
     [FromQuery] string State,
     [FromQuery] string? Error,
+    [FromQuery] string? Scope,
     [FromServices] IUseCase<ConnectStravaInput, ConnectStravaOutput> UseCase,
     [FromServices] ICurrentUser CurrentUser,
     [FromServices] IOptions<StravaOptions> Options,
@@ -43,9 +44,20 @@ public static class StravaCallbackController
             return TypedResults.BadRequest("Invalid state parameter");
         }
 
+        var frontendUrl = request.Options.Value.FrontendUrl.TrimEnd('/');
+
+        // Strava lets the user untick activity access on its consent screen; without it every
+        // activity call comes back 403, so don't store a connection that can't import anything.
+        if (!HasActivityScope(request.Scope))
+            return TypedResults.Redirect($"{frontendUrl}/profile?strava=missing-scope");
+
         await request.UseCase.Execute(new ConnectStravaInput(request.Code), ct);
 
-        var frontendUrl = request.Options.Value.FrontendUrl.TrimEnd('/');
         return TypedResults.Redirect($"{frontendUrl}/profile?strava=connected");
     }
+
+    private static bool HasActivityScope(string? scope) =>
+        (scope ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Any(s => s is "activity:read" or "activity:read_all");
 }

@@ -154,9 +154,13 @@ function ProfilePage() {
             fillForm(u);
             setLastWeighIn(body.at(-1) ?? null);
             if (s) setStrava(s);
-            // Drop the ?strava=connected the OAuth redirect leaves behind
+            // Drop the ?strava=... the OAuth redirect leaves behind
             const params = new URLSearchParams(window.location.search);
-            if (params.get("strava") === "connected") {
+            const stravaResult = params.get("strava");
+            if (stravaResult === "missing-scope") {
+                setStravaError("Strava wasn't connected — tick \"View data about your activities\" when approving");
+            }
+            if (stravaResult) {
                 window.history.replaceState({}, "", window.location.pathname);
             }
         }).finally(() => setLoading(false));

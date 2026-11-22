@@ -101,6 +101,13 @@ public class StravaApiClient(
             () => AuthorizedGet(accessToken, url),
             ct);
 
+        if (!resp.IsSuccessStatusCode)
+        {
+            // Strava's error body names the actual problem (missing scope, app limits, ...);
+            // the bare status code alone isn't enough to diagnose a failed import.
+            var body = await resp.Content.ReadAsStringAsync(ct);
+            logger.LogWarning("Strava activities request failed with {Status}: {Body}", (int)resp.StatusCode, body);
+        }
         resp.EnsureSuccessStatusCode();
         var raw = await resp.Content.ReadFromJsonAsync<List<StravaActivity>>(JsonOpts, ct) ?? [];
         return raw.Select(ToResult).ToList();
