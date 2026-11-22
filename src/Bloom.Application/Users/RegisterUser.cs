@@ -60,7 +60,7 @@ public class RegisterUser(
 
         await uow.Do(ct);
 
-        var token = tokenIssuer.Issue(SessionTicket.For(user, persistent: false));
+        var token = tokenIssuer.Issue(SessionTicket.For(user, persistent: true));
 
         logger.LogInformation("User registered | Id: {UserId}", user.Id);
 

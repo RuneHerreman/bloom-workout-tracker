@@ -19,8 +19,7 @@ public sealed record LoginUserRequest(
 
 public sealed record LoginUserBody(
     [Required, EmailAddress] string Email,
-    [Required] string Password,
-    bool RememberMe = false
+    [Required] string Password
 );
 
 public static class LoginUserController
@@ -32,8 +31,7 @@ public static class LoginUserController
     {
         var output = await request.UseCase.Execute(new LoginUserInput(
             request.Body.Email,
-            request.Body.Password,
-            request.Body.RememberMe
+            request.Body.Password
         ), ct);
 
         AuthCookie.Append(request.HttpContext, request.JwtOptions.Value, output.Token, output.Persistent, request.Clock.GetUtcNow());

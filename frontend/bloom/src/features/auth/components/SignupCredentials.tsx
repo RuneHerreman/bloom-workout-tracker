@@ -69,6 +69,8 @@ function SignupCredentials() {
                             <input
                                 type="email"
                                 id="email"
+                                name="email"
+                                autoComplete="username"
                                 placeholder="Email"
                                 value={email}
                                 required
@@ -79,6 +81,7 @@ function SignupCredentials() {
                             <label htmlFor="password"></label>
                             <PasswordInput
                                 id="password"
+                                autoComplete="new-password"
                                 placeholder="Password"
                                 value={password}
                                 required
@@ -89,6 +92,7 @@ function SignupCredentials() {
                             <label htmlFor="password-check"></label>
                             <PasswordInput
                                 id="password-check"
+                                autoComplete="new-password"
                                 placeholder="Repeat password"
                                 value={passwordAgain}
                                 required
@@ -143,6 +147,7 @@ function SignupCredentials() {
                             <input
                                 type="text"
                                 id="username"
+                                autoComplete="nickname"
                                 placeholder="Username"
                                 maxLength={50}
                                 required

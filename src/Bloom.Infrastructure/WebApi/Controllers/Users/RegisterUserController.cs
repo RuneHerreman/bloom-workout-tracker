@@ -48,7 +48,7 @@ public static class RegisterUserController
             request.Body.BirthDate
         ), ct);
 
-        AuthCookie.Append(request.HttpContext, request.JwtOptions.Value, output.Token, persistent: false, request.Clock.GetUtcNow());
+        AuthCookie.Append(request.HttpContext, request.JwtOptions.Value, output.Token, persistent: true, request.Clock.GetUtcNow());
 
         return TypedResults.NoContent();
     }

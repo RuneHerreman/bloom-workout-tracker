@@ -81,24 +81,13 @@
 
 #login-checks {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     padding-top: 0.5rem;
     color: var(--ink-muted);
     font-size: var(--text-sm);
 }
 
-#login-checks div {
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: center;
-    gap: 0.2rem;
-}
 
-#login-checks input {
-    width: fit-content;
-    margin: 0.1rem;
-    accent-color: var(--primary);
-}
 
 #login-action {
     margin-top: 1.5rem;

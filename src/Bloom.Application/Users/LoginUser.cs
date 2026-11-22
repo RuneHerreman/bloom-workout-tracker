@@ -8,8 +8,7 @@ namespace Bloom.Application.Users;
 
 public sealed record LoginUserInput(
     string Email,
-    string Password,
-    bool RememberMe = false
+    string Password
 );
 
 public sealed record LoginUserOutput(string Token, bool Persistent);
@@ -43,10 +42,11 @@ public class LoginUser(
         if (!passwordHasher.VerifyHashedPassword(user.HashedPassword.Value, input.Password))
             throw new InvalidCredentialsException("Invalid email or password.");
 
-        var token = tokenIssuer.Issue(SessionTicket.For(user, input.RememberMe));
+        // Every login lasts JwtOptions.RememberMeDays of inactivity and survives a browser restart.
+        var token = tokenIssuer.Issue(SessionTicket.For(user, persistent: true));
 
         logger.LogInformation("Login successful | Id: {UserId}", user.Id);
 
-        return new LoginUserOutput(token, input.RememberMe);
+        return new LoginUserOutput(token, Persistent: true);
     }
 }

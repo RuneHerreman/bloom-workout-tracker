@@ -3,13 +3,15 @@ import { Eye, EyeOff } from "lucide-react";
 
 interface PasswordInputProps {
     id: string;
+    name?: string;
+    autoComplete?: "current-password" | "new-password";
     placeholder: string;
     value?: string;
     required?: boolean;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-function PasswordInput({ id, placeholder, value, required, onChange }: PasswordInputProps) {
+function PasswordInput({ id, name, autoComplete, placeholder, value, required, onChange }: PasswordInputProps) {
     const [visible, setVisible] = useState(false);
 
     return (
@@ -17,6 +19,8 @@ function PasswordInput({ id, placeholder, value, required, onChange }: PasswordI
             <input
                 type={visible ? "text" : "password"}
                 id={id}
+                name={name ?? id}
+                autoComplete={autoComplete}
                 placeholder={placeholder}
                 value={value}
                 required={required}

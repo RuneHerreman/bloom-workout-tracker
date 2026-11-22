@@ -8,7 +8,6 @@ import PasswordInput from "./PasswordInput.tsx";
 function LoginCredentials() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [rememberMe, setRememberMe] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const { markAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -16,7 +15,7 @@ function LoginCredentials() {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await login(email, password, rememberMe);
+            await login(email, password);
             markAuthenticated();
             navigate("/dashboard");
         } catch (err) {
@@ -35,6 +34,8 @@ function LoginCredentials() {
                     <input
                         type="email"
                         id="email"
+                        name="email"
+                        autoComplete="username"
                         required
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="Email">
@@ -44,6 +45,7 @@ function LoginCredentials() {
                     <label htmlFor="password"></label>
                     <PasswordInput
                         id="password"
+                        autoComplete="current-password"
                         placeholder="Password"
                         required
                         onChange={(e) => setPassword(e.target.value)}
@@ -51,15 +53,6 @@ function LoginCredentials() {
                 </div>
                 {errorMessage && <p className="error-message">{errorMessage}</p>}
                 <div id="login-checks">
-                    <div>
-                        <label htmlFor="remember">Remember me</label>
-                        <input
-                            type="checkbox"
-                            id="remember"
-                            checked={rememberMe}
-                            onChange={(e) => setRememberMe(e.target.checked)}>
-                        </input>
-                    </div>
                     <a id="forgot-password">Forgot password?</a>
                 </div>
                 <div id="login-action">
